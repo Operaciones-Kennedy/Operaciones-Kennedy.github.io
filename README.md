@@ -15,7 +15,7 @@ Se publica sola con GitHub Pages en **https://operaciones-kennedy.github.io**. C
 | **Reportes → Historial y reportes del período** | Cumplimiento, gasto en fletes, gráficos por día/mes, comuna y transportista, y buscador de clientes con su foto de entrega. |
 | **Gestión de flotas → Liquidación del día / del período** | Pagos, facturas, visto bueno del transportista (Conforme / Observar) y comprobante en PDF. |
 
-**Roles.** Solo los correos de `ADMINISTRADORES_SHA256` (al inicio del `<script>` de `index.html`, guardados como SHA-256 del correo en minúsculas) ven todo. Cualquier otro usuario entra en *vista transportista*: solo Entregas y la liquidación del día, sin marcar pagos ni facturas. Para sumar un administrador: `printf '%s' 'correo@dominio.cl' | sha256sum` y agregar el resultado a la lista.
+**Roles.** Solo los correos de `ADMINISTRADORES_SHA256` (al inicio del `<script>` de `index.html`, guardados como SHA-256 del correo en minúsculas) ven todo. Cualquier otro usuario entra en *vista transportista*: solo Entregas y la liquidación del día, sin marcar pagos ni facturas. Para sumar un administrador: `printf '%s' 'correo@dominio.cl' | sha256sum` y agregar el resultado a la lista. Además, agregar el correo en `esAdmin()` de las reglas de Firestore en la consola de Firebase (el archivo `firebase/firestore.rules` no guarda correos porque el repositorio es público).
 
 **App instalable.** En el teléfono, abrir la página y usar «Agregar a la pantalla de inicio» (o el botón 📲 del menú en Android/Chrome).
 
