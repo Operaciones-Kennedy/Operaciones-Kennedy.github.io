@@ -28,7 +28,20 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-24 · 4";
+const VERSION_APP = "2026-09-24 · 5";
+
+/* ============================================================
+   ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
+   usuario que entre ve la vista de transportista (Entregas y Pagos).
+   Los correos están como SHA-256 del correo en minúsculas, para que no
+   queden a la vista en el código público. Para agregar un administrador,
+   calculá el SHA-256 de su correo (por ejemplo en una terminal:
+   printf '%s' 'correo@dominio.cl' | sha256sum) y sumalo a la lista.
+   ============================================================ */
+const ADMINISTRADORES_SHA256 = [
+  "18dccc406e1ccec60e806e16f1348bd7dcf7fc3bcd367bb673116ce0aa55c14e",
+  "c70a18a3ee64a0ac6edf32864d5262df7b249be7db68eae0bf9143852c9df5ce"
+];
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyCamNILqMyAxfRlYJHFzFgyuzTjH34AswQ";
 window.__googleMapsReady = false;
@@ -2182,10 +2195,29 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return !!email && listaTransportistas().includes(email);
   }
 
+  // null = todavía no se sabe (se calcula al iniciar sesión); true/false = es o no administrador.
+  let esAdminSesion = null;
+  async function sha256(texto){
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  async function calcularAdmin(email){
+    email = String(email || '').trim().toLowerCase();
+    // En las pruebas automáticas (página abierta como archivo) los administradores vienen del simulador.
+    const prueba = location.protocol === 'file:' && window.__fakeParams && !window.__fakeParams.usarListaReal && window.__fakeParams;
+    if(prueba && !prueba.admins){ esAdminSesion = null; aplicarRol(); return; }
+    if(prueba){ esAdminSesion = prueba.admins.map(e => e.toLowerCase()).includes(email); aplicarRol(); return; }
+    try{ esAdminSesion = ADMINISTRADORES_SHA256.includes(await sha256(email)); }
+    catch(e){ esAdminSesion = null; } // sin crypto.subtle: se usa la lista de transportistas
+    aplicarRol();
+  }
+
   function aplicarRol(){
     if(!appLista) return;
     const antes = modoTransportista;
-    modoTransportista = esTransportista();
+    // Regla principal: quien no es administrador es transportista. Si no se pudo
+    // calcular (caso raro), se usa la lista de transportistas como antes.
+    modoTransportista = esAdminSesion === null ? esTransportista() : !esAdminSesion;
     document.body.classList.toggle('modo-transportista', modoTransportista);
     $('rolChip').hidden = !modoTransportista;
     if(modoTransportista && !['chofer', 'liquidaciones'].includes(currentView)) switchView('chofer');
@@ -4480,6 +4512,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       if(unsub){ unsub(); unsub = null; }
       firebaseReady = false;
       baseState = null;
+      esAdminSesion = null;
       if(!user){
         $('loginScreen').hidden = false;
         $('sheet').hidden = true;
@@ -4493,6 +4526,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       $('avatarInitial').title = email;
       $('movilAvatar').textContent = $('movilMasInicial').textContent = email ? email[0].toUpperCase() : '?';
       $('movilMasEmail').textContent = email;
+      calcularAdmin(email);
       firebaseReady = true;
 
       tryInitMap();
