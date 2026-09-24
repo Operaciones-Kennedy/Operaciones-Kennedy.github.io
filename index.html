@@ -42,7 +42,7 @@ const firebaseConfig = {
   messagingSenderId: "593838460928",
   appId: "1:593838460928:web:3638c3a303e693792648e5"
 };
-const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento compartido
+const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del historial por día (se migra solo)
 </script>
 <style>
   :root{
@@ -296,6 +296,20 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
   .sync-banner.local{ background:var(--pend-bg); color:var(--pend); }
   .sync-banner.local .dot{ background:var(--pend); }
   @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+
+  /* ---------- Barra "Ruta del día" ---------- */
+  .hoja-bar{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px;
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:10px 14px; margin-bottom:18px; box-shadow:0 2px 10px rgba(15,76,92,0.04);
+  }
+  .hoja-bar-label{ font-weight:800; color:var(--accent-dark); font-size:14px; }
+  .hoja-bar input[type="date"]{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; font-size:14px; font-weight:700; color:var(--text); background:#fff; }
+  .hoja-bar select{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; font-size:13px; color:var(--text); background:#fff; max-width:100%; min-width:0; }
+  .hoja-bar button{ padding:7px 12px; }
+  .hoja-bar .hoja-nav{ padding:6px 8px; font-size:13px; color:var(--accent-dark); }
+  .hoja-bar-info{ font-size:12.5px; color:var(--muted); font-weight:600; margin-left:auto; }
+  @media (max-width:480px){ .hoja-bar-info{ margin-left:0; width:100%; } .hoja-bar select{ width:100%; } }
 
   .content-header{
     margin-bottom:18px;
@@ -1020,6 +1034,15 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
   </aside>
 
   <main class="content">
+  <div class="hoja-bar" id="hojaBar">
+    <span class="hoja-bar-label">📅 Ruta del</span>
+    <button class="icon-btn hoja-nav" id="hojaPrev" title="Día anterior" aria-label="Día anterior">◀</button>
+    <input type="date" id="hojaFecha" aria-label="Fecha de la ruta">
+    <button class="icon-btn hoja-nav" id="hojaNext" title="Día siguiente" aria-label="Día siguiente">▶</button>
+    <button id="hojaHoy">Hoy</button>
+    <select id="hojaRecientes" aria-label="Rutas guardadas"><option value="">Rutas guardadas…</option></select>
+    <span class="hoja-bar-info" id="hojaInfo"></span>
+  </div>
   <div id="viewDespachos">
     <div class="content-header">
       <h1>Despachos</h1>
@@ -1049,7 +1072,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
         <label>Punto de partida</label>
         <div class="value" id="puntoPartida" contenteditable="true" spellcheck="false">Av. Presidente Kennedy 5757, piso -3</div>
       </div>
-      <div class="field">
+      <div class="field" hidden>
         <label>Fecha de ruta</label>
         <input type="date" id="fechaRuta">
       </div>
@@ -1257,6 +1280,23 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
 (function(){
   const $ = id => document.getElementById(id);
   const STORAGE_KEY = 'hojaDeRuta_v1';
+  const HOJA_KEY = 'hojaDeRuta_actual';
+
+  // Fecha local (Chile) en formato AAAA-MM-DD, que es también el id del documento de la ruta.
+  function fechaLocal(d){
+    d = d || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function sumarDias(id, n){
+    const [y, m, d] = id.split('-').map(Number);
+    return fechaLocal(new Date(y, m - 1, d + n));
+  }
+  function fechaLarga(id){
+    const [y, m, d] = id.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  let hojaId = (() => { try{ return localStorage.getItem(HOJA_KEY) || fechaLocal(); }catch(e){ return fechaLocal(); } })();
+  const storageKeyDe = id => STORAGE_KEY + ':' + id;
   const tbody = $('tbody');
   const totalTarifaEl = $('totalTarifa');
   const titulo = $('titulo');
@@ -1294,8 +1334,8 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
 
   function loadLocalState(){
     try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return defaultState();
+      const raw = localStorage.getItem(storageKeyDe(hojaId));
+      if(!raw) return Object.assign(defaultState(), { fecha: hojaId });
       const parsed = JSON.parse(raw);
       if(!parsed.rows || !parsed.rows.length) parsed.rows = [defaultRow()];
       return parsed;
@@ -1308,7 +1348,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
   let pendingRemote = null;
 
   function cacheLocal(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* no disponible */ }
+    try{ localStorage.setItem(storageKeyDe(hojaId), JSON.stringify(state)); }catch(e){ /* no disponible */ }
   }
 
   function isEditingNow(){
@@ -1516,6 +1556,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
     if(currentView === 'reportes') renderReportes();
     if(currentView === 'chofer') renderChofer();
     if(currentView === 'liquidaciones') renderLiquidaciones();
+    pintarBarraHoja();
   }
 
   /* ============================================================
@@ -1726,7 +1767,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
         if(!file) return;
         msgFactura.textContent = 'Subiendo…';
         try{
-          const path = 'hojasDeRuta/' + HOJA_ID + '/' + row.id + '/factura-' + Date.now() + '-' + file.name;
+          const path = 'hojasDeRuta/' + hojaId + '/' + row.id + '/factura-' + Date.now() + '-' + file.name;
           const up = await uploadBlob(path, file, file.type || 'application/octet-stream');
           row.facturaUrl = up.url;
           row.facturaPath = up.path;
@@ -2456,13 +2497,13 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
         if(selectedFile){
           msg.textContent = 'Subiendo foto…';
           const blob = await compressImage(selectedFile);
-          const up = await uploadBlob('hojasDeRuta/' + HOJA_ID + '/' + row.id + '/foto-' + Date.now() + '.jpg', blob, 'image/jpeg');
+          const up = await uploadBlob('hojasDeRuta/' + hojaId + '/' + row.id + '/foto-' + Date.now() + '.jpg', blob, 'image/jpeg');
           entrega.fotoUrl = up.url; entrega.fotoPath = up.path;
         }
         if(!pad.isEmpty()){
           msg.textContent = 'Subiendo firma…';
           const sigBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-          const up = await uploadBlob('hojasDeRuta/' + HOJA_ID + '/' + row.id + '/firma-' + Date.now() + '.png', sigBlob, 'image/png');
+          const up = await uploadBlob('hojasDeRuta/' + hojaId + '/' + row.id + '/firma-' + Date.now() + '.png', sigBlob, 'image/png');
           entrega.firmaUrl = up.url; entrega.firmaPath = up.path;
         }
 
@@ -2651,7 +2692,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
   puntoPartida.addEventListener('input', () => { state.puntoPartida = puntoPartida.textContent; commit(); });
   puntoPartida.addEventListener('blur', () => geocodeStart());
   transportista.addEventListener('input', () => { state.transportista = transportista.textContent; commit(); });
-  fechaRuta.addEventListener('input', () => { state.fecha = fechaRuta.value; commit(); });
+  // La fecha de la ruta ahora es la hoja elegida arriba (barra "Ruta del …").
 
   $('btnAddRow').addEventListener('click', () => {
     state.rows.push(defaultRow());
@@ -2674,7 +2715,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const fecha = state.fecha || new Date().toISOString().slice(0,10);
+    const fecha = state.fecha || hojaId;
     a.href = url;
     a.download = `hoja-de-ruta-${fecha}.json`;
     a.click();
@@ -2709,7 +2750,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
     const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const fecha = state.fecha || new Date().toISOString().slice(0,10);
+    const fecha = state.fecha || hojaId;
     a.href = url;
     a.download = `hoja-de-ruta-${fecha}.csv`;
     a.click();
@@ -2738,7 +2779,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
     ws['!cols'] = [{wch:4},{wch:24},{wch:28},{wch:16},{wch:16},{wch:26},{wch:14},{wch:10},{wch:20},{wch:10}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Despachos');
-    const fecha = state.fecha || new Date().toISOString().slice(0,10);
+    const fecha = state.fecha || hojaId;
     XLSX.writeFile(wb, `hoja-de-ruta-${fecha}.xlsx`);
   });
 
@@ -3006,7 +3047,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
         if(blob.url) up = { url: blob.url, path: '' };
         else{
           const jpg = await compressImage(blob);
-          up = await uploadBlob('hojasDeRuta/' + HOJA_ID + '/' + rowId + '/foto-excel-' + Date.now() + '.jpg', jpg, 'image/jpeg');
+          up = await uploadBlob('hojasDeRuta/' + hojaId + '/' + rowId + '/foto-excel-' + Date.now() + '.jpg', jpg, 'image/jpeg');
         }
         // Se busca la fila recién ahora: mientras subía pudo llegar una versión nueva de la hoja.
         const row = state.rows.find(r => r.id === rowId);
@@ -3199,6 +3240,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
     setTimeout(() => {
       if(pendingRemote && !isEditingNow()){
         state = pendingRemote;
+        baseState = clonar(pendingRemote);
         pendingRemote = null;
         if(!state.rows || !state.rows.length) state.rows = [defaultRow()];
         bindHeaderFields();
@@ -3216,26 +3258,231 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
   /* ============================================================
      LOGIN + SINCRONIZACIÓN EN VIVO (Firebase Auth + Firestore)
      ============================================================ */
-  let docRef = null, saveTimer = null, firebaseReady = false, auth = null, unsub = null;
+  let docRef = null, saveTimer = null, firebaseReady = false, auth = null, unsub = null, db = null;
+  // Última versión de la hoja que llegó de Firestore. Al guardar, solo se envían las
+  // diferencias de este dispositivo respecto a ella, y se combinan con lo que haya
+  // en línea en ese momento: así dos personas (o una pestaña vieja) no se pisan
+  // la lista completa, y un despacho borrado en otro lado no reaparece.
+  let baseState = null;
+  const clonar = o => JSON.parse(JSON.stringify(o));
+
+  function fusionarHoja(remoto, base, local){
+    const res = clonar(remoto);
+    const b = base || { rows: [] };
+    Object.keys(local).forEach(k => {
+      if(k === 'rows') return;
+      if(JSON.stringify(local[k]) !== JSON.stringify(b[k])) res[k] = clonar(local[k]);
+    });
+    const baseRows = new Map((b.rows || []).map(r => [r.id, JSON.stringify(r)]));
+    const localIds = new Set(local.rows.map(r => r.id));
+    // Lo que se borró en este dispositivo se quita también en línea.
+    let rows = (res.rows || []).filter(r => !(baseRows.has(r.id) && !localIds.has(r.id)));
+    let idx = new Map(rows.map((r, i) => [r.id, i]));
+    local.rows.forEach((r, i) => {
+      const antes = baseRows.get(r.id);
+      const cambio = JSON.stringify(r) !== antes;
+      if(idx.has(r.id)){
+        if(cambio) rows[idx.get(r.id)] = clonar(r);
+      } else if(antes === undefined){
+        // Nuevo en este dispositivo: va después del que lo precede aquí.
+        const prev = i > 0 ? idx.get(local.rows[i - 1].id) : -1;
+        const at = prev === undefined ? rows.length : prev + 1;
+        rows.splice(at, 0, clonar(r));
+        idx = new Map(rows.map((x, j) => [x.id, j]));
+      }
+      // Si estaba antes pero ya no está en línea, otro lo borró: no se revive.
+    });
+    // Si aquí se reordenó la lista, se respeta ese orden.
+    const baseOrden = (b.rows || []).map(r => r.id).filter(id => localIds.has(id)).join(',');
+    const localOrden = local.rows.map(r => r.id).filter(id => baseRows.has(id)).join(',');
+    if(baseOrden !== localOrden){
+      const pos = new Map(local.rows.map((r, i) => [r.id, i]));
+      rows = rows.map((r, i) => [r, pos.has(r.id) ? pos.get(r.id) : 1e6 + i]).sort((x, y) => x[1] - y[1]).map(x => x[0]);
+    }
+    res.rows = rows.length ? rows : [defaultRow()];
+    return res;
+  }
+
+  function resumenDe(st, id){
+    const rows = st.rows.filter(r => r.cliente || r.direccion);
+    return {
+      fecha: id,
+      titulo: st.titulo || '',
+      transportista: st.transportista || '',
+      despachos: rows.length,
+      entregados: rows.filter(r => r.estado === 'entregado').length,
+      noEntregados: rows.filter(r => r.estado === 'no-entregado').length,
+      totalTarifa: rows.reduce((a, r) => a + (Number(r.tarifa) || 0), 0)
+    };
+  }
+
+  function guardarResumen(st, id, who){
+    if(!db) return;
+    db.collection('hojasResumen').doc(id).set(Object.assign(resumenDe(st, id), {
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: who
+    })).then(cargarRecientes).catch(err => console.warn('No se pudo guardar el resumen de la ruta', err));
+  }
 
   function commit(){
     cacheLocal();
     if(firebaseReady && docRef){
       setSync('saving', 'Guardando…');
       clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        const who = (auth && auth.currentUser && auth.currentUser.email) || 'alguien';
-        docRef.set({
-          json: JSON.stringify(state),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedBy: who
-        }).then(() => setSync('ok', 'Sincronizado')).catch(err => {
-          console.error(err);
-          setSync('err', 'No se pudo guardar en línea (revisá conexión/reglas de Firestore)');
-        });
-      }, 400);
+      saveTimer = setTimeout(guardarAhora, 400);
     }
   }
+
+  async function guardarAhora(){
+    saveTimer = null;
+    const who = (auth && auth.currentUser && auth.currentUser.email) || 'alguien';
+    const local = clonar(state);
+    const ref = docRef, id = hojaId, base = baseState;
+    try{
+      const final = await db.runTransaction(async tx => {
+        const snap = await tx.get(ref);
+        const remoto = snap.exists && snap.data().json ? JSON.parse(snap.data().json) : null;
+        const combinado = remoto ? fusionarHoja(remoto, base, local) : local;
+        tx.set(ref, { json: JSON.stringify(combinado), fecha: id, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: who });
+        return combinado;
+      });
+      guardarResumen(final, id, who);
+      if(id !== hojaId) return; // se cambió de día mientras guardaba
+      baseState = clonar(final);
+      if(JSON.stringify(final) !== JSON.stringify(local) && !isEditingNow()){
+        // Llegaron cambios de otra persona mientras se guardaba: se muestran.
+        state = final; bindHeaderFields(); renderRows(); cacheLocal();
+      }
+      setSync('ok', 'Sincronizado');
+    }catch(err){
+      console.error(err);
+      if(err && err.code === 'permission-denied'){
+        setSync('err', 'Firestore no permite guardar esta ruta (revisá las reglas de seguridad)');
+        return;
+      }
+      // Sin conexión las transacciones no funcionan: se guarda igual y Firestore lo
+      // sube solo cuando vuelve la señal.
+      setSync('saving', 'Sin conexión — guardado en este dispositivo');
+      ref.set({ json: JSON.stringify(local), fecha: id, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: who })
+        .then(() => { if(id === hojaId){ baseState = clonar(local); setSync('ok', 'Sincronizado'); } })
+        .catch(() => setSync('err', 'Sin conexión — se guardará cuando vuelva la señal'));
+    }
+  }
+
+  /* ---------- Una ruta por día ---------- */
+  function suscribirHoja(){
+    if(unsub){ unsub(); unsub = null; }
+    if(!db) return;
+    docRef = db.collection('hojasDeRuta').doc(hojaId);
+    const id = hojaId;
+    unsub = docRef.onSnapshot(snap => {
+      if(id !== hojaId) return;
+      if(snap.exists && snap.data().json){
+        if(snap.metadata && snap.metadata.hasPendingWrites) return; // eco de lo que se está guardando aquí
+        const remote = JSON.parse(snap.data().json);
+        if(!remote.rows || !remote.rows.length) remote.rows = [defaultRow()];
+        if(isEditingNow()){
+          pendingRemote = remote;
+          setSync('saving', 'Hay cambios nuevos — tocá afuera de una celda para verlos');
+          return;
+        }
+        state = remote;
+        baseState = clonar(remote);
+        bindHeaderFields();
+        renderRows();
+        cacheLocal();
+        const who = snap.data().updatedBy;
+        setSync('ok', who ? ('En vivo · última actualización de ' + who) : 'En vivo');
+      } else {
+        // Día sin ruta guardada todavía: se crea recién cuando alguien carga algo.
+        baseState = null;
+        setSync('ok', 'Ruta nueva — se guarda al cargar despachos');
+      }
+      pintarBarraHoja();
+    }, err => {
+      console.error(err);
+      setSync('err', err && err.code === 'permission-denied'
+        ? 'Firestore no permite leer esta ruta (revisá las reglas de seguridad)'
+        : 'Sin conexión con Firestore — trabajando en modo local');
+    });
+  }
+
+  function abrirHoja(id){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(id || '') || id === hojaId){ pintarBarraHoja(); return; }
+    if(saveTimer){ clearTimeout(saveTimer); guardarAhora(); } // no perder lo último escrito
+    const anterior = state;
+    hojaId = id;
+    try{ localStorage.setItem(HOJA_KEY, id); }catch(e){}
+    pendingRemote = null;
+    baseState = null;
+    state = loadLocalState();
+    // Un día nuevo hereda los datos fijos de la ruta anterior.
+    if(!state.rows.some(r => r.cliente || r.direccion)){
+      ['titulo', 'puntoPartida', 'transportista', 'transportistaEmail', 'startLat', 'startLng'].forEach(k => { if(anterior[k] != null) state[k] = anterior[k]; });
+    }
+    state.fecha = id;
+    bindHeaderFields();
+    renderRows();
+    geocodeAllPending();
+    suscribirHoja();
+    pintarBarraHoja();
+  }
+
+  var recientes = []; // var: pintarBarraHoja puede llamarse antes de llegar a esta línea
+  function pintarBarraHoja(){
+    const f = $('hojaFecha');
+    if(document.activeElement !== f) f.value = hojaId;
+    if(!Array.isArray(recientes)) recientes = [];
+    const n = state.rows.filter(r => r.cliente || r.direccion).length;
+    $('hojaInfo').textContent = fechaLarga(hojaId) + (hojaId === fechaLocal() ? ' (hoy)' : '') + ' · ' + n + ' despacho(s)';
+    const sel = $('hojaRecientes');
+    sel.innerHTML = '';
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = recientes.length ? 'Rutas guardadas (' + recientes.length + ')…' : 'Sin rutas guardadas aún';
+    sel.appendChild(ph);
+    recientes.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r.fecha;
+      o.textContent = r.fecha.split('-').reverse().join('/') + ' · ' + (r.despachos || 0) + ' desp. · ' + (r.entregados || 0) + ' entreg.';
+      sel.appendChild(o);
+    });
+    sel.value = '';
+  }
+
+  function cargarRecientes(){
+    if(!db) return;
+    db.collection('hojasResumen').orderBy('fecha', 'desc').limit(120).get()
+      .then(qs => { recientes = qs.docs.map(d => d.data()).filter(r => r.despachos); pintarBarraHoja(); })
+      .catch(err => console.warn('No se pudieron cargar las rutas guardadas', err));
+  }
+
+  // Antes había una sola hoja ("principal"). La primera vez se copia a su fecha, sin borrar la original.
+  async function migrarHojaUnica(){
+    try{
+      const viejo = await db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID).get();
+      if(!viejo.exists || !viejo.data().json || viejo.data().migradoA) return null;
+      const st = JSON.parse(viejo.data().json);
+      const ts = viejo.data().updatedAt && viejo.data().updatedAt.toDate ? viejo.data().updatedAt.toDate() : new Date();
+      const id = /^\d{4}-\d{2}-\d{2}$/.test(st.fecha || '') ? st.fecha : fechaLocal(ts);
+      st.fecha = id;
+      const destino = db.collection('hojasDeRuta').doc(id);
+      const yaHay = await destino.get();
+      if(!yaHay.exists) await destino.set({ json: JSON.stringify(st), fecha: id, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: 'migración' });
+      await db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID).set({ migradoA: id }, { merge: true });
+      guardarResumen(st, id, 'migración');
+      return id;
+    }catch(err){
+      console.warn('No se pudo migrar la hoja anterior', err);
+      return null;
+    }
+  }
+
+  $('hojaFecha').addEventListener('change', e => abrirHoja(e.target.value));
+  $('hojaPrev').addEventListener('click', () => abrirHoja(sumarDias(hojaId, -1)));
+  $('hojaNext').addEventListener('click', () => abrirHoja(sumarDias(hojaId, 1)));
+  $('hojaHoy').addEventListener('click', () => abrirHoja(fechaLocal()));
+  $('hojaRecientes').addEventListener('change', e => { if(e.target.value) abrirHoja(e.target.value); });
 
   function loginErrorMessage(e){
     const m = {
@@ -3281,8 +3528,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
     }
     try{ firebase.initializeApp(firebaseConfig); }catch(e){ /* ya inicializada */ }
     auth = firebase.auth();
-    const db = firebase.firestore();
-    docRef = db.collection('hojasDeRuta').doc(HOJA_ID);
+    db = firebase.firestore();
 
     $('btnLogin').addEventListener('click', doLogin);
     $('lPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
@@ -3292,6 +3538,7 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
     auth.onAuthStateChanged(user => {
       if(unsub){ unsub(); unsub = null; }
       firebaseReady = false;
+      baseState = null;
       if(!user){
         $('loginScreen').hidden = false;
         $('sheet').hidden = true;
@@ -3310,29 +3557,15 @@ const HOJA_ID = "principal"; // colección "hojasDeRuta", un único documento co
       updateMap();
       geocodeAllPending();
 
-      unsub = docRef.onSnapshot(snap => {
-        if(snap.exists && snap.data().json){
-          const remote = JSON.parse(snap.data().json);
-          if(!remote.rows || !remote.rows.length) remote.rows = [defaultRow()];
-          if(isEditingNow()){
-            pendingRemote = remote;
-            setSync('saving', 'Hay cambios nuevos — tocá afuera de una celda para verlos');
-            return;
-          }
-          state = remote;
-          bindHeaderFields();
-          renderRows();
-          cacheLocal();
-          const who = snap.data().updatedBy;
-          setSync('ok', who ? ('En vivo · última actualización de ' + who) : 'En vivo');
-        } else {
-          // No existe todavía en Firestore: subimos lo que haya en este dispositivo.
-          commit();
-        }
-      }, err => {
-        console.error(err);
-        setSync('err', 'Sin conexión con Firestore — trabajando en modo local');
-      });
+      (async () => {
+        const migrada = await migrarHojaUnica();
+        // Si este dispositivo nunca eligió un día, abre la ruta migrada.
+        let elegido = null; try{ elegido = localStorage.getItem(HOJA_KEY); }catch(e){}
+        if(migrada && !elegido){ hojaId = migrada; state = loadLocalState(); bindHeaderFields(); renderRows(); }
+        suscribirHoja();
+        cargarRecientes();
+        pintarBarraHoja();
+      })();
     });
   }
 
