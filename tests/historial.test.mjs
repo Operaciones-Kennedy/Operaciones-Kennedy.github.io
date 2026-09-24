@@ -86,4 +86,25 @@ console.log('T4 pestaña vieja con 30 despachos no pisa la lista de 15');
   if(p.errors.length) console.log('  errores:', p.errors);
   await p.context().close();
 }
+console.log('T9 rutas guardadas sin resumen (reglas antiguas)');
+{
+  const p = await open(b, { setup: () => {
+    const hoja = (n, est) => JSON.stringify({ titulo: 'PACS', transportista: 'Juan', rows: Array.from({ length: n }, (_, i) => ({ id: 'x' + i, cliente: 'C' + i, direccion: 'D' + i, estado: est, tarifa: 5000 })) });
+    window.__fakeParams = { seed: [
+      ['hojasDeRuta/2026-09-20', { json: hoja(4, 'entregado') }],
+      ['hojasDeRuta/2026-09-21', { json: hoja(2, 'pendiente') }],
+      ['hojasDeRuta/2026-09-22', { json: JSON.stringify({ rows: [{ id: 'v' }] }) }],
+      ['hojasResumen/2026-09-21', { fecha: '2026-09-21', despachos: 2, entregados: 0 }]
+    ] };
+  }});
+  await p.waitForTimeout(900);
+  const r20 = await p.evaluate(() => window.__fs.docs['hojasResumen/2026-09-20']);
+  check('crea el resumen que faltaba', r20 && r20.despachos === 4 && r20.entregados === 4 && r20.totalTarifa === 20000, JSON.stringify(r20));
+  check('no toca el resumen que ya estaba', (await p.evaluate(() => window.__fs.docs['hojasResumen/2026-09-21'].updatedBy)) === undefined);
+  check('no crea resumen de una ruta vacía', !(await p.evaluate(() => window.__fs.docs['hojasResumen/2026-09-22'])));
+  const opts = await p.$$eval('#hojaRecientes option', o => o.map(x => x.textContent));
+  check('aparece en rutas guardadas', opts.some(t => t.startsWith('20/09/2026 · 4 desp.')), opts.join(' | '));
+  if(p.errors.length) console.log('  errores:', p.errors);
+  await p.context().close();
+}
 await b.close();

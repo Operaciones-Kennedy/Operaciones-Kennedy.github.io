@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-24 · 6";
+const VERSION_APP = "2026-09-24 · 7";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -4424,8 +4424,35 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function cargarRecientes(){
     if(!db) return;
     db.collection('hojasResumen').orderBy('fecha', 'desc').limit(120).get()
-      .then(qs => { recientes = qs.docs.map(d => d.data()).filter(r => r.despachos); pintarBarraHoja(); })
+      .then(qs => { recientes = qs.docs.map(d => d.data()).filter(r => r.despachos); pintarBarraHoja(); completarResumenes(); })
       .catch(err => { console.warn('No se pudieron cargar las rutas guardadas', err); marcarPermiso('resumen', err); });
+  }
+
+  // Las rutas guardadas mientras Firebase no dejaba escribir resúmenes no aparecen en la
+  // lista ni en el historial: una vez por sesión, un administrador les crea el resumen.
+  let resumenesRevisados = false;
+  async function completarResumenes(){
+    if(resumenesRevisados || !db || modoTransportista) return;
+    resumenesRevisados = true;
+    try{
+      const [rutas, resumenes] = await Promise.all([
+        db.collection('hojasDeRuta').get(),
+        db.collection('hojasResumen').get()
+      ]);
+      const hay = new Set(resumenes.docs.map(d => d.id));
+      const faltan = rutas.docs
+        .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d.id) && !hay.has(d.id) && d.data().json)
+        .map(d => resumenDe(JSON.parse(d.data().json), d.id))
+        .filter(r => r.despachos);
+      if(!faltan.length) return;
+      await Promise.all(faltan.map(r => db.collection('hojasResumen').doc(r.fecha).set(Object.assign(r, {
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: 'recuperado'
+      }))));
+      cargarRecientes();
+    }catch(err){
+      console.warn('No se pudieron completar los resúmenes de rutas', err);
+    }
   }
 
   // Antes había una sola hoja ("principal"). La primera vez se copia a su fecha, sin borrar la original.
