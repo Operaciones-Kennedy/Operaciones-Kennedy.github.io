@@ -15,7 +15,7 @@ check('botón 💬 en la tabla solo si hay teléfono (2 de 3)', hrefs.length ===
 const dec = h => decodeURIComponent(h.split('?text=')[1]);
 check('en ruta: número con 56 y hora estimada', hrefs[0].startsWith('https://wa.me/56985859910?text=') && dec(hrefs[0]).includes('va en camino a Las Hualtatas 6172, Vitacura') && dec(hrefs[0]).includes('15:40'), dec(hrefs[0]));
 check('entregado: hora, quién recibió y foto', dec(hrefs[1]).includes('fue entregado a las 16:03 y lo recibió Gino') && dec(hrefs[1]).includes('Foto de la entrega: https://firebasestorage'), dec(hrefs[1]).replace(/\n/g, ' / '));
-await p.evaluate(() => document.querySelector('.nav-flyout-item[data-view="chofer"]').click()); await p.waitForTimeout(200);
+await p.evaluate(() => document.querySelector('.side-item[data-view="chofer"]').click()); await p.waitForTimeout(200);
 const btns = await p.$$eval('#viewChofer .chofer-nav a.wsp', as => as.map(a => a.textContent));
 check('en Entregas: "Avisar por WhatsApp"', btns.includes('💬 Avisar por WhatsApp'), btns.join(' | '));
 await p.click('.chofer-resueltos-toggle'); await p.waitForTimeout(100);

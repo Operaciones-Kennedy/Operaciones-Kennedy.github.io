@@ -190,113 +190,52 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
   .app[hidden]{ display:none; }
 
+  /* ---------- Menú lateral (computador) ----------
+     Ancho y con textos en pantallas grandes; solo íconos en pantallas medianas;
+     en el teléfono se oculta y se usa el menú inferior. */
   .sidebar{
-    width:72px;
-    flex:none;
-    background:var(--marca-tinta);
-    color:var(--sidebar-text);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:18px 0;
-    gap:22px;
+    width:248px; flex:none; position:sticky; top:0; height:100vh; overflow-y:auto;
+    background:var(--marca-tinta); color:var(--sidebar-text);
+    display:flex; flex-direction:column; padding:22px 14px 16px; gap:22px;
   }
-  .sidebar-logo{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:4px;
+  .sidebar-logo{ display:flex; align-items:center; gap:10px; padding:0 8px; }
+  .sidebar-logo .name{ font-family:var(--marca-letra-titulos); font-weight:800; font-size:26px; letter-spacing:-0.035em; color:#fff; line-height:1; }
+  .sidebar-logo .name::first-letter{ text-transform:lowercase; }
+  .sidebar-nav{ display:flex; flex-direction:column; gap:18px; }
+  .side-grupo{ display:flex; flex-direction:column; gap:2px; }
+  .side-titulo{ font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:rgba(255,255,255,0.5); padding:0 12px 6px; }
+  .side-item{
+    display:flex; align-items:center; gap:12px; width:100%; min-height:44px;
+    border:0; border-radius:12px; background:none; padding:10px 12px;
+    font:inherit; font-size:14.5px; font-weight:600; color:var(--sidebar-text); text-align:left; cursor:pointer;
   }
-  .sidebar-logo .badge{
-    width:38px; height:38px;
-    border-radius:11px;
-    background:transparent;
-    display:flex; align-items:center; justify-content:center;
-    font-size:18px;
-    flex:none;
-  }
-  .sidebar-logo .name{ display:none; }
-  .sidebar-nav{ display:flex; flex-direction:column; gap:8px; align-items:center; width:100%; }
-  .nav-item{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:44px; height:44px;
-    border-radius:11px;
-    font-size:14px;
-    font-weight:600;
-    color:var(--sidebar-text);
-    cursor:pointer;
-  }
-  .nav-item:hover{ background:rgba(255,255,255,0.06); }
-  .nav-item .nav-icon{ font-size:18px; }
-  .nav-item .nav-label{ display:none; }
-  .nav-item.active{
-    background:var(--sidebar-2);
-    color:var(--sidebar-text-active);
-    box-shadow:inset 3px 0 0 var(--marca-acento);
-  }
-  .nav-group{ position:relative; width:100%; display:flex; justify-content:center; }
-  .nav-flyout{
-    position:absolute;
-    left:56px;
-    top:0;
-    background:#fff;
-    border-radius:10px;
-    box-shadow:0 10px 28px rgba(15,76,92,0.25);
-    padding:8px;
-    min-width:190px;
-    z-index:30;
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-  }
-  .nav-flyout[hidden]{ display:none; }
-  .nav-flyout-head{
-    font-size:10.5px;
-    text-transform:uppercase;
-    letter-spacing:0.4px;
-    color:var(--muted);
-    font-weight:800;
-    padding:4px 10px 6px;
-  }
-  .nav-flyout-item{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:9px 11px;
-    border-radius:8px;
-    font-size:13px;
-    font-weight:600;
-    color:var(--text);
-    cursor:pointer;
-    white-space:nowrap;
-  }
-  .nav-flyout-item:hover{ background:var(--bg); }
-  .nav-flyout-item.active{ background:var(--pend-bg); color:var(--accent-dark); }
+  .side-item svg{ width:22px; height:22px; flex:none; }
+  .side-item:hover{ background:rgba(255,255,255,0.07); color:#fff; }
+  .side-item.active{ background:rgba(255,255,255,0.12); color:#fff; box-shadow:inset 3px 0 0 var(--marca-acento); }
+  .side-item.active svg{ color:var(--marca-acento); }
+  .side-item:focus-visible, .side-salir:focus-visible{ outline:2px solid var(--marca-acento); outline-offset:2px; }
   .sidebar-spacer{ flex:1; }
-  .sidebar-footer{
-    border-top:1px solid rgba(255,255,255,0.08);
-    padding-top:16px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-    width:100%;
-  }
+  .sidebar-footer{ border-top:1px solid rgba(255,255,255,0.1); padding-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .side-cuenta{ display:flex; align-items:center; gap:10px; padding:4px 4px 4px 8px; }
+  .side-cuenta-texto{ flex:1; min-width:0; }
+  .side-cuenta-titulo{ font-size:13px; font-weight:800; color:#fff; }
+  .user-email{ font-size:12px; color:rgba(255,255,255,0.65); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .side-salir{ border:0; background:none; color:var(--sidebar-text); padding:8px; border-radius:10px; cursor:pointer; display:flex; }
+  .side-salir svg{ width:20px; height:20px; }
+  .side-salir:hover{ background:rgba(255,255,255,0.08); color:#fff; }
   .avatar{
-    width:34px; height:34px;
-    border-radius:50%;
-    background:#fff;
-    color:var(--accent-dark);
-    font-weight:800;
-    font-size:13px;
-    display:flex; align-items:center; justify-content:center;
-    flex:none;
-    cursor:default;
+    width:36px; height:36px; border-radius:50%; background:var(--marca-principal); color:#fff;
+    font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; flex:none; cursor:default;
   }
-  .sidebar-user{ display:flex; flex-direction:column; align-items:center; }
-  .user-email{ display:none; }
+  @media (max-width:1099px){
+    .sidebar{ width:76px; padding:18px 10px 14px; align-items:center; }
+    .sidebar-logo{ padding:0; }
+    .sidebar-logo .name, .side-titulo, .side-item span, .side-cuenta-texto{ display:none; }
+    .sidebar-nav{ gap:10px; }
+    .side-grupo + .side-grupo{ border-top:1px solid rgba(255,255,255,0.1); padding-top:10px; }
+    .side-item{ justify-content:center; padding:10px; width:48px; }
+    .side-cuenta{ flex-direction:column; padding:0; gap:6px; }
+  }
   .link-btn{
     background:none;
     border:none;
@@ -706,11 +645,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .stat-note{ font-size:12px; font-weight:700; opacity:.92; min-height:16px; }
 
   /* ---------- Vista del transportista ---------- */
-  body.modo-transportista #navDespachos,
-  body.modo-transportista #navReportes,
-  body.modo-transportista .nav-flyout-item[data-view="liqperiodo"]{ display:none !important; }
-  body.modo-transportista .nav-group:has(#navDespachos),
-  body.modo-transportista .nav-group:has(#navReportes){ display:none !important; }
   .rol-chip{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:6px; background:#ffe8e2; color:#c2452f; }
   .chofer-nav{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   .chofer-nav a{
@@ -1089,11 +1023,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     .content{ padding:18px 16px 32px; }
     .summary-card{ gap:14px 24px; }
     .kpi-bar{ padding:14px 16px; }
-    .sidebar{ width:60px; padding:14px 0; gap:16px; }
-    .nav-item{ width:38px; height:38px; }
-    .nav-item .nav-icon{ font-size:16px; }
-    .sidebar-logo .badge{ width:32px; height:32px; font-size:16px; }
-    .nav-flyout{ left:48px; }
     #mapView{ height:360px; }
   }
 
@@ -1138,45 +1067,33 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <svg class="marca-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 52 V13 H33 A11.5 11.5 0 0 1 33 36 H17 M31 36 L45 51" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="52" r="5.5" fill="var(--marca-tinta)" stroke="#FFFFFF" stroke-width="3.5"/><circle cx="47.5" cy="53" r="7" fill="var(--marca-acento)"/></svg>
       <span class="name">Ruteka</span>
     </div>
-    <nav class="sidebar-nav">
-      <div class="nav-group" data-nav-mode="menu">
-        <div class="nav-item active" id="navDespachos" title="Despachos"><span class="nav-icon">📦</span><span class="nav-label">Despachos</span></div>
-        <div class="nav-flyout" id="despachosFlyout" hidden>
-          <div class="nav-flyout-head">Despachos</div>
-          <div class="nav-flyout-item active" data-view="despachos">🗺️ Coordinación de rutas</div>
-        </div>
+    <nav class="sidebar-nav" aria-label="Menú principal">
+      <div class="side-grupo">
+        <div class="side-titulo">Operación</div>
+        <button class="side-item" type="button" data-view="despachos" id="navDespachos" data-solo-admin title="Ruta del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta del día</span></button>
+        <button class="side-item" type="button" data-view="chofer" id="navChofer" title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
       </div>
-      <div class="nav-group" data-nav-mode="menu">
-        <div class="nav-item" id="navChofer" title="Entregas (chofer)"><span class="nav-icon">🖊️</span><span class="nav-label">Entregas</span></div>
-        <div class="nav-flyout" id="choferFlyout" hidden>
-          <div class="nav-flyout-head">Entregas</div>
-          <div class="nav-flyout-item" data-view="chofer">🖊️ Pruebas de entregas</div>
-        </div>
+      <div class="side-grupo" data-solo-admin>
+        <div class="side-titulo">Reportes</div>
+        <button class="side-item" type="button" data-view="reportes" id="navReportes" data-solo-admin title="KPIs del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
+        <button class="side-item" type="button" data-view="historial" data-solo-admin title="Historial y reportes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Historial y reportes</span></button>
       </div>
-      <div class="nav-group" data-nav-mode="menu">
-        <div class="nav-item" id="navReportes" title="Reportes"><span class="nav-icon">📊</span><span class="nav-label">Reportes</span></div>
-        <div class="nav-flyout" id="reportesFlyout" hidden>
-          <div class="nav-flyout-head">Reportes</div>
-          <div class="nav-flyout-item" data-view="reportes">📈 KPIs del día</div>
-          <div class="nav-flyout-item" data-view="historial">🗂️ Historial y reportes del período</div>
-        </div>
-      </div>
-      <div class="nav-group" data-nav-mode="menu">
-        <div class="nav-item" id="navFlota" title="Gestión de flotas"><span class="nav-icon">🚛</span><span class="nav-label">Gestión de flotas</span></div>
-        <div class="nav-flyout" id="flotaFlyout" hidden>
-          <div class="nav-flyout-head">Gestión de flotas</div>
-          <div class="nav-flyout-item" data-view="liquidaciones">💰 Liquidación del día</div>
-          <div class="nav-flyout-item" data-view="liqperiodo">📅 Liquidación del período</div>
-        </div>
+      <div class="side-grupo">
+        <div class="side-titulo">Pagos</div>
+        <button class="side-item" type="button" data-view="liquidaciones" id="navFlota" title="Liquidación del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M15.5 15h2.5"/></svg><span>Liquidación del día</span></button>
+        <button class="side-item" type="button" data-view="liqperiodo" data-solo-admin title="Liquidación del período"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
       </div>
     </nav>
     <div class="sidebar-spacer"></div>
     <div class="sidebar-footer">
-      <button class="link-btn" id="btnInstalar" title="Instalar como app en este dispositivo" hidden>📲</button>
-      <div class="avatar" id="avatarInitial" title="">?</div>
-      <div class="sidebar-user">
-        <div class="user-email" id="sessionEmail"></div>
-        <button class="link-btn" id="btnLogout" title="Cerrar sesión">⎋</button>
+      <button class="side-item" type="button" id="btnInstalar" title="Instalar Ruteka en este equipo" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.5 11.5L12 14l2.5-2.5"/></svg><span>Instalar Ruteka</span></button>
+      <div class="side-cuenta">
+        <div class="avatar" id="avatarInitial" title="">?</div>
+        <div class="side-cuenta-texto">
+          <div class="side-cuenta-titulo">Mi cuenta</div>
+          <div class="user-email" id="sessionEmail"></div>
+        </div>
+        <button class="side-salir" type="button" id="btnLogout" title="Cerrar sesión" aria-label="Cerrar sesión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h9"/></svg></button>
       </div>
     </div>
   </aside>
@@ -2810,12 +2727,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     // La barra "Ruta del …" no aplica a las vistas del período.
     $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo';
 
-    document.querySelectorAll('.nav-group').forEach(group => {
-      const flyoutItems = Array.from(group.querySelectorAll('.nav-flyout-item'));
-      const matched = flyoutItems.some(i => i.dataset.view === view);
-      group.querySelector('.nav-item').classList.toggle('active', matched);
-      flyoutItems.forEach(i => i.classList.toggle('active', i.dataset.view === view));
-    });
+    marcarMenuLateral(view);
 
     if(view === 'reportes') renderReportes();
     if(view === 'chofer') renderChofer();
@@ -2824,43 +2736,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     marcarTabMovil(view);
   }
 
-  // Cada ícono del menú es un "nav-group" con su propio flyout (data-nav-mode
-  //="menu"): el clic siempre despliega la lista de opciones de esa categoría,
-  // aunque hoy tenga una sola. Así se pueden sumar subcategorías nuevas a
-  // futuro agregando más .nav-flyout-item dentro del grupo, sin tocar esta
-  // lógica. (Un grupo sin data-nav-mode="menu" navegaría directo si tiene una
-  // sola opción, por si en el futuro se prefiere ese comportamiento.)
-  document.querySelectorAll('.nav-group').forEach(group => {
-    const mainItem = group.querySelector('.nav-item');
-    const flyout = group.querySelector('.nav-flyout');
-    const options = Array.from(flyout.querySelectorAll('.nav-flyout-item'));
-    const alwaysMenu = group.dataset.navMode === 'menu';
-
-    mainItem.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.nav-flyout').forEach(f => { if(f !== flyout) f.hidden = true; });
-      if(!alwaysMenu && options.length <= 1){
-        flyout.hidden = true;
-        switchView(options[0].dataset.view);
-      } else {
-        flyout.hidden = !flyout.hidden;
-      }
+  function marcarMenuLateral(view){
+    document.querySelectorAll('.side-item[data-view]').forEach(b => {
+      const activa = b.dataset.view === view;
+      b.classList.toggle('active', activa);
+      if(activa) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
-
-    options.forEach(opt => {
-      opt.addEventListener('click', (e) => {
-        e.stopPropagation();
-        flyout.hidden = true;
-        switchView(opt.dataset.view);
-      });
-    });
-  });
-
-  document.addEventListener('click', (e) => {
-    if(!e.target.closest('.nav-group')){
-      document.querySelectorAll('.nav-flyout').forEach(f => { f.hidden = true; });
-    }
-  });
+  }
+  document.querySelectorAll('.side-item[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
 
   function renderBarChart(container, items, opts){
     opts = opts || {};
@@ -4497,6 +4380,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   $('marcaLema').textContent = MARCA.lema;
   marcarTabMovil(currentView);
+  marcarMenuLateral(currentView);
   appLista = true;
   startFirebase();
 })();

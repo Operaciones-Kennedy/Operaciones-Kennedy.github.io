@@ -17,7 +17,7 @@ const setup = () => {
   window.__fakeParams = { seed };
 };
 const p = await open(b, { setup });
-await p.evaluate(() => document.querySelector('.nav-flyout-item[data-view="historial"]').click());
+await p.evaluate(() => document.querySelector('.side-item[data-view="historial"]').click());
 await p.waitForTimeout(600);
 check('barra del día oculta en historial', await p.$eval('#hojaBar', e => e.hidden));
 check('rango por defecto: este mes', (await p.inputValue('#rDesdeH')) === '2026-09-01' && (await p.inputValue('#rHastaH')) === '2026-09-24');
@@ -35,7 +35,7 @@ await p.fill('#rHastaH', '2026-09-30'); await p.dispatchEvent('#rHastaH', 'chang
 check('dos meses: agrupa por mes', (await p.textContent('#hTituloTiempo')) === 'Despachos por mes' && (await p.textContent('#hDespachos')) === '9');
 
 
-await p.evaluate(() => document.querySelector('.nav-flyout-item[data-view="liqperiodo"]').click()); await p.waitForTimeout(400);
+await p.evaluate(() => document.querySelector('.side-item[data-view="liqperiodo"]').click()); await p.waitForTimeout(400);
 check('liquidación del período: total $72.000', (await p.textContent('#lpTotal')) === '$72.000', await p.textContent('#lpTotal'));
 check('visto bueno 1 de 9', (await p.textContent('#lpVistoBueno')) === '1 de 9');
 await p.selectOption('#lpTransportista', 'Pedro'); await p.waitForTimeout(100);
