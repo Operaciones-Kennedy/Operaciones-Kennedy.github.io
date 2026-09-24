@@ -1,6 +1,6 @@
-# Hoja de Ruta — Despachos
+# Ruteka — Despachos
 
-Página web para coordinar los despachos del día con el transportista: carga de la ruta desde Excel, mapa, registro de entregas con foto y firma, liquidación con el visto bueno del transportista, e historial y reportes por período.
+**Ruteka** («todas tus rutas, en un solo lugar») es la página web para coordinar los despachos del día con el transportista: carga de la ruta desde Excel, mapa, registro de entregas con foto y firma, liquidación con el visto bueno del transportista, e historial y reportes por período.
 
 Se publica sola con GitHub Pages en **https://operaciones-kennedy.github.io**. Cada cambio que se une a `main` queda en línea en uno o dos minutos.
 
@@ -63,3 +63,9 @@ npm install
 npx playwright install chromium   # solo la primera vez
 npm test
 ```
+
+## Marca
+
+- **Nombre y lema:** bloque `MARCA` al inicio del `<script>` de `index.html`.
+- **Colores y letras:** bloque «MARCA — RUTEKA» al inicio del `<style>` (`--marca-tinta`, `--marca-principal`, `--marca-acento`, `--marca-fondo`, `--marca-letra-titulos`, `--marca-letra-texto`). Todas las pantallas toman los colores de ahí.
+- **Ícono de la app:** `icons/` (y `manifest.json`).

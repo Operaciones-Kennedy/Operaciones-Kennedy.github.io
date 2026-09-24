@@ -24,6 +24,6 @@ await p.reload(); await p.waitForTimeout(500);
 check('service worker activo', await p.evaluate(() => !!navigator.serviceWorker.controller));
 await ctx.setOffline(true);
 await p.reload(); await p.waitForTimeout(500);
-check('sin señal la app abre igual', (await p.title()).includes('Hoja de Ruta') && await p.isVisible('#loginScreen .login-box'));
+check('sin señal la app abre igual', (await p.title()).includes('Ruteka') && await p.isVisible('#loginScreen .login-box'));
 await b.close();
 server.close();
