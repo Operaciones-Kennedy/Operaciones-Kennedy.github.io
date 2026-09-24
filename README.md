@@ -68,4 +68,4 @@ npm test
 
 - **Nombre y lema:** bloque `MARCA` al inicio del `<script>` de `index.html`.
 - **Colores y letras:** bloque «MARCA — RUTEKA» al inicio del `<style>` (`--marca-tinta`, `--marca-principal`, `--marca-acento`, `--marca-fondo`, `--marca-letra-titulos`, `--marca-letra-texto`). Todas las pantallas toman los colores de ahí.
-- **Ícono de la app:** `icons/` (y `manifest.json`).
+- **Ícono de la app:** `icons/ruteka-*.png`, `icons/ruteka.svg` y `favicon.ico` (y `manifest.json`). Si cambias el ícono, cámbiale también el nombre al archivo para que los teléfonos lo vuelvan a descargar.
