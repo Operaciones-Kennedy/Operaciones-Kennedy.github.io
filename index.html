@@ -686,6 +686,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .chofer-nav a.waze{ background:#e6f8fd; border-color:#b6e8f5; color:#0b6f8a; }
   .chofer-nav a.tel{ background:var(--ok-bg); border-color:#a8e6dc; color:var(--ok); }
   .chofer-nav a.wsp{ background:#e7f9ee; border-color:#b4e8c6; color:#137a3a; }
+  button.ruta-btn{ background:#eef5ff; border-color:#c6dafc; color:#1e4fb3; }
+  button.ruta-btn:hover{ background:#dde9ff; }
+  .salida-hora{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--muted); }
+  .salida-hora input{ border:1px solid var(--border); border-radius:8px; padding:7px 8px; font:inherit; font-weight:700; color:var(--text); background:#fff; }
+  .cell-eta{ font-size:12.5px; font-weight:700; color:#1e4fb3; }
   a.wsp-btn{ text-decoration:none; display:inline-block; }
   .foto-pendiente{ font-size:12px; font-weight:700; color:#9a5b00; background:#fff1d6; border-radius:8px; padding:6px 9px; display:inline-block; }
   @media (max-width:480px){ .chofer-nav a{ flex:1 1 auto; justify-content:center; } }
@@ -1158,6 +1163,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <button class="excel" id="btnImportExcel">📊 Importar Excel</button>
       <button class="excel" id="btnExportExcel">📤 Exportar Excel</button>
       <button id="btnPrint">🖨️ Imprimir / PDF</button>
+      <button class="ruta-btn" id="btnOptimizar" title="Ordenar los despachos pendientes por el camino más corto desde el punto de partida">🧭 Optimizar ruta</button>
+      <label class="salida-hora" for="horaSalida">Salida <input type="time" id="horaSalida" value="09:00"></label>
       <span class="spacer"></span>
       <button class="danger" id="btnClear">🗑️ Vaciar todo</button>
     </div>
@@ -1592,6 +1599,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       bounds.extend(marker.getPosition());
       hasPoints = true;
     });
+
+    // Recorrido sugerido: desde el punto de partida por los pendientes, en orden.
+    const tramo = [];
+    if(state.startLat != null && state.startLng != null) tramo.push({ lat: state.startLat, lng: state.startLng });
+    state.rows.forEach(r => { if(r.lat != null && r.lng != null && (r.estado === 'pendiente' || r.estado === 'en-ruta')) tramo.push({ lat: r.lat, lng: r.lng }); });
+    if(state.rutaOptimizada && tramo.length > 1){
+      mapMarkers.push(new google.maps.Polyline({ path: tramo, map, strokeColor: '#3b82f6', strokeOpacity: 0.85, strokeWeight: 4 }));
+    }
 
     if(!hasPoints) return;
     if(mapMarkers.length === 1){
@@ -2116,6 +2131,112 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(d.startsWith('56')) return '+' + d;
     return d;
   }
+  /* ============================================================
+     RUTA OPTIMIZADA
+     Ordena los despachos pendientes por el camino más corto desde el punto
+     de partida (vecino más cercano + mejora 2-opt) usando las coordenadas del
+     mapa, y estima la hora de llegada a cada uno.
+     Supuestos: calles ≈ 1,35 × la distancia en línea recta, 24 km/h promedio
+     en ciudad y 8 minutos por entrega.
+     ============================================================ */
+  const RUTA = { factorCalle: 1.35, kmh: 24, minPorEntrega: 8 };
+  function distKm(a, b){
+    const R = 6371, rad = x => x * Math.PI / 180;
+    const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h)) * RUTA.factorCalle;
+  }
+  function largoRuta(inicio, pts){
+    let d = 0, prev = inicio;
+    pts.forEach(p => { if(prev) d += distKm(prev, p); prev = p; });
+    return d;
+  }
+  function ordenarPuntos(inicio, pts){
+    // Vecino más cercano
+    const quedan = pts.slice(), orden = [];
+    let actual = inicio || quedan[0];
+    while(quedan.length){
+      let mejor = 0, dm = Infinity;
+      quedan.forEach((p, i) => { const d = distKm(actual, p); if(d < dm){ dm = d; mejor = i; } });
+      actual = quedan.splice(mejor, 1)[0];
+      orden.push(actual);
+    }
+    // Mejora 2-opt: invierte tramos mientras acorte el recorrido
+    let mejoro = true, vueltas = 0;
+    while(mejoro && vueltas++ < 60){
+      mejoro = false;
+      for(let i = 0; i < orden.length - 1; i++){
+        for(let k = i + 1; k < orden.length; k++){
+          const nuevo = orden.slice(0, i).concat(orden.slice(i, k + 1).reverse(), orden.slice(k + 1));
+          if(largoRuta(inicio, nuevo) + 1e-9 < largoRuta(inicio, orden)){ orden.splice(0, orden.length, ...nuevo); mejoro = true; }
+        }
+      }
+    }
+    return orden;
+  }
+  const horaAMin = h => { const m = /^(\d{1,2}):(\d{2})/.exec(h || ''); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
+  const minAHora = m => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(Math.round(m) % 60).padStart(2, '0');
+
+  // Horas estimadas en el orden actual de la lista (solo pendientes y en ruta con ubicación).
+  function calcularEtas(){
+    const inicio = state.startLat != null ? { lat: state.startLat, lng: state.startLng } : null;
+    let t = horaAMin(state.horaSalida || '09:00');
+    let prev = inicio, km = 0;
+    state.rows.forEach(r => {
+      if(!(r.estado === 'pendiente' || r.estado === 'en-ruta') || r.lat == null){ delete r.eta; return; }
+      const p = { lat: r.lat, lng: r.lng };
+      if(prev){ const d = distKm(prev, p); km += d; t += d / RUTA.kmh * 60; }
+      r.eta = minAHora(t);
+      t += RUTA.minPorEntrega;
+      prev = p;
+    });
+    return { km, fin: minAHora(t) };
+  }
+
+  async function optimizarRuta(){
+    const pend = state.rows.filter(r => (r.cliente || r.direccion) && (r.estado === 'pendiente' || r.estado === 'en-ruta'));
+    const conUbicacion = pend.filter(r => r.lat != null && r.lng != null);
+    const sinUbicacion = pend.filter(r => r.lat == null || r.lng == null);
+    if(conUbicacion.length < 2){
+      showDialog(conUbicacion.length ? 'Hay un solo despacho pendiente con ubicación en el mapa: no hay nada que ordenar.'
+        : 'Todavía no hay despachos pendientes ubicados en el mapa. Esperá unos segundos a que se ubiquen las direcciones e intentá de nuevo.');
+      return;
+    }
+    const antes = state.rows.map(r => r.id);
+    const inicio = state.startLat != null ? { lat: state.startLat, lng: state.startLng } : null;
+    const orden = ordenarPuntos(inicio, conUbicacion);
+    const resueltos = state.rows.filter(r => !pend.includes(r) && (r.cliente || r.direccion));
+    const vacias = state.rows.filter(r => !(r.cliente || r.direccion));
+    const kmAntes = largoRuta(inicio, conUbicacion);
+    state.rows = resueltos.concat(orden, sinUbicacion, vacias);
+    state.rutaOptimizada = true;
+    const { km, fin } = calcularEtas();
+    renderRows(); commit();
+    const ahorro = kmAntes - km;
+    const opcion = await showDialog(
+      `Ruta optimizada: ${orden.length} despacho(s) pendientes en orden, desde ${inicio ? 'el punto de partida' : 'el primer despacho'}.\n` +
+      `Recorrido estimado: ${km.toFixed(1)} km` + (ahorro > 0.5 ? ` (${ahorro.toFixed(1)} km menos que antes)` : '') + `.\n` +
+      `Saliendo a las ${state.horaSalida || '09:00'}, termina aprox. a las ${fin}.` +
+      (sinUbicacion.length ? `\n\n${sinUbicacion.length} despacho(s) sin ubicación en el mapa quedaron al final: revisá su dirección.` : '') +
+      (!inicio ? '\n\nOjo: el punto de partida no está ubicado en el mapa; revisá la dirección de partida.' : '') +
+      `\n\nLas horas son estimadas (${RUTA.kmh} km/h promedio y ${RUTA.minPorEntrega} min por entrega).`,
+      [{ label: 'Deshacer' }, { label: 'Listo', primary: true }]
+    );
+    if(opcion === 0){
+      const porId = new Map(state.rows.map(r => [r.id, r]));
+      state.rows = antes.map(id => porId.get(id)).filter(Boolean);
+      state.rutaOptimizada = false;
+      state.rows.forEach(r => delete r.eta);
+      renderRows(); commit();
+    }
+  }
+  $('btnOptimizar').addEventListener('click', optimizarRuta);
+  $('horaSalida').addEventListener('change', e => {
+    state.horaSalida = e.target.value || '09:00';
+    if(state.rutaOptimizada){ calcularEtas(); renderRows(); }
+    commit();
+  });
+
   /* ---------- Aviso al cliente por WhatsApp ----------
      El mensaje cambia según el estado: en camino (con hora estimada si la
      ruta está optimizada), entregado (con la foto de prueba) o no entregado. */
@@ -2908,6 +3029,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     card.appendChild(head);
 
     const metaChips = [];
+    if(row.eta && (row.estado === 'pendiente' || row.estado === 'en-ruta')) metaChips.push(['🕒', 'Llega aprox. ' + row.eta]);
     if(row.contacto) metaChips.push(['📞', row.contacto]);
     if(row.productos) metaChips.push(['📦', row.productos]);
     if(row.tarifa) metaChips.push(['💰', formatMoney(row.tarifa)]);
@@ -3218,6 +3340,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       span.className = 'cell-hora-entrega';
       span.textContent = row.entrega.horaEntrega;
       td.appendChild(span);
+    } else if(row.eta && (row.estado === 'pendiente' || row.estado === 'en-ruta')){
+      const span = document.createElement('span');
+      span.className = 'cell-eta';
+      span.title = 'Hora estimada de llegada según la ruta optimizada';
+      span.textContent = '~' + row.eta + ' (estimada)';
+      td.appendChild(span);
     } else {
       const span = document.createElement('span');
       span.className = 'cell-pendiente-chofer';
@@ -3325,6 +3453,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     puntoPartida.textContent = state.puntoPartida;
     transportista.textContent = state.transportista;
     fechaRuta.value = state.fecha || '';
+    if(document.activeElement !== $('horaSalida')) $('horaSalida').value = state.horaSalida || '09:00';
   }
 
   titulo.addEventListener('input', () => { state.titulo = titulo.textContent; commit(); });
