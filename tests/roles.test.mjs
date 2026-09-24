@@ -17,7 +17,7 @@ console.log('Administrador anota al transportista con Firebase bloqueando config
   await p.click('.side-item[data-view="config"]'); await p.waitForTimeout(200);
   await p.fill('#configEmail', 'Transporte@Barrientos.cl'); await p.click('#configForm button[type=submit]'); await p.waitForTimeout(900);
   check('queda en la lista de la página', (await visibles(p, '#configLista li span')).includes('transporte@barrientos.cl'));
-  check('explica que se guardó en la ruta pero no en la lista general', (await p.textContent('#configMsg')).includes('Firebase no permitió'));
+  check('aunque Firebase bloquee config, queda para todas las rutas', (await p.textContent('#configMsg')).includes('todas las rutas'));
   const st = await rowsOf(p, 'hojasDeRuta', '2026-09-23');
   check('se guarda dentro de la ruta del día', (st.transportistas || []).includes('transporte@barrientos.cl'), JSON.stringify(st.transportistas));
   await p.fill('#configEmail', 'philip@kennedy.cl'); await p.click('#configForm button[type=submit]'); await p.waitForTimeout(200);
@@ -41,6 +41,28 @@ for (const [w, nombre] of [[1280, 'computador'], [390, 'teléfono']]) {
   else check('menú inferior: Entregas, Pagos, Más', (await visibles(p, '.movil-tab span')).join(',') === 'Entregas,Pagos,Más', (await visibles(p, '.movil-tab span')).join(','));
   check('no ve el aviso de permisos', !(await p.isVisible('#avisoPermisos')));
   check('abre en Entregas', !(await p.$eval('#viewChofer', e => e.hidden)));
+  sinErrores(p);
+  await p.context().close();
+}
+console.log('El administrador lo agrega mirando otro día; el transportista abre el 23/09');
+{
+  const p = await open(b, { setup: setup('philip@kennedy.cl').replace("localStorage.setItem('hojaDeRuta_actual', '2026-09-23')", "localStorage.setItem('hojaDeRuta_actual', '2026-09-24')"), width: 1280 });
+  await p.waitForTimeout(500);
+  await p.click('.side-item[data-view="config"]'); await p.waitForTimeout(150);
+  await p.fill('#configEmail', 'transporte@barrientos.cl'); await p.click('#configForm button[type=submit]'); await p.waitForTimeout(900);
+  const principal = await p.evaluate(() => window.__fs.docs['hojasDeRuta/principal']);
+  check('queda en la lista para todos los días', principal && principal.transportistas.includes('transporte@barrientos.cl'), JSON.stringify(principal));
+  check('el mensaje confirma que vale para todas las rutas', (await p.textContent('#configMsg')).includes('todas las rutas'));
+  sinErrores(p);
+  await p.context().close();
+}
+{
+  const p = await open(b, { setup: setup('transporte@barrientos.cl').replace("denegar: ['config', 'hojasResumen'], seed: [", "denegar: ['config', 'hojasResumen'], seed: [['hojasDeRuta/principal', { transportistas: ['transporte@barrientos.cl'] }], "), width: 390, height: 844 });
+  await p.waitForTimeout(600);
+  check('en el 23/09 (sin lista en la ruta) igual entra como transportista', await p.evaluate(() => document.body.classList.contains('modo-transportista')));
+  check('menú inferior: Entregas, Pagos, Más', (await visibles(p, '.movil-tab span')).join(',') === 'Entregas,Pagos,Más', (await visibles(p, '.movil-tab span')).join(','));
+  await p.click('.movil-tab[data-tab="mas"]'); await p.waitForTimeout(150);
+  check('Más muestra la versión', /Versión \d{4}-\d{2}-\d{2}/.test(await p.textContent('#movilVersion')));
   sinErrores(p);
   await p.context().close();
 }

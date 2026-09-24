@@ -27,6 +27,8 @@
    MARCA al inicio del <style>).
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
+// Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
+const VERSION_APP = "2026-09-24 · 4";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyCamNILqMyAxfRlYJHFzFgyuzTjH34AswQ";
 window.__googleMapsReady = false;
@@ -721,6 +723,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .movil-sheet-item:hover{ background:var(--bg); }
   .movil-sheet-item svg{ width:24px; height:24px; color:var(--marca-principal); flex:none; }
   .movil-sheet-item.salir, .movil-sheet-item.salir svg{ color:var(--bad); }
+  .movil-version{ margin:6px 10px 0; font-size:12px; color:var(--muted); }
 
   /* ---------- Transportistas y aviso de permisos ---------- */
   .aviso-permisos{ background:#fff4e5; border:1px solid #f6d596; color:#6b4300; border-radius:14px; padding:12px 16px; margin-bottom:14px; font-size:13.5px; line-height:1.5; }
@@ -1139,6 +1142,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
       <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Transportistas</span></button>
       <button class="movil-sheet-item" type="button" id="movilInstalar" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.5 11.5L12 14l2.5-2.5"/></svg><span>Instalar Ruteka en este teléfono</span></button>
+      <p class="movil-version" id="movilVersion"></p>
       <button class="movil-sheet-item salir" type="button" id="movilSalir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h9"/></svg><span>Cerrar sesión</span></button>
     </div>
   </div>
@@ -2163,13 +2167,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
      (La protección real de los datos está en las reglas de Firestore.)
      ============================================================ */
   let transportistasConfig = [];
+  let transportistasGlobal = []; // copia en hojasDeRuta/principal (Firebase ya permite esa colección)
   let modoTransportista = false;
 
   // Transportistas: config/app (lista general) + la lista guardada dentro de la ruta del día
   // (state.transportistas, que cada día nuevo hereda) + el "Correo del transportista" de la ruta.
   // Así el rol funciona aunque Firebase no deje leer config/app.
   function listaTransportistas(){
-    const todos = transportistasConfig.concat(state.transportistas || [], state.transportistaEmail ? [state.transportistaEmail] : []);
+    const todos = transportistasConfig.concat(transportistasGlobal, state.transportistas || [], state.transportistaEmail ? [state.transportistaEmail] : []);
     return [...new Set(todos.map(e => String(e).trim().toLowerCase()).filter(Boolean))].sort();
   }
   function esTransportista(){
@@ -2189,6 +2194,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   function escucharConfig(){
     if(!db) return;
+    // Copia de la lista que vale para todos los días, en un documento que las reglas actuales ya dejan leer.
+    db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID).onSnapshot(snap => {
+      const d = snap.exists ? snap.data() : {};
+      transportistasGlobal = (d.transportistas || []).map(e => String(e).toLowerCase());
+      aplicarRol();
+    }, err => console.warn('No se pudo leer la lista de transportistas (principal)', err));
     db.collection('config').doc('app').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
       transportistasConfig = (d.transportistas || []).map(e => String(e).toLowerCase());
@@ -2206,6 +2217,17 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     state.transportistas = [...enRuta].sort();
     commit();
     if(!db) return true;
+    // Lista para todos los días (hojasDeRuta/principal, que las reglas actuales permiten).
+    let okGlobal = false;
+    try{
+      const g = db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID);
+      const gs = await g.get();
+      const lg = new Set(((gs.exists && gs.data().transportistas) || []).map(e => String(e).toLowerCase()));
+      if(quitar) lg.delete(email); else lg.add(email);
+      await g.set({ transportistas: [...lg].sort() }, { merge: true });
+      transportistasGlobal = [...lg];
+      okGlobal = true;
+    }catch(err){ console.warn('No se pudo guardar la lista de transportistas (principal)', err); }
     try{
       const ref = db.collection('config').doc('app');
       const snap = await ref.get();
@@ -2217,7 +2239,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }catch(err){
       console.warn('No se pudo guardar el transportista en config/app', err);
       marcarPermiso('config', err);
-      return false;
+      return okGlobal; // con la copia general basta para que el rol funcione todos los días
     }
   }
 
@@ -2236,7 +2258,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       b.setAttribute('aria-label', 'Quitar ' + email);
       b.addEventListener('click', async () => {
         const ok = await registrarTransportista(email, true);
-        pintarConfig(ok ? email + ' ya no es transportista.' : 'Se quitó de esta ruta, pero Firebase no permitió actualizar la lista general (revisá las reglas).', !ok);
+        pintarConfig(ok ? email + ' ya no es transportista.' : 'Se quitó solo de esta ruta: Firebase no permitió actualizar la lista general (revisá las reglas).', !ok);
         aplicarRol();
       });
       li.append(sp, b);
@@ -2252,7 +2274,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(email === currentEmail()){ pintarConfig('Ese es tu propio correo: si lo agregás, dejarías de ver el menú de administrador.', true); return; }
     const ok = await registrarTransportista(email);
     $('configEmail').value = '';
-    pintarConfig(ok ? email + ' quedó como transportista.' : 'Quedó guardado en esta ruta (y en las siguientes), pero Firebase no permitió guardarlo en la lista general: revisá las reglas.', !ok);
+    pintarConfig(ok ? email + ' quedó como transportista en todas las rutas. Pedile que cierre y vuelva a abrir Ruteka.' : 'Quedó guardado solo en esta ruta (y las siguientes): Firebase no permitió guardarlo en la lista general. Revisá las reglas.', !ok);
   });
 
   /* ---------- Aviso cuando Firebase bloquea una parte de la app ---------- */
@@ -4494,6 +4516,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   $('marcaLema').textContent = MARCA.lema;
+  $('movilVersion').textContent = 'Versión ' + VERSION_APP;
+  $('sessionEmail').title = 'Versión ' + VERSION_APP;
   marcarTabMovil(currentView);
   marcarMenuLateral(currentView);
   appLista = true;
