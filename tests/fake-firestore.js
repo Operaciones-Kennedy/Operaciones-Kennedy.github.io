@@ -18,19 +18,23 @@
     window.__writes.push(key);
     notify(key);
   }
+  // params.denegar: colecciones que las "reglas" bloquean (como un Firebase sin reglas nuevas).
+  const denegada = coll => (params.denegar || []).includes(coll);
+  const permiso = () => Object.assign(new Error('Missing or insufficient permissions.'), { code: 'permission-denied' });
   function ref(coll, id){
     const key = coll + '/' + id;
     return {
       __key: key, id,
-      get: async () => snap(key),
-      set: async (data, opts) => { if(params.offline) throw Object.assign(new Error('offline'), { code: 'unavailable' }); write(key, data, opts); },
-      onSnapshot(cb){ (listeners[key] = listeners[key] || []).push(cb); setTimeout(() => cb(snap(key)), 0); return () => { listeners[key] = listeners[key].filter(x => x !== cb); }; }
+      get: async () => { if(denegada(coll)) throw permiso(); return snap(key); },
+      set: async (data, opts) => { if(denegada(coll)) throw permiso(); if(params.offline) throw Object.assign(new Error('offline'), { code: 'unavailable' }); write(key, data, opts); },
+      onSnapshot(cb, onErr){ if(denegada(coll)){ setTimeout(() => onErr && onErr(permiso()), 0); return () => {}; } (listeners[key] = listeners[key] || []).push(cb); setTimeout(() => cb(snap(key)), 0); return () => { listeners[key] = listeners[key].filter(x => x !== cb); }; }
     };
   }
   function query(coll, field, dir, n){
     return {
       limit: m => query(coll, field, dir, m),
       get: async () => {
+        if(denegada(coll)) throw permiso();
         let list = Object.keys(docs).filter(k => k.startsWith(coll + '/')).map(k => snap(k));
         if(field) list.sort((a, b) => { const x = a.data()[field], y = b.data()[field]; return (x < y ? -1 : x > y ? 1 : 0) * (dir === 'desc' ? -1 : 1); });
         if(n) list = list.slice(0, n);
