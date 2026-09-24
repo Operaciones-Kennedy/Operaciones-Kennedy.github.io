@@ -1,0 +1,26 @@
+name: Pruebas
+
+# Corre las pruebas automáticas (tests/) en cada pull request y en cada cambio
+# a main. Si alguna falla, el pull request lo muestra en rojo antes de unirlo.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+      - name: Instalar navegador
+        run: npx playwright install --with-deps chromium
+      - name: Correr pruebas
+        run: npm test

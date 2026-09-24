@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Reglas de Storage (fotos de entrega, firmas y facturas de la Hoja de Ruta).
+// Cómo publicarlas: consola de Firebase → Storage → Reglas → pegar → Publicar.
+//
+// Los enlaces de descarga que genera la app (los que se mandan por WhatsApp)
+// llevan un token propio y siguen funcionando para el cliente sin iniciar sesión.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /hojasDeRuta/{ruta=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 15 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*')
+            || request.resource.contentType == 'application/pdf'
+            || request.resource.contentType == 'application/octet-stream');
+    }
+  }
+}
