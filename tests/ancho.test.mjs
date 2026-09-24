@@ -11,7 +11,7 @@ for (const w of [360, 390, 520, 768, 1440]) {
   await p.waitForTimeout(300);
   const malas = [];
   for (const v of VISTAS) {
-    await p.evaluate(v => document.querySelector('.nav-flyout-item[data-view="' + v + '"]').click(), v);
+    await p.evaluate(v => document.querySelector('.side-item[data-view="' + v + '"]').click(), v);
     await p.waitForTimeout(250);
     const r = await p.evaluate(() => {
       const vw = document.documentElement.clientWidth, fuera = [];

@@ -28,7 +28,7 @@ for (const f of ['real-en-celda.xlsx', 'real-flotante.xlsx', 'real-imagen-url.xl
 console.log('R2 visto bueno del transportista');
 {
   const p = await open(b, { setup: setupDup });
-  await p.evaluate(() => document.querySelector('.nav-flyout-item[data-view="liquidaciones"]').click()); await p.waitForTimeout(200);
+  await p.evaluate(() => document.querySelector('.side-item[data-view="liquidaciones"]').click()); await p.waitForTimeout(200);
   await p.click('#tbodyLiq tr:nth-child(1) button.vb-ok'); await p.waitForTimeout(900);
   const st = await rowsOf(p, 'hojasDeRuta', HOY);
   check('conforme guardado', st.rows[0].vistoBueno && st.rows[0].vistoBueno.estado === 'conforme');

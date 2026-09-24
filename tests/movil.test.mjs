@@ -52,6 +52,14 @@ console.log('Computador');
   const p = await open(b, { setup: setup('philip@kennedy.cl'), width: 1280, height: 900 });
   await p.waitForTimeout(400);
   check('menú lateral visible y sin menú inferior ni barra superior', await visible(p, '.sidebar') && !(await visible(p, '.movil-nav')) && !(await visible(p, '.movil-top')));
+  check('al abrir queda marcada Ruta del día', (await p.getAttribute('#navDespachos', 'aria-current')) === 'page');
+  const textos = await p.$$eval('.sidebar .side-item[data-view] span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent));
+  check('menú lateral ancho con las 6 opciones escritas', textos.join(',') === 'Ruta del día,Entregas,KPIs del día,Historial y reportes,Liquidación del día,Liquidación del período', textos.join(','));
+  await p.click('.side-item[data-view="historial"]'); await p.waitForTimeout(300);
+  check('un clic abre la vista y la marca activa', (await vista(p)) === 'viewHistorial' && (await p.getAttribute('.side-item[data-view="historial"]', 'aria-current')) === 'page');
+  await p.setViewportSize({ width: 960, height: 800 }); await p.waitForTimeout(150);
+  const ancho = await p.$eval('.sidebar', e => e.getBoundingClientRect().width);
+  check('en pantallas medianas se contrae a solo íconos', ancho <= 80 && !(await p.$$eval('.sidebar .side-item span', ss => ss.some(x => x.offsetWidth))), String(ancho));
   sinErrores(p);
   await p.context().close();
 }
