@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f4c5c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hoja de Ruta">
 <title>Hoja de Ruta — Despachos</title>
 <script>
 /* ============================================================
@@ -663,6 +669,26 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .stat-grid .stat-value{ color:#fff; }
   .stat-note{ font-size:12px; font-weight:700; opacity:.92; min-height:16px; }
 
+  /* ---------- Vista del transportista ---------- */
+  body.modo-transportista #navDespachos,
+  body.modo-transportista #navReportes,
+  body.modo-transportista .nav-flyout-item[data-view="liqperiodo"]{ display:none !important; }
+  body.modo-transportista .nav-group:has(#navDespachos),
+  body.modo-transportista .nav-group:has(#navReportes){ display:none !important; }
+  .rol-chip{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:6px; background:#ffe8e2; color:#c2452f; }
+  .chofer-nav{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .chofer-nav a{
+    display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:700; text-decoration:none;
+    padding:7px 11px; border-radius:9px; border:1px solid var(--border); background:#fff; color:var(--text);
+  }
+  .chofer-nav a:hover{ background:var(--bg); }
+  .chofer-nav a.maps{ background:#e8f1ff; border-color:#c6dafc; color:#1e4fb3; }
+  .chofer-nav a.waze{ background:#e6f8fd; border-color:#b6e8f5; color:#0b6f8a; }
+  .chofer-nav a.tel{ background:var(--ok-bg); border-color:#a8e6dc; color:var(--ok); }
+  .chofer-nav a.wsp{ background:#e7f9ee; border-color:#b4e8c6; color:#137a3a; }
+  .foto-pendiente{ font-size:12px; font-weight:700; color:#9a5b00; background:#fff1d6; border-radius:8px; padding:6px 9px; display:inline-block; }
+  @media (max-width:480px){ .chofer-nav a{ flex:1 1 auto; justify-content:center; } }
+
   /* ---------- Historial y liquidación del período ---------- */
   .rango-bar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:12px 16px; margin-bottom:18px; font-size:13px; font-weight:700; color:var(--muted); }
   .rango-bar input[type="date"]{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; font-weight:700; color:var(--text); background:#fff; }
@@ -1046,6 +1072,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     </nav>
     <div class="sidebar-spacer"></div>
     <div class="sidebar-footer">
+      <button class="link-btn" id="btnInstalar" title="Instalar como app en este dispositivo" hidden>📲</button>
       <div class="avatar" id="avatarInitial" title="">?</div>
       <div class="sidebar-user">
         <div class="user-email" id="sessionEmail"></div>
@@ -1062,6 +1089,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <button class="icon-btn hoja-nav" id="hojaNext" title="Día siguiente" aria-label="Día siguiente">▶</button>
     <button id="hojaHoy">Hoy</button>
     <select id="hojaRecientes" aria-label="Rutas guardadas"><option value="">Rutas guardadas…</option></select>
+    <span class="rol-chip" id="rolChip" hidden>Vista transportista</span>
     <span class="hoja-bar-info" id="hojaInfo"></span>
   </div>
   <div id="viewDespachos">
@@ -1407,6 +1435,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
   let hojaId = (() => { try{ return localStorage.getItem(HOJA_KEY) || fechaLocal(); }catch(e){ return fechaLocal(); } })();
   const storageKeyDe = id => STORAGE_KEY + ':' + id;
+  // Se pone en true al final, cuando ya existen todas las variables de la sesión:
+  // antes de eso, lo que dependa del usuario conectado no debe ejecutarse.
+  var appLista = false;
+  var colaPendientes = 0; // fotos/firmas guardadas en el teléfono esperando señal
   const tbody = $('tbody');
   const totalTarifaEl = $('totalTarifa');
   const titulo = $('titulo');
@@ -1470,6 +1502,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function setSync(cls, msg){
+    if(colaPendientes && cls === 'ok'){ cls = 'saving'; msg += ' · ' + colaPendientes + ' foto(s)/firma(s) esperando señal'; }
     const bar = $('syncBar');
     bar.className = 'sync-banner ' + cls;
     $('syncMsg').textContent = msg;
@@ -1667,6 +1700,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(currentView === 'chofer') renderChofer();
     if(currentView === 'liquidaciones') renderLiquidaciones();
     pintarBarraHoja();
+    aplicarRol(); // el correo del transportista puede venir con la ruta
   }
 
   /* ============================================================
@@ -1800,6 +1834,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     tbodyLiq.innerHTML = '';
     const inputEmail = $('liqTransportistaEmail');
     if(document.activeElement !== inputEmail) inputEmail.value = state.transportistaEmail || '';
+    inputEmail.disabled = modoTransportista;
 
     let total = 0, pagado = 0, vbConforme = 0, vbObservado = 0, vbTotal = 0;
     state.rows.forEach((row, idx) => {
@@ -1840,6 +1875,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       inputFactura.className = 'prueba';
       inputFactura.placeholder = 'N° factura';
       inputFactura.value = row.numeroFactura || '';
+      inputFactura.disabled = modoTransportista;
       inputFactura.addEventListener('input', () => {
         row.numeroFactura = inputFactura.value;
         commit();
@@ -1857,11 +1893,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         cambiar.className = 'icon-btn';
         cambiar.title = 'Reemplazar archivo';
         cambiar.textContent = '✎';
+        cambiar.hidden = modoTransportista;
         cambiar.addEventListener('click', () => facturaFileInput.click());
         tdFacturaFile.appendChild(cambiar);
       } else {
         const btn = document.createElement('button');
         btn.textContent = '📎 Adjuntar';
+        btn.disabled = modoTransportista;
         btn.addEventListener('click', () => facturaFileInput.click());
         tdFacturaFile.appendChild(btn);
       }
@@ -1896,6 +1934,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const chk = document.createElement('input');
       chk.type = 'checkbox';
       chk.checked = !!row.pagado;
+      chk.disabled = modoTransportista;
       chk.addEventListener('change', () => {
         row.pagado = chk.checked;
         renderLiquidaciones();
@@ -1924,6 +1963,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   $('liqTransportistaEmail').addEventListener('change', e => {
     state.transportistaEmail = e.target.value.trim().toLowerCase();
+    registrarTransportista(state.transportistaEmail);
     renderLiquidaciones();
     commit();
   });
@@ -2017,6 +2057,195 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     win.print();
   }
   $('btnImprimirLiq').addEventListener('click', imprimirLiquidacion);
+
+  /* ============================================================
+     ROLES: administrador y transportista
+     Los correos de transportista se guardan en config/app. Un transportista
+     solo ve Entregas y la liquidación del día, y no puede marcar pagos.
+     (La protección real de los datos está en las reglas de Firestore.)
+     ============================================================ */
+  let transportistasConfig = [];
+  let modoTransportista = false;
+
+  function esTransportista(){
+    const email = currentEmail();
+    if(!email) return false;
+    return transportistasConfig.includes(email) || (state.transportistaEmail || '').toLowerCase() === email;
+  }
+
+  function aplicarRol(){
+    if(!appLista) return;
+    const antes = modoTransportista;
+    modoTransportista = esTransportista();
+    document.body.classList.toggle('modo-transportista', modoTransportista);
+    $('rolChip').hidden = !modoTransportista;
+    if(modoTransportista && !['chofer', 'liquidaciones'].includes(currentView)) switchView('chofer');
+    if(antes !== modoTransportista && currentView === 'liquidaciones') renderLiquidaciones();
+  }
+
+  function escucharConfig(){
+    if(!db) return;
+    db.collection('config').doc('app').onSnapshot(snap => {
+      const d = snap.exists ? snap.data() : {};
+      transportistasConfig = (d.transportistas || []).map(e => String(e).toLowerCase());
+      aplicarRol();
+    }, err => console.warn('No se pudo leer config/app', err));
+  }
+
+  async function registrarTransportista(email){
+    if(!db || !email) return;
+    try{
+      const ref = db.collection('config').doc('app');
+      const snap = await ref.get();
+      const lista = ((snap.exists && snap.data().transportistas) || []).map(e => String(e).toLowerCase());
+      if(!lista.includes(email)) await ref.set({ transportistas: lista.concat(email) }, { merge: true });
+    }catch(err){ console.warn('No se pudo guardar el transportista en config/app', err); }
+  }
+
+  /* ---------- Enlaces para llegar y contactar ---------- */
+  function destinoDe(row){
+    return [row.direccion, row.comuna, 'Chile'].filter(Boolean).join(', ');
+  }
+  function telefonoDe(row){
+    let d = String(row.contacto || '').replace(/[^\d+]/g, '');
+    if(!d || d.replace(/\D/g, '').length < 8) return '';
+    if(d.startsWith('+')) return d;
+    d = d.replace(/^0+/, '');
+    if(d.length === 9 && d.startsWith('9')) return '+56' + d; // celular chileno sin código
+    if(d.startsWith('56')) return '+' + d;
+    return d;
+  }
+  function enlacesNavegacion(row){
+    const box = document.createElement('div');
+    box.className = 'chofer-nav';
+    const add = (cls, href, text, title) => {
+      const a = document.createElement('a');
+      a.className = cls; a.href = href; a.textContent = text; a.title = title;
+      if(!href.startsWith('tel:')){ a.target = '_blank'; a.rel = 'noopener'; }
+      box.appendChild(a);
+      return a;
+    };
+    if(row.direccion){
+      const q = encodeURIComponent(destinoDe(row));
+      const ll = (row.lat != null && row.lng != null) ? row.lat + ',' + row.lng : '';
+      add('maps', 'https://www.google.com/maps/dir/?api=1&destination=' + (ll || q), '🗺️ Cómo llegar', 'Abrir en Google Maps');
+      add('waze', ll ? 'https://waze.com/ul?ll=' + ll + '&navigate=yes' : 'https://waze.com/ul?q=' + q + '&navigate=yes', '🚗 Waze', 'Abrir en Waze');
+    }
+    const tel = telefonoDe(row);
+    if(tel) add('tel', 'tel:' + tel, '📞 Llamar', 'Llamar a ' + (row.contacto || ''));
+    return box;
+  }
+
+  /* ---------- Fotos sin señal: cola en el dispositivo ----------
+     Si no hay conexión al registrar una entrega, la foto y la firma quedan
+     guardadas en este teléfono (IndexedDB) y se suben solas al volver la señal. */
+  const COLA_DB = 'hojaDeRutaPendientes';
+  function colaAbrir(){
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(COLA_DB, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('fotos', { keyPath: 'id', autoIncrement: true });
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function colaOp(modo, fn){
+    const idb = await colaAbrir();
+    return new Promise((resolve, reject) => {
+      const tx = idb.transaction('fotos', modo);
+      const out = fn(tx.objectStore('fotos'));
+      tx.oncomplete = () => resolve(out && 'result' in out ? out.result : undefined);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  const colaAgregar = item => colaOp('readwrite', st => st.add(item));
+  const colaTodos = () => colaOp('readonly', st => st.getAll());
+  const colaBorrar = id => colaOp('readwrite', st => st.delete(id));
+
+  const sinSenal = err => !navigator.onLine || /network|retry-limit|unavailable|offline|failed to fetch/i.test(String((err && (err.code || '')) + ' ' + (err && err.message)));
+
+  // Sube el archivo; si no hay señal, lo deja en la cola y devuelve { pendiente: true }.
+  async function subirOEncolar(path, blob, contentType, rowId, campo){
+    if(navigator.onLine){
+      try{ return await uploadBlob(path, blob, contentType); }
+      catch(err){ if(!sinSenal(err)) throw err; }
+    }
+    await colaAgregar({ hojaId, rowId, campo, path, contentType, blob, creado: Date.now() });
+    actualizarAvisoCola();
+    return { pendiente: true };
+  }
+
+  // Aplica un cambio a un despacho de cualquier día (el abierto o uno guardado).
+  async function aplicarEnHoja(id, rowId, fn){
+    if(id === hojaId){
+      const row = state.rows.find(r => r.id === rowId);
+      if(!row) return false;
+      fn(row); renderRows(); commit();
+      return true;
+    }
+    if(!db) return false;
+    const ref = db.collection('hojasDeRuta').doc(id);
+    return db.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      if(!snap.exists || !snap.data().json) return false;
+      const st = JSON.parse(snap.data().json);
+      const row = st.rows.find(r => r.id === rowId);
+      if(!row) return false;
+      fn(row);
+      tx.set(ref, { json: JSON.stringify(st), fecha: id, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: currentEmail() || 'alguien' });
+      return true;
+    });
+  }
+
+  let colaProcesando = false;
+  async function procesarCola(){
+    if(!appLista) return;
+    if(colaProcesando || !navigator.onLine || !firebaseReady) return;
+    colaProcesando = true;
+    try{
+      const items = await colaTodos();
+      for(const it of items){
+        try{
+          const up = await uploadBlob(it.path, it.blob, it.contentType);
+          await aplicarEnHoja(it.hojaId, it.rowId, row => {
+            row.entrega = row.entrega || {};
+            row.entrega[it.campo + 'Url'] = up.url;
+            row.entrega[it.campo + 'Path'] = up.path;
+            delete row.entrega[it.campo + 'Pendiente'];
+          });
+          await colaBorrar(it.id);
+        }catch(err){
+          console.warn('Foto pendiente sin subir todavía', err);
+          if(sinSenal(err)) break;
+        }
+      }
+    }catch(err){ console.warn(err); }
+    colaProcesando = false;
+    actualizarAvisoCola();
+  }
+
+  async function actualizarAvisoCola(){
+    let n = 0;
+    try{ n = (await colaTodos()).length; }catch(e){ return; }
+    const antes = colaPendientes;
+    colaPendientes = n;
+    if(n) setSync('saving', n + ' foto(s)/firma(s) esperando señal para subirse');
+    else if(antes) setSync('ok', 'Sincronizado');
+  }
+  window.addEventListener('online', procesarCola);
+  setInterval(procesarCola, 60000);
+
+  /* ---------- Instalar como app ---------- */
+  let promptInstalar = null;
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalar = e; $('btnInstalar').hidden = false; });
+  $('btnInstalar').addEventListener('click', async () => {
+    if(!promptInstalar) return;
+    promptInstalar.prompt();
+    try{ await promptInstalar.userChoice; }catch(e){}
+    promptInstalar = null; $('btnInstalar').hidden = true;
+  });
+  if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('No se pudo registrar el service worker', err));
+  }
 
   /* ============================================================
      HISTORIAL, REPORTES Y LIQUIDACIÓN DEL PERÍODO
@@ -2270,6 +2499,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   let expandedResueltoIds = new Set();
 
   function switchView(view){
+    if(modoTransportista && !['chofer', 'liquidaciones'].includes(view)) view = 'chofer';
     currentView = view;
     $('viewDespachos').hidden = view !== 'despachos';
     $('viewChofer').hidden = view !== 'chofer';
@@ -2576,6 +2806,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       motivo.textContent = row.entrega.motivo;
       texts.appendChild(motivo);
     }
+    if(row.entrega && (row.entrega.fotoPendiente || row.entrega.firmaPendiente)){
+      const pend = document.createElement('span');
+      pend.className = 'chofer-compact-detail';
+      pend.textContent = '📶 ' + [row.entrega.fotoPendiente && 'Foto', row.entrega.firmaPendiente && 'Firma'].filter(Boolean).join(' y ') + ' esperando señal';
+      texts.appendChild(pend);
+    }
 
     const pill = document.createElement('span');
     pill.className = 'estado-pill ' + estadoInfo.cls;
@@ -2667,7 +2903,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       card.appendChild(empty);
     }
 
-    const hasProof = row.entrega && (row.entrega.recibidoPor || row.entrega.fotoUrl || row.entrega.firmaUrl || row.entrega.motivo);
+    card.appendChild(enlacesNavegacion(row));
+
+    const hasProof = row.entrega && (row.entrega.recibidoPor || row.entrega.fotoUrl || row.entrega.firmaUrl || row.entrega.motivo || row.entrega.fotoPendiente);
     card.appendChild(hasProof ? makeChoferSummary(row) : makeChoferActions(row));
 
     return card;
@@ -2695,6 +2933,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       img.style.objectFit = 'contain'; img.style.background = '#fff';
       a.appendChild(img);
       thumbs.appendChild(a);
+    }
+
+    if(row.entrega.fotoPendiente || row.entrega.firmaPendiente){
+      const pend = document.createElement('span');
+      pend.className = 'foto-pendiente';
+      pend.textContent = '📶 ' + [row.entrega.fotoPendiente && 'Foto', row.entrega.firmaPendiente && 'Firma'].filter(Boolean).join(' y ') + ' esperando señal';
+      thumbs.appendChild(pend);
     }
 
     const details = document.createElement('div');
@@ -2851,14 +3096,16 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         if(selectedFile){
           msg.textContent = 'Subiendo foto…';
           const blob = await compressImage(selectedFile);
-          const up = await uploadBlob('hojasDeRuta/' + hojaId + '/' + row.id + '/foto-' + Date.now() + '.jpg', blob, 'image/jpeg');
-          entrega.fotoUrl = up.url; entrega.fotoPath = up.path;
+          const up = await subirOEncolar('hojasDeRuta/' + hojaId + '/' + row.id + '/foto-' + Date.now() + '.jpg', blob, 'image/jpeg', row.id, 'foto');
+          if(up.pendiente) entrega.fotoPendiente = true;
+          else { entrega.fotoUrl = up.url; entrega.fotoPath = up.path; delete entrega.fotoPendiente; }
         }
         if(!pad.isEmpty()){
           msg.textContent = 'Subiendo firma…';
           const sigBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-          const up = await uploadBlob('hojasDeRuta/' + hojaId + '/' + row.id + '/firma-' + Date.now() + '.png', sigBlob, 'image/png');
-          entrega.firmaUrl = up.url; entrega.firmaPath = up.path;
+          const up = await subirOEncolar('hojasDeRuta/' + hojaId + '/' + row.id + '/firma-' + Date.now() + '.png', sigBlob, 'image/png', row.id, 'firma');
+          if(up.pendiente) entrega.firmaPendiente = true;
+          else { entrega.firmaUrl = up.url; entrega.firmaPath = up.path; delete entrega.firmaPendiente; }
         }
 
         row.entrega = entrega;
@@ -3883,6 +4130,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     try{ firebase.initializeApp(firebaseConfig); }catch(e){ /* ya inicializada */ }
     auth = firebase.auth();
     db = firebase.firestore();
+    // Guarda la hoja en el teléfono para seguir trabajando sin señal.
+    try{ db.enablePersistence({ synchronizeTabs: true }).catch(err => console.warn('Sin modo sin señal:', err && err.code)); }catch(e){}
 
     $('btnLogin').addEventListener('click', doLogin);
     $('lPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
@@ -3919,10 +4168,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         suscribirHoja();
         cargarRecientes();
         pintarBarraHoja();
+        escucharConfig();
+        aplicarRol();
+        procesarCola();
       })();
     });
   }
 
+  appLista = true;
   startFirebase();
 })();
 </script>
