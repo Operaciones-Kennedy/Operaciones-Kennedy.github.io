@@ -73,6 +73,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     --excel-border:#b4e8c6;
   }
   *{box-sizing:border-box;}
+  [hidden]{ display:none !important; } /* que ningún display:flex de una clase gane sobre hidden */
   html,body{ height:100%; }
   body{
     margin:0;
@@ -662,6 +663,24 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .stat-grid .stat-value{ color:#fff; }
   .stat-note{ font-size:12px; font-weight:700; opacity:.92; min-height:16px; }
 
+  /* ---------- Historial y liquidación del período ---------- */
+  .rango-bar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:12px 16px; margin-bottom:18px; font-size:13px; font-weight:700; color:var(--muted); }
+  .rango-bar input[type="date"]{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; font-weight:700; color:var(--text); background:#fff; }
+  .rango-atajos{ display:flex; flex-wrap:wrap; gap:6px; }
+  .rango-atajos button{ font-size:12px; padding:6px 10px; }
+  .rango-info{ margin-left:auto; font-weight:600; font-size:12.5px; }
+  .hist-charts{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap:16px; }
+  .hist-charts .chart-card{ margin-bottom:0; }
+  .hist-charts + .chart-card{ margin-top:16px; }
+  .hist-buscar{ width:100%; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font:inherit; font-size:14px; margin:4px 0 12px; }
+  .hist-buscar:focus{ outline:none; border-color:var(--accent); }
+  table.hist-table{ min-width:760px; }
+  .hist-table td{ font-size:13px; }
+  .hist-table a.hist-fecha{ color:var(--accent-dark); font-weight:800; text-decoration:none; white-space:nowrap; }
+  .hist-table a.hist-fecha:hover{ text-decoration:underline; }
+  .hist-foto{ width:44px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--border); display:block; }
+  @media (max-width:480px){ .rango-info{ margin-left:0; width:100%; } .hist-charts{ grid-template-columns:1fr; } }
+
   /* ---------- Visto bueno del transportista (Liquidaciones) ---------- */
   .vb-email{ display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--muted); flex-wrap:wrap; }
   .vb-email input{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; font-weight:600; font-size:13px; color:var(--text); min-width:0; width:230px; max-width:100%; background:#fff; }
@@ -1012,14 +1031,16 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div class="nav-item" id="navReportes" title="Reportes"><span class="nav-icon">📊</span><span class="nav-label">Reportes</span></div>
         <div class="nav-flyout" id="reportesFlyout" hidden>
           <div class="nav-flyout-head">Reportes</div>
-          <div class="nav-flyout-item" data-view="reportes">📈 KPIs</div>
+          <div class="nav-flyout-item" data-view="reportes">📈 KPIs del día</div>
+          <div class="nav-flyout-item" data-view="historial">🗂️ Historial y reportes del período</div>
         </div>
       </div>
       <div class="nav-group" data-nav-mode="menu">
         <div class="nav-item" id="navFlota" title="Gestión de flotas"><span class="nav-icon">🚛</span><span class="nav-label">Gestión de flotas</span></div>
         <div class="nav-flyout" id="flotaFlyout" hidden>
           <div class="nav-flyout-head">Gestión de flotas</div>
-          <div class="nav-flyout-item" data-view="liquidaciones">💰 Liquidaciones</div>
+          <div class="nav-flyout-item" data-view="liquidaciones">💰 Liquidación del día</div>
+          <div class="nav-flyout-item" data-view="liqperiodo">📅 Liquidación del período</div>
         </div>
       </div>
     </nav>
@@ -1207,6 +1228,95 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <p class="chart-note" id="chartTarifaNote"></p>
       <div class="chart-holder" id="chartTarifa"></div>
     </section>
+  </div>
+
+  <div id="viewHistorial" hidden>
+    <div class="content-header">
+      <h1>Historial y reportes</h1>
+      <p>Todas las rutas del período: cumplimiento, gasto y el historial de cada cliente con su foto de entrega.</p>
+    </div>
+    <section class="card rango-bar">
+      <label for="rDesdeH">Desde</label><input type="date" id="rDesdeH">
+      <label for="rHastaH">Hasta</label><input type="date" id="rHastaH">
+      <span class="rango-atajos">
+        <button data-rango="semana">Esta semana</button>
+        <button data-rango="mes">Este mes</button>
+        <button data-rango="mespasado">Mes pasado</button>
+      </span>
+      <span class="rango-info" id="rInfoH"></span>
+    </section>
+    <section class="stat-grid">
+      <div class="card stat-tile"><span class="stat-label">Despachos</span><span class="stat-value" id="hDespachos">0</span><span class="stat-note" id="hRutas"></span></div>
+      <div class="card stat-tile"><span class="stat-label">Cumplimiento</span><span class="stat-value" id="hCumplimiento">0%</span><span class="stat-note" id="hNoEntregados"></span></div>
+      <div class="card stat-tile"><span class="stat-label">Gasto en fletes</span><span class="stat-value" id="hTarifa">$0</span><span class="stat-note" id="hPromedio"></span></div>
+      <div class="card stat-tile"><span class="stat-label">Pendiente de pago</span><span class="stat-value" id="hPendiente">$0</span><span class="stat-note" id="hPagado"></span></div>
+    </section>
+
+    <div class="hist-charts">
+      <section class="card chart-card">
+        <h2 id="hTituloTiempo">Despachos por mes</h2>
+        <div class="chart-holder" id="hChartTiempo"></div>
+      </section>
+      <section class="card chart-card">
+        <h2>Gasto por comuna</h2>
+        <div class="chart-holder" id="hChartComuna"></div>
+      </section>
+      <section class="card chart-card">
+        <h2>Despachos por transportista</h2>
+        <div class="chart-holder" id="hChartTransportista"></div>
+      </section>
+    </div>
+
+    <section class="card chart-card">
+      <h2>Buscar cliente</h2>
+      <p class="chart-note">Escribí un cliente, dirección o comuna para ver todas sus entregas del período, con la foto de prueba.</p>
+      <input type="search" id="hBuscar" class="hist-buscar" placeholder="Ej: Las Amikas, Vitacura, Ricardo Lyon…" autocomplete="off">
+      <div class="table-wrap">
+        <table class="hist-table">
+          <thead><tr><th>Fecha</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>Prueba</th><th>Tarifa</th><th>Pagado</th></tr></thead>
+          <tbody id="hResultados"></tbody>
+        </table>
+      </div>
+      <p class="chart-note" id="hResultadosNota"></p>
+    </section>
+  </div>
+
+  <div id="viewLiqPeriodo" hidden>
+    <div class="content-header">
+      <h1>Liquidación del período</h1>
+      <p>Todos los despachos de varias rutas juntos, para liquidar la semana o el mes con el transportista.</p>
+    </div>
+    <section class="card rango-bar">
+      <label for="rDesdeL">Desde</label><input type="date" id="rDesdeL">
+      <label for="rHastaL">Hasta</label><input type="date" id="rHastaL">
+      <span class="rango-atajos">
+        <button data-rango="semana">Esta semana</button>
+        <button data-rango="mes">Este mes</button>
+        <button data-rango="mespasado">Mes pasado</button>
+      </span>
+      <span class="rango-info" id="rInfoL"></span>
+    </section>
+    <section class="stat-grid">
+      <div class="card stat-tile"><span class="stat-label">Total del período</span><span class="stat-value" id="lpTotal">$0</span><span class="stat-note" id="lpDespachos"></span></div>
+      <div class="card stat-tile"><span class="stat-label">Pagado</span><span class="stat-value" id="lpPagado">$0</span></div>
+      <div class="card stat-tile"><span class="stat-label">Pendiente de pago</span><span class="stat-value" id="lpPendiente">$0</span></div>
+      <div class="card stat-tile"><span class="stat-label">Visto bueno transportista</span><span class="stat-value" id="lpVistoBueno">0 de 0</span><span class="stat-note" id="lpVistoBuenoNota"></span></div>
+    </section>
+    <div class="toolbar">
+      <button class="primary" id="btnImprimirLiqPeriodo">🖨️ Imprimir liquidación del período (PDF)</button>
+      <label class="vb-email" for="lpTransportista"><span>Transportista</span>
+        <select id="lpTransportista"><option value="">Todos</option></select>
+      </label>
+    </div>
+    <section class="card table-card">
+      <div class="table-wrap">
+        <table class="hist-table">
+          <thead><tr><th>Fecha</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno</th></tr></thead>
+          <tbody id="lpFilas"></tbody>
+        </table>
+      </div>
+    </section>
+    <p class="footer-note">Para marcar un despacho como pagado o darle el visto bueno, abrí su ruta con el enlace de la fecha. Esta vista suma todo el período y arma el comprobante.</p>
   </div>
 
   <div id="viewLiquidaciones" hidden>
@@ -1826,8 +1936,23 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function imprimirLiquidacion(){
-    const rows = state.rows.filter(r => r.cliente || r.direccion || Number(r.tarifa));
-    if(!rows.length){ alert('No hay despachos cargados para liquidar.'); return; }
+    abrirComprobante({
+      rows: state.rows.filter(r => r.cliente || r.direccion || Number(r.tarifa)),
+      periodo: null,
+      transportista: state.transportista || '',
+      transportistaEmail: state.transportistaEmail || '',
+      hoja: state.titulo || '',
+      puntoPartida: state.puntoPartida || ''
+    });
+  }
+
+  // Comprobante de liquidación (un día o un período). Si trae "periodo", agrega la columna Fecha.
+  function abrirComprobante(o){
+    const rows = o.rows;
+    if(!rows.length){ showDialog('No hay despachos para liquidar.'); return; }
+    const conFecha = !!o.periodo;
+    let vbOk = 0, vbObs = 0;
+    rows.forEach(r => { const v = vistoBuenoDe(r).estado; if(v === 'conforme') vbOk++; if(v === 'observado') vbObs++; });
 
     let total = 0, pagado = 0;
     const filas = rows.map((r, i) => {
@@ -1837,6 +1962,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const estadoInfo = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
       return '<tr>' +
         '<td>' + (i + 1) + '</td>' +
+        (conFecha ? '<td style="white-space:nowrap">' + escapeHtml((r._fecha || '').split('-').reverse().join('/')) + '</td>' : '') +
         '<td>' + (escapeHtml(r.cliente) || '(sin cliente)') + '</td>' +
         '<td>' + escapeHtml([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</td>' +
         '<td>' + escapeHtml(estadoInfo.label) + '</td>' +
@@ -1849,7 +1975,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
     const fechaEmision = new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const win = window.open('', '_blank');
-    if(!win){ alert('El navegador bloqueó la ventana. Permití pop-ups para este sitio e intentá de nuevo.'); return; }
+    if(!win){ showDialog('El navegador bloqueó la ventana. Permití pop-ups para este sitio e intentá de nuevo.'); return; }
 
     win.document.write(
       '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">' +
@@ -1870,13 +1996,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       '</style></head><body>' +
       '<h1>Liquidación de Transportista</h1>' +
       '<div class="meta">' +
-        'Hoja de ruta: <b>' + escapeHtml(state.titulo || '') + '</b><br>' +
-        'Transportista: <b>' + escapeHtml(state.transportista || '') + '</b>' + (state.transportistaEmail ? ' (' + escapeHtml(state.transportistaEmail) + ')' : '') + '<br>' +
-        'Visto bueno del transportista: <b>' + $('liqVistoBueno').textContent + ' conforme</b>' + ($('liqVistoBuenoNota').textContent && $('liqVistoBuenoNota').textContent !== 'Todo conforme' ? ' · ' + escapeHtml($('liqVistoBuenoNota').textContent) : '') + '<br>' +
-        'Punto de partida: ' + escapeHtml(state.puntoPartida || '') + '<br>' +
+        (o.periodo ? 'Período: <b>' + escapeHtml(o.periodo) + '</b><br>' : 'Hoja de ruta: <b>' + escapeHtml(o.hoja) + '</b><br>') +
+        'Transportista: <b>' + escapeHtml(o.transportista || 'Todos') + '</b>' + (o.transportistaEmail ? ' (' + escapeHtml(o.transportistaEmail) + ')' : '') + '<br>' +
+        'Visto bueno del transportista: <b>' + vbOk + ' de ' + rows.length + ' conforme</b>' + (vbObs ? ' · ' + vbObs + ' con observación' : '') + '<br>' +
+        (o.puntoPartida ? 'Punto de partida: ' + escapeHtml(o.puntoPartida) + '<br>' : '') +
         'Fecha de emisión: ' + fechaEmision +
       '</div>' +
-      '<table><thead><tr><th>N°</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno transportista</th></tr></thead>' +
+      '<table><thead><tr><th>N°</th>' + (conFecha ? '<th>Fecha</th>' : '') + '<th>Cliente</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno transportista</th></tr></thead>' +
       '<tbody>' + filas + '</tbody></table>' +
       '<div class="totales">' +
         '<div><span>Total liquidación</span><span>' + formatMoney(total) + '</span></div>' +
@@ -1891,6 +2017,229 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     win.print();
   }
   $('btnImprimirLiq').addEventListener('click', imprimirLiquidacion);
+
+  /* ============================================================
+     HISTORIAL, REPORTES Y LIQUIDACIÓN DEL PERÍODO
+     Lee varias rutas (una por día) y las junta. Es solo lectura: para
+     cambiar algo se abre la ruta de ese día.
+     ============================================================ */
+  const periodo = { desde: '', hasta: '', rows: [], rutas: 0, cargando: false, clave: '' };
+  (function rangoInicial(){
+    const hoy = new Date();
+    periodo.desde = fechaLocal(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    periodo.hasta = fechaLocal(hoy);
+  })();
+
+  function rangoAtajo(tipo){
+    const hoy = new Date();
+    if(tipo === 'semana'){
+      const dow = (hoy.getDay() + 6) % 7; // lunes = 0
+      return [fechaLocal(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - dow)), fechaLocal(hoy)];
+    }
+    if(tipo === 'mespasado') return [fechaLocal(new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1)), fechaLocal(new Date(hoy.getFullYear(), hoy.getMonth(), 0))];
+    return [fechaLocal(new Date(hoy.getFullYear(), hoy.getMonth(), 1)), fechaLocal(hoy)];
+  }
+
+  function pintarRangos(){
+    ['H', 'L'].forEach(suf => {
+      $('rDesde' + suf).value = periodo.desde;
+      $('rHasta' + suf).value = periodo.hasta;
+      $('rInfo' + suf).textContent = periodo.cargando ? 'Cargando…' : (periodo.rutas + ' ruta(s) · ' + periodo.rows.length + ' despacho(s)');
+    });
+  }
+
+  async function cargarPeriodo(forzar){
+    const clave = periodo.desde + '|' + periodo.hasta + '|' + hojaId;
+    if(periodo.cargando || (!forzar && clave === periodo.clave)){ pintarPeriodo(); return; }
+    periodo.cargando = true; pintarRangos();
+    let porDia = new Map();
+    try{
+      if(db){
+        const qs = await db.collection('hojasResumen').orderBy('fecha', 'desc').limit(800).get();
+        const ids = qs.docs.map(d => d.data()).filter(r => r.fecha >= periodo.desde && r.fecha <= periodo.hasta && r.despachos).map(r => r.fecha);
+        const snaps = await Promise.all(ids.map(id => db.collection('hojasDeRuta').doc(id).get()));
+        snaps.forEach((sn, k) => { if(sn.exists && sn.data().json) porDia.set(ids[k], JSON.parse(sn.data().json)); });
+      }
+    }catch(err){
+      console.error(err);
+      setSync('err', 'No se pudo cargar el período (revisá conexión o reglas de Firestore)');
+    }
+    // La ruta abierta se toma de este dispositivo, que tiene lo último.
+    if(hojaId >= periodo.desde && hojaId <= periodo.hasta) porDia.set(hojaId, state);
+    const rows = [];
+    [...porDia.keys()].sort().forEach(fecha => {
+      const st = porDia.get(fecha);
+      st.rows.filter(r => r.cliente || r.direccion || Number(r.tarifa)).forEach(r => {
+        rows.push(Object.assign({}, r, { _fecha: fecha, _transportista: (st.transportista || '').replace(/^—.*—$/, '').trim(), _transportistaEmail: st.transportistaEmail || '' }));
+      });
+    });
+    periodo.rows = rows;
+    periodo.rutas = [...porDia.values()].filter(st => st.rows.some(r => r.cliente || r.direccion)).length;
+    periodo.cargando = false;
+    periodo.clave = clave;
+    pintarPeriodo();
+  }
+
+  function mesCorto(fecha){
+    const [y, m] = fecha.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('es-CL', { month: 'short', year: 'numeric' });
+  }
+
+  function enlaceFecha(fecha){
+    const a = document.createElement('a');
+    a.href = '#';
+    a.className = 'hist-fecha';
+    a.textContent = fecha.split('-').reverse().join('/');
+    a.title = 'Abrir la ruta de ese día';
+    a.addEventListener('click', e => { e.preventDefault(); abrirHoja(fecha); switchView('despachos'); });
+    return a;
+  }
+
+  function pintarPeriodo(){
+    pintarRangos();
+    if(currentView === 'historial') pintarHistorial();
+    if(currentView === 'liqperiodo') pintarLiqPeriodo();
+  }
+
+  function pintarHistorial(){
+    const rows = periodo.rows;
+    const entregados = rows.filter(r => r.estado === 'entregado').length;
+    const noEnt = rows.filter(r => r.estado === 'no-entregado').length;
+    const total = rows.reduce((a, r) => a + (Number(r.tarifa) || 0), 0);
+    const pagado = rows.filter(r => r.pagado).reduce((a, r) => a + (Number(r.tarifa) || 0), 0);
+    $('hDespachos').textContent = rows.length;
+    $('hRutas').textContent = periodo.rutas + ' ruta(s)';
+    $('hCumplimiento').textContent = (rows.length ? Math.round(entregados / rows.length * 100) : 0) + '%';
+    $('hNoEntregados').textContent = noEnt ? noEnt + ' no entregado(s)' : '';
+    $('hTarifa').textContent = formatMoney(total);
+    $('hPromedio').textContent = rows.length ? 'Promedio ' + formatMoney(total / rows.length) + ' por despacho' : '';
+    $('hPendiente').textContent = formatMoney(total - pagado);
+    $('hPagado').textContent = 'Pagado ' + formatMoney(pagado);
+
+    // En un solo mes se agrupa por día; en varios, por mes.
+    const meses = new Set(rows.map(r => r._fecha.slice(0, 7)));
+    const porDia = meses.size <= 1;
+    $('hTituloTiempo').textContent = porDia ? 'Despachos por día' : 'Despachos por mes';
+    const tiempo = new Map();
+    rows.forEach(r => { const k = porDia ? r._fecha : r._fecha.slice(0, 7); tiempo.set(k, (tiempo.get(k) || 0) + 1); });
+    renderBarChart($('hChartTiempo'), [...tiempo.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1).map(([k, v]) => ({
+      label: porDia ? k.slice(8) + '/' + k.slice(5, 7) : mesCorto(k + '-01'), value: v
+    })));
+    const comuna = new Map();
+    rows.forEach(r => { const k = (r.comuna || '').trim() || 'Sin comuna'; comuna.set(k, (comuna.get(k) || 0) + (Number(r.tarifa) || 0)); });
+    renderBarChart($('hChartComuna'), [...comuna.entries()].filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([label, value]) => ({ label, value })), { formatValue: formatMoney });
+    const trans = new Map();
+    rows.forEach(r => { const k = r._transportista || r._transportistaEmail || 'Sin nombre'; trans.set(k, (trans.get(k) || 0) + 1); });
+    renderBarChart($('hChartTransportista'), [...trans.entries()].sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label, value })));
+    pintarBusqueda();
+  }
+
+  function pintarBusqueda(){
+    const q = normalizeHeaderText($('hBuscar').value).trim();
+    const tb = $('hResultados');
+    tb.innerHTML = '';
+    const lista = periodo.rows
+      .filter(r => !q || normalizeHeaderText([r.cliente, r.direccion, r.comuna, r.contacto].join(' ')).includes(q))
+      .slice().reverse(); // lo más reciente primero
+    const MAX = 200;
+    lista.slice(0, MAX).forEach(r => {
+      const tr = document.createElement('tr');
+      const td = (content) => { const c = document.createElement('td'); if(content instanceof Node) c.appendChild(content); else c.textContent = content; tr.appendChild(c); return c; };
+      td(enlaceFecha(r._fecha));
+      td(r.cliente || '(sin cliente)');
+      td([r.direccion, r.comuna].filter(Boolean).join(', '));
+      const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
+      const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label; td(pill);
+      if(r.entrega && r.entrega.fotoUrl){
+        const a = document.createElement('a'); a.href = r.entrega.fotoUrl; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Ver foto de entrega';
+        const img = document.createElement('img'); img.src = r.entrega.fotoUrl; img.alt = 'Foto de entrega'; img.className = 'hist-foto'; img.loading = 'lazy';
+        a.appendChild(img); td(a);
+      } else td('—');
+      td(formatMoney(r.tarifa));
+      td(r.pagado ? 'Sí' : 'No');
+      tb.appendChild(tr);
+    });
+    $('hResultadosNota').textContent = !lista.length
+      ? (periodo.rows.length ? 'No hay entregas que coincidan con la búsqueda.' : 'No hay rutas guardadas en este período.')
+      : (lista.length > MAX ? 'Se muestran las ' + MAX + ' más recientes de ' + lista.length + '. Afiná la búsqueda para ver otras.' : lista.length + ' entrega(s).');
+  }
+
+  function filasLiqPeriodo(){
+    const t = $('lpTransportista').value;
+    return periodo.rows.filter(r => !t || (r._transportista || r._transportistaEmail || 'Sin nombre') === t);
+  }
+
+  function pintarLiqPeriodo(){
+    const sel = $('lpTransportista');
+    const actual = sel.value;
+    const nombres = [...new Set(periodo.rows.map(r => r._transportista || r._transportistaEmail || 'Sin nombre'))].sort();
+    sel.innerHTML = '<option value="">Todos</option>' + nombres.map(n => '<option>' + escapeHtml(n) + '</option>').join('');
+    sel.value = nombres.includes(actual) ? actual : '';
+    const rows = filasLiqPeriodo();
+    let total = 0, pagado = 0, ok = 0, obs = 0;
+    const tb = $('lpFilas');
+    tb.innerHTML = '';
+    rows.forEach(r => {
+      const tarifa = Number(r.tarifa) || 0;
+      total += tarifa; if(r.pagado) pagado += tarifa;
+      const vb = vistoBuenoDe(r);
+      if(vb.estado === 'conforme') ok++; if(vb.estado === 'observado') obs++;
+      const tr = document.createElement('tr');
+      if(vb.estado === 'observado') tr.className = 'vb-observado';
+      const td = (content) => { const c = document.createElement('td'); if(content instanceof Node) c.appendChild(content); else c.textContent = content; tr.appendChild(c); return c; };
+      td(enlaceFecha(r._fecha));
+      td(r.cliente || '(sin cliente)');
+      td([r.direccion, r.comuna].filter(Boolean).join(', '));
+      const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
+      const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label; td(pill);
+      td(r.numeroFactura || '—');
+      td(formatMoney(tarifa));
+      td(r.pagado ? 'Sí' : 'No');
+      td(vb.estado === 'conforme' ? '✅ Conforme' : vb.estado === 'observado' ? '⚠️ ' + (vb.comentario || 'Observado') : (vb.cambioTarifa ? 'Pendiente (cambió la tarifa)' : 'Pendiente'));
+      tb.appendChild(tr);
+    });
+    if(!rows.length){
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="8" class="chart-empty">No hay despachos en este período.</td>';
+      tb.appendChild(tr);
+    }
+    $('lpTotal').textContent = formatMoney(total);
+    $('lpDespachos').textContent = rows.length + ' despacho(s) en ' + new Set(rows.map(r => r._fecha)).size + ' ruta(s)';
+    $('lpPagado').textContent = formatMoney(pagado);
+    $('lpPendiente').textContent = formatMoney(total - pagado);
+    $('lpVistoBueno').textContent = ok + ' de ' + rows.length;
+    $('lpVistoBuenoNota').textContent = obs ? obs + ' con observación' : (rows.length && ok === rows.length ? 'Todo conforme' : '');
+  }
+
+  document.querySelectorAll('.rango-bar').forEach(bar => {
+    const [d, h] = bar.querySelectorAll('input[type="date"]');
+    const aplicar = () => {
+      if(!d.value || !h.value) return;
+      periodo.desde = d.value <= h.value ? d.value : h.value;
+      periodo.hasta = d.value <= h.value ? h.value : d.value;
+      cargarPeriodo();
+    };
+    d.addEventListener('change', aplicar);
+    h.addEventListener('change', aplicar);
+    bar.querySelectorAll('[data-rango]').forEach(btn => btn.addEventListener('click', () => {
+      [periodo.desde, periodo.hasta] = rangoAtajo(btn.dataset.rango);
+      cargarPeriodo();
+    }));
+  });
+  $('hBuscar').addEventListener('input', pintarBusqueda);
+  $('lpTransportista').addEventListener('change', pintarLiqPeriodo);
+  $('btnImprimirLiqPeriodo').addEventListener('click', () => {
+    const t = $('lpTransportista').value;
+    const rows = filasLiqPeriodo();
+    const email = [...new Set(rows.map(r => r._transportistaEmail).filter(Boolean))];
+    abrirComprobante({
+      rows,
+      periodo: periodo.desde.split('-').reverse().join('/') + ' al ' + periodo.hasta.split('-').reverse().join('/'),
+      transportista: t,
+      transportistaEmail: email.length === 1 ? email[0] : '',
+      hoja: '', puntoPartida: ''
+    });
+  });
 
   function updateKpis(){
     const counts = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
@@ -1926,6 +2275,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('viewChofer').hidden = view !== 'chofer';
     $('viewReportes').hidden = view !== 'reportes';
     $('viewLiquidaciones').hidden = view !== 'liquidaciones';
+    $('viewHistorial').hidden = view !== 'historial';
+    $('viewLiqPeriodo').hidden = view !== 'liqperiodo';
+    // La barra "Ruta del …" no aplica a las vistas del período.
+    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo';
 
     document.querySelectorAll('.nav-group').forEach(group => {
       const flyoutItems = Array.from(group.querySelectorAll('.nav-flyout-item'));
@@ -1937,6 +2290,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(view === 'reportes') renderReportes();
     if(view === 'chofer') renderChofer();
     if(view === 'liquidaciones') renderLiquidaciones();
+    if(view === 'historial' || view === 'liqperiodo') cargarPeriodo();
   }
 
   // Cada ícono del menú es un "nav-group" con su propio flyout (data-nav-mode
