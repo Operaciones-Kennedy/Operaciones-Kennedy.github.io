@@ -6,6 +6,10 @@ rules_version = '2';
 // Operaciones (colección "tableros"). Antes de publicar, compará con las reglas
 // que ya están en la consola y conservá las de otras colecciones que no estén acá.
 //
+// Los correos no se guardan en este archivo porque el repositorio es público:
+// en la consola, reemplazá 'correo-admin@ejemplo.cl' por los correos de los
+// administradores y conservá el bloque /tableros que ya está allá.
+//
 // Cómo publicarlas: consola de Firebase → Firestore Database → Reglas → pegar →
 // Publicar. Probalas antes con el "Área de pruebas de reglas" de la misma página.
 service cloud.firestore {
@@ -20,8 +24,7 @@ service cloud.firestore {
     // Administradores: los mismos correos de ADMINISTRADORES_SHA256 en index.html.
     function esAdmin() {
       return conectado() && correo() in [
-        'pfuentesarroyo@coca-cola.com',
-        'philip.fuentes93@gmail.com'
+        'correo-admin@ejemplo.cl'
       ];
     }
 
@@ -47,9 +50,8 @@ service cloud.firestore {
       allow write: if esAdmin();
     }
 
-    // Panel de Operaciones (otra app del mismo proyecto): se mantiene igual.
-    match /tableros/{tablero} {
-      allow read, write: if conectado();
-    }
+    // Panel de Operaciones (otra app del mismo proyecto): se mantiene igual que en
+    // la consola, con su propia lista de correos permitidos.
+    // match /tableros/{tablero} { ... }
   }
 }
