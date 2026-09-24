@@ -3,8 +3,8 @@
 //   al tiro) y solo si no hay señal se usa la copia guardada.
 // - Las librerías (Firebase, lector de Excel) se guardan para abrir sin señal.
 // - Los datos NO pasan por aquí: Firestore los guarda en el teléfono por su cuenta.
-const CACHE = 'ruteka-v1';
-const APP = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
+const CACHE = 'ruteka-v2';
+const APP = ['./', './index.html', './manifest.json', './icons/ruteka-192.png', './icons/ruteka-512.png', './icons/ruteka.svg'];
 const LIBRERIAS = ['www.gstatic.com', 'cdnjs.cloudflare.com'];
 
 self.addEventListener('install', e => {
