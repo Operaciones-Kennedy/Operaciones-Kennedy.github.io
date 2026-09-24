@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-24 · 5";
+const VERSION_APP = "2026-09-24 · 6";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1411,7 +1411,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <ul class="config-lista" id="configLista"></ul>
       <p class="config-msg" id="configMsg" role="status"></p>
     </section>
-    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Quien no esté en esta lista entra como administrador.</p>
+    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas y la liquidación del día, aunque no esté en esta lista.</p>
   </div>
 
   <div id="viewLiqPeriodo" hidden>
