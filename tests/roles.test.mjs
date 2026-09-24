@@ -67,3 +67,34 @@ console.log('El administrador lo agrega mirando otro día; el transportista abre
   await p.context().close();
 }
 await b.close();
+
+// ---- Regla principal: solo los administradores de la lista ven todo ----
+{
+  const b2 = await launch();
+  const caso = (email, extra) => `(() => {
+    localStorage.setItem('hojaDeRuta_actual', '2026-09-23');
+    const rows = [{ id: 'a', cliente: 'Céline', direccion: 'Las Hualtatas 6172', comuna: 'Vitacura', contacto: '', productos: '', estado: 'entregado', tarifa: 8000 }];
+    window.__fakeParams = Object.assign({ email: '${email}', denegar: ['config', 'hojasResumen'], seed: [['hojasDeRuta/2026-09-23', { json: JSON.stringify({ titulo: 't', fecha: '2026-09-23', rows }) }]] }, ${extra});
+  })()`;
+  for (const [titulo, email, extra, esperado] of [
+    ['Correo real de administrador (lista del código)', 'PFuentesArroyo@coca-cola.com', '{ usarListaReal: true }', 'admin'],
+    ['Otro correo real de administrador', 'philip.fuentes93@gmail.com', '{ usarListaReal: true }', 'admin'],
+    ['Cualquier otro correo, sin anotarlo en ninguna lista', 'transporte@barrientos.cl', '{ usarListaReal: true }', 'transportista'],
+    ['Administrador de prueba', 'jefe@prueba.cl', '{ admins: ["jefe@prueba.cl"] }', 'admin'],
+    ['No administrador de prueba', 'chofer@prueba.cl', '{ admins: ["jefe@prueba.cl"] }', 'transportista']
+  ]) {
+    console.log(titulo);
+    for (const w of [1280, 390]) {
+      const p = await open(b2, { setup: caso(email, extra), width: w, height: 844 });
+      await p.waitForTimeout(600);
+      const trans = await p.evaluate(() => document.body.classList.contains('modo-transportista'));
+      const menu = w > 820 ? await p.$$eval('.sidebar .side-item[data-view] span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','))
+                           : await p.$$eval('.movil-tab span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','));
+      if (esperado === 'transportista') check((w > 820 ? 'computador' : 'teléfono') + ': solo ve ' + menu, trans && (menu === 'Entregas,Liquidación del día' || menu === 'Entregas,Pagos,Más'), menu);
+      else check((w > 820 ? 'computador' : 'teléfono') + ': ve el menú completo', !trans && menu.split(',').length >= 5, menu);
+      sinErrores(p);
+      await p.context().close();
+    }
+  }
+  await b2.close();
+}
