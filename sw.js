@@ -1,9 +1,9 @@
-// Service worker de la Hoja de Ruta: permite instalarla como app y abrirla sin señal.
+// Service worker de Ruteka: permite instalarla como app y abrirla sin señal.
 // - La página se pide siempre a internet primero (así cada cambio publicado llega
 //   al tiro) y solo si no hay señal se usa la copia guardada.
 // - Las librerías (Firebase, lector de Excel) se guardan para abrir sin señal.
 // - Los datos NO pasan por aquí: Firestore los guarda en el teléfono por su cuenta.
-const CACHE = 'hoja-de-ruta-v1';
+const CACHE = 'ruteka-v1';
 const APP = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 const LIBRERIAS = ['www.gstatic.com', 'cdnjs.cloudflare.com'];
 

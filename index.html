@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0f4c5c">
+<meta name="theme-color" content="#12292D">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Hoja de Ruta">
-<title>Hoja de Ruta — Despachos</title>
+<meta name="apple-mobile-web-app-title" content="Ruteka">
+<title>Ruteka — Despachos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700;800&display=swap">
 <script>
 /* ============================================================
    CONFIGURACIÓN GOOGLE MAPS
@@ -17,6 +20,12 @@
    (creá un proyecto → habilitá "Maps JavaScript API" → Credenciales →
    Crear credenciales → Clave de API) y pegala acá reemplazando el texto.
    ============================================================ */
+/* ============================================================
+   MARCA: nombre y lema que muestra la app (colores y letras: bloque
+   MARCA al inicio del <style>).
+   ============================================================ */
+const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
+
 const GOOGLE_MAPS_API_KEY = "AIzaSyCamNILqMyAxfRlYJHFzFgyuzTjH34AswQ";
 window.__googleMapsReady = false;
 window.initGoogleMapsCallback = function(){
@@ -51,22 +60,39 @@ const firebaseConfig = {
 const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del historial por día (se migra solo)
 </script>
 <style>
+  /* ============================================================
+     MARCA — RUTEKA
+     Todo el estilo de la app sale de estas variables: cambiá un color o
+     una letra aquí y se actualiza en todas las pantallas.
+     (El nombre y el lema están en el bloque MARCA del <script> de arriba.)
+     ============================================================ */
   :root{
-    --sidebar:#0f4c5c;
+    --marca-tinta:#12292D;            /* menú lateral, encabezados de tablas, textos fuertes */
+    --marca-principal:#0B7A6B;        /* botones, títulos y tarjeta principal */
+    --marca-principal-claro:#14A38E;  /* degradés y detalles */
+    --marca-principal-oscuro:#08594E; /* botones al pasar el mouse */
+    --marca-acento:#FF8A3D;           /* mandarina: entregas, logo y destacados */
+    --marca-fondo:#F2F7F6;            /* fondo general */
+    --marca-letra-titulos:'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+    --marca-letra-texto:'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  :root{
+    --sidebar:var(--marca-tinta);
     --sidebar-2:rgba(255,255,255,0.16);
     --sidebar-text:#b5dcd8;
     --sidebar-text-active:#ffffff;
-    --accent:#0e8f8a;
-    --accent-dark:#0e6b73;
+    --accent:var(--marca-principal);
+    --accent-dark:var(--marca-principal-oscuro);
     --teal:#14b8a6;
     --blue:#3b82f6;
-    --coral:#ff7f6b;
+    --coral:#E5484D; /* no entregado */
     --border:#d8ebe9;
-    --bg:#eef8f6;
+    --bg:var(--marca-fondo);
     --panel:#ffffff;
-    --text:#12302f;
+    --text:var(--marca-tinta);
     --muted:#5b7473;
-    --ok:#0e7c72;
+    --ok:var(--marca-principal);
     --ok-bg:#d5f5f0;
     --warn:#2458c9;
     --warn-bg:#dde9ff;
@@ -79,12 +105,19 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     --excel-border:#b4e8c6;
   }
   *{box-sizing:border-box;}
-  [hidden]{ display:none !important; } /* que ningún display:flex de una clase gane sobre hidden */
+  [hidden]{ display:none !important; }
+  h1, h2, .login-box h2, .stat-value, .hoja-bar-label{ font-family:var(--marca-letra-titulos); letter-spacing:-0.01em; }
+  .marca-logo{ display:block; }
+  .sidebar-logo .marca-logo{ width:40px; height:40px; }
+  .login-marca{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px; }
+  .login-marca .marca-logo{ width:52px; height:52px; }
+  .login-marca .marca-nombre{ font-family:var(--marca-letra-titulos); font-weight:800; font-size:40px; letter-spacing:-0.035em; color:var(--marca-tinta); line-height:1; }
+  .login-lema{ margin:0 0 10px !important; font-weight:700; color:var(--marca-principal) !important; } /* que ningún display:flex de una clase gane sobre hidden */
   html,body{ height:100%; }
   body{
     margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:linear-gradient(165deg, #ecf9f7 0%, #f5fbfc 50%, #fff3ef 100%);
+    font-family:var(--marca-letra-texto);
+    background:linear-gradient(165deg, #EDF6F4 0%, var(--marca-fondo) 50%, #FFF4EB 100%);
     background-attachment:fixed;
     color:var(--text);
   }
@@ -93,7 +126,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .login-screen{
     position:fixed;
     inset:0;
-    background:linear-gradient(160deg,#0f4c5c,#0e7c72);
+    background:linear-gradient(160deg,var(--marca-tinta) 0%,var(--marca-principal) 100%);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -158,7 +191,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .sidebar{
     width:72px;
     flex:none;
-    background:linear-gradient(180deg,#0f4c5c 0%,#0e6b73 100%);
+    background:var(--marca-tinta);
     color:var(--sidebar-text);
     display:flex;
     flex-direction:column;
@@ -175,7 +208,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .sidebar-logo .badge{
     width:38px; height:38px;
     border-radius:11px;
-    background:linear-gradient(135deg,var(--coral),#ffb199);
+    background:transparent;
     display:flex; align-items:center; justify-content:center;
     font-size:18px;
     flex:none;
@@ -199,7 +232,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .nav-item.active{
     background:var(--sidebar-2);
     color:var(--sidebar-text-active);
-    box-shadow:inset 3px 0 0 var(--coral);
+    box-shadow:inset 3px 0 0 var(--marca-acento);
   }
   .nav-group{ position:relative; width:100%; display:flex; justify-content:center; }
   .nav-flyout{
@@ -661,10 +694,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     color:var(--text);
   }
   .stat-grid .stat-tile{ border:none; color:#fff; box-shadow:0 6px 16px rgba(15,76,92,0.14); }
-  .stat-grid .stat-tile:nth-child(4n+1){ background:linear-gradient(135deg,#14b8a6,#0e7c72); }
+  .stat-grid .stat-tile:nth-child(4n+1){ background:linear-gradient(135deg,var(--marca-principal-claro),var(--marca-principal)); }
   .stat-grid .stat-tile:nth-child(4n+2){ background:linear-gradient(135deg,#3b82f6,#2458c9); }
-  .stat-grid .stat-tile:nth-child(4n+3){ background:linear-gradient(135deg,#ff7f6b,#e2553f); }
-  .stat-grid .stat-tile:nth-child(4n+4){ background:linear-gradient(135deg,#0f4c5c,#0e6b73); }
+  .stat-grid .stat-tile:nth-child(4n+3){ background:var(--marca-acento); color:var(--marca-tinta); }
+  .stat-grid .stat-tile:nth-child(4n+3) .stat-label, .stat-grid .stat-tile:nth-child(4n+3) .stat-value{ color:var(--marca-tinta); }
+  .stat-grid .stat-tile:nth-child(4n+4){ background:var(--marca-tinta); }
   .stat-grid .stat-label{ color:rgba(255,255,255,0.88); }
   .stat-grid .stat-value{ color:#fff; }
   .stat-note{ font-size:12px; font-weight:700; opacity:.92; min-height:16px; }
@@ -717,7 +751,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .vb-email{ display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--muted); flex-wrap:wrap; }
   .vb-email input{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; font-weight:600; font-size:13px; color:var(--text); min-width:0; width:230px; max-width:100%; background:#fff; }
   .vb-email input:focus{ outline:none; border-color:var(--accent); }
-  thead th.col-vb{ background:#0e7c72; }
+  thead th.col-vb{ background:var(--marca-principal); }
   td.col-vb{ min-width:230px; background:rgba(20,184,166,0.05); }
   tbody tr.vb-observado{ background:#fffaf0; }
   .vb-box{ display:flex; flex-direction:column; gap:6px; }
@@ -1025,8 +1059,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
-    <div class="icon">🚚</div>
-    <h2>Hoja de Ruta</h2>
+    <div class="login-marca"><svg class="marca-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 52 V13 H33 A11.5 11.5 0 0 1 33 36 H17 M31 36 L45 51" fill="none" stroke="var(--marca-principal)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="52" r="5.5" fill="#fff" stroke="var(--marca-principal)" stroke-width="3.5"/><circle cx="47.5" cy="53" r="7" fill="var(--marca-acento)"/></svg><span class="marca-nombre" id="marcaNombreLogin">ruteka</span></div>
+    <p class="login-lema" id="marcaLema">Todas tus rutas, en un solo lugar.</p>
+    <h2 hidden>Ruteka</h2>
     <p>Ingresá con el correo y la clave que te asignaron para ver y actualizar los despachos.</p>
     <input id="lEmail" type="email" placeholder="Correo" autocomplete="username">
     <input id="lPass" type="password" placeholder="Contraseña" autocomplete="current-password">
@@ -1040,9 +1075,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
 <div class="app" id="sheet" hidden>
   <aside class="sidebar">
-    <div class="sidebar-logo" title="Hoja de Ruta">
-      <span class="badge">🚚</span>
-      <span class="name">Hoja de Ruta</span>
+    <div class="sidebar-logo" title="Ruteka">
+      <svg class="marca-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 52 V13 H33 A11.5 11.5 0 0 1 33 36 H17 M31 36 L45 51" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="52" r="5.5" fill="var(--marca-tinta)" stroke="#FFFFFF" stroke-width="3.5"/><circle cx="47.5" cy="53" r="7" fill="var(--marca-acento)"/></svg>
+      <span class="name">Ruteka</span>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-group" data-nav-mode="menu">
@@ -1151,8 +1186,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           <div class="map-legend">
             <span class="swatch"><span class="dot" style="background:#94a8a7"></span> Pendiente</span>
             <span class="swatch"><span class="dot" style="background:#3b82f6"></span> En ruta</span>
-            <span class="swatch"><span class="dot" style="background:#14b8a6"></span> Entregado</span>
-            <span class="swatch"><span class="dot" style="background:#ff7f6b"></span> No entregado</span>
+            <span class="swatch"><span class="dot" style="background:#14A38E"></span> Entregado</span>
+            <span class="swatch"><span class="dot" style="background:#E5484D"></span> No entregado</span>
           </div>
         </div>
       </div>
@@ -1460,7 +1495,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     { value: 'entregado', label: 'Entregado', cls: 'entregado' },
     { value: 'no-entregado', label: 'No entregado', cls: 'no-entregado' }
   ];
-  const ESTADO_COLORS = { pendiente:'#94a8a7', 'en-ruta':'#3b82f6', entregado:'#14b8a6', 'no-entregado':'#ff7f6b' };
+  const ESTADO_COLORS = { pendiente:'#94a8a7', 'en-ruta':'#3b82f6', entregado:'#14A38E', 'no-entregado':'#E5484D' };
 
   function escapeHtml(s){
     return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -2050,6 +2085,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       '.firma div{ flex:1; border-top:1px solid #999; padding-top:6px; font-size:12px; color:#555; text-align:center; }' +
       '@media print{ body{ padding:0; } }' +
       '</style></head><body>' +
+      '<div style="font-size:12px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:#0B7A6B;margin-bottom:6px">' + escapeHtml(MARCA.nombre) + '</div>' +
       '<h1>Liquidación de Transportista</h1>' +
       '<div class="meta">' +
         (o.periodo ? 'Período: <b>' + escapeHtml(o.periodo) + '</b><br>' : 'Hoja de ruta: <b>' + escapeHtml(o.hoja) + '</b><br>') +
@@ -2643,7 +2679,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   /* ============================================================
      REPORTES (gráficos de barras en SVG, sin librerías)
      ============================================================ */
-  const ACCENT_HEX = '#0e8f8a';
+  const ACCENT_HEX = '#0B7A6B';
   let currentView = 'despachos';
   let resueltosOpen = false;
   let expandedResueltoIds = new Set();
@@ -4342,6 +4378,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
   }
 
+  $('marcaLema').textContent = MARCA.lema;
   appLista = true;
   startFirebase();
 })();
