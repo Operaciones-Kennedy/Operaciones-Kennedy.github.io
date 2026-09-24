@@ -686,6 +686,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .chofer-nav a.waze{ background:#e6f8fd; border-color:#b6e8f5; color:#0b6f8a; }
   .chofer-nav a.tel{ background:var(--ok-bg); border-color:#a8e6dc; color:var(--ok); }
   .chofer-nav a.wsp{ background:#e7f9ee; border-color:#b4e8c6; color:#137a3a; }
+  a.wsp-btn{ text-decoration:none; display:inline-block; }
   .foto-pendiente{ font-size:12px; font-weight:700; color:#9a5b00; background:#fff1d6; border-radius:8px; padding:6px 9px; display:inline-block; }
   @media (max-width:480px){ .chofer-nav a{ flex:1 1 auto; justify-content:center; } }
 
@@ -2115,6 +2116,32 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(d.startsWith('56')) return '+' + d;
     return d;
   }
+  /* ---------- Aviso al cliente por WhatsApp ----------
+     El mensaje cambia según el estado: en camino (con hora estimada si la
+     ruta está optimizada), entregado (con la foto de prueba) o no entregado. */
+  function mensajeWhatsApp(row){
+    const nombre = (row.cliente || '').trim();
+    const saludo = 'Hola' + (nombre ? ' ' + nombre : '') + ', ';
+    const e = row.entrega || {};
+    if(row.estado === 'entregado'){
+      return saludo + 'tu despacho' + (row.productos ? ' (' + row.productos + ')' : '') + ' fue entregado' +
+        (e.horaEntrega ? ' a las ' + e.horaEntrega : '') + (e.recibidoPor ? ' y lo recibió ' + e.recibidoPor : '') + '.' +
+        (e.fotoUrl ? '\n\nFoto de la entrega: ' + e.fotoUrl : '') + '\n\n¡Gracias!';
+    }
+    if(row.estado === 'no-entregado'){
+      return saludo + 'hoy no pudimos entregar tu despacho' + (row.productos ? ' (' + row.productos + ')' : '') +
+        (e.motivo ? ': ' + e.motivo : '') + '.\n\n¿Nos confirmas cuándo y dónde podemos entregarlo?';
+    }
+    return saludo + 'tu despacho' + (row.productos ? ' (' + row.productos + ')' : '') + ' va en camino a ' +
+      [row.direccion, row.comuna].filter(Boolean).join(', ') + '.' +
+      (row.eta ? ' Llegaría aproximadamente a las ' + row.eta + '.' : '') + '\n\nCualquier cambio, avísanos por aquí.';
+  }
+  function enlaceWhatsApp(row){
+    const tel = telefonoDe(row);
+    if(!tel) return '';
+    return 'https://wa.me/' + tel.replace(/\D/g, '') + '?text=' + encodeURIComponent(mensajeWhatsApp(row));
+  }
+
   function enlacesNavegacion(row){
     const box = document.createElement('div');
     box.className = 'chofer-nav';
@@ -2133,6 +2160,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }
     const tel = telefonoDe(row);
     if(tel) add('tel', 'tel:' + tel, '📞 Llamar', 'Llamar a ' + (row.contacto || ''));
+    const wsp = enlaceWhatsApp(row);
+    if(wsp) add('wsp', wsp, row.estado === 'entregado' ? '💬 Enviar comprobante' : '💬 Avisar por WhatsApp', 'Abrir WhatsApp con el mensaje listo para el cliente');
     return box;
   }
 
@@ -3277,6 +3306,15 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       renderRows();
     });
 
+    const wsp = enlaceWhatsApp(row);
+    if(wsp){
+      const a = document.createElement('a');
+      a.className = 'icon-btn wsp-btn';
+      a.href = wsp; a.target = '_blank'; a.rel = 'noopener';
+      a.title = row.estado === 'entregado' ? 'Enviar comprobante de entrega por WhatsApp' : 'Avisar al cliente por WhatsApp';
+      a.textContent = '💬';
+      td.appendChild(a);
+    }
     td.appendChild(dup);
     td.appendChild(del);
     return td;
