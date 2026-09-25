@@ -36,4 +36,42 @@ console.log('R2 visto bueno del transportista');
   sinErrores(p);
   await p.context().close();
 }
+console.log('R-filas en blanco: no se guardan ni se muestran como despachos');
+{
+  const p = await open(b, { setup: () => {
+    const vacia = id => ({ id, cliente: '', direccion: '', comuna: '', contacto: '', productos: '', estado: 'pendiente', hora: '', prueba: '', tarifa: '', pagado: false });
+    const llena = (id, c) => Object.assign(vacia(id), { cliente: c, direccion: 'Calle ' + c });
+    localStorage.setItem('hojaDeRuta_actual', '2026-09-25');
+    window.__fakeParams = { seed: [['hojasDeRuta/2026-09-25', { json: JSON.stringify({ titulo: 't', rows: [vacia('v1'), vacia('v2'), vacia('v3'), llena('a', 'Ana'), llena('b', 'Beto')] }) }]] };
+  }});
+  await p.waitForTimeout(600);
+  check('solo se ven los 2 despachos con datos', (await p.$$('#tbody tr')).length === 2, String((await p.$$('#tbody tr')).length));
+  check('pendientes: 2', (await p.textContent('#countPendiente')) === '2', await p.textContent('#countPendiente'));
+  await p.click('#btnAddRow'); await p.waitForTimeout(900);
+  check('«Agregar despacho» muestra la fila nueva', (await p.$$('#tbody tr')).length === 3);
+  const enLinea = await rowsOf(p, 'hojasDeRuta', '2026-09-25');
+  check('en línea quedan solo los 2 con datos', enLinea.rows.length === 2 && enLinea.rows.every(r => r.cliente), enLinea.rows.map(r => r.id).join(','));
+  await p.click('#tbody tr:nth-child(3) td:nth-child(2)');
+  await p.keyboard.type('Carla');
+  await p.click('#hojaInfo'); await p.waitForTimeout(900);
+  const tras = await rowsOf(p, 'hojasDeRuta', '2026-09-25');
+  check('al escribirle un dato, se guarda', tras.rows.length === 3 && tras.rows[2].cliente === 'Carla', tras.rows.map(r => r.cliente).join(','));
+  await p.evaluate(() => document.querySelector('.side-item[data-view="chofer"]').click()); await p.waitForTimeout(300);
+  const tarjetas = await p.$eval('#choferList', e => e.textContent);
+  check('Entregas no muestra «(sin cliente)»', !tarjetas.includes('(sin cliente)'));
+  sinErrores(p);
+  await p.context().close();
+}
+console.log('R-día nuevo: una sola fila en blanco y nada guardado');
+{
+  const p = await open(b, { setup: () => { localStorage.setItem('hojaDeRuta_actual', '2026-10-02'); window.__fakeParams = { seed: [] }; } });
+  await p.waitForTimeout(500);
+  check('una sola fila para empezar', (await p.$$('#tbody tr')).length === 1);
+  await p.evaluate(() => { const t = document.getElementById('titulo'); t.textContent = 'Otra ruta'; t.dispatchEvent(new Event('input')); });
+  await p.waitForTimeout(900);
+  const d = await rowsOf(p, 'hojasDeRuta', '2026-10-02');
+  check('se guarda el título sin filas en blanco', d && d.titulo === 'Otra ruta' && d.rows.length === 0, JSON.stringify(d && d.rows));
+  sinErrores(p);
+  await p.context().close();
+}
 await b.close();
