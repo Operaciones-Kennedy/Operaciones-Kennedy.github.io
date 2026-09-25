@@ -6,7 +6,7 @@ const setup = email => `(() => {
   const rows = [{ id: 'a', cliente: 'Céline', direccion: 'Las Hualtatas 6172', comuna: 'Vitacura', contacto: '+569 8585 9910', productos: '6x', estado: 'pendiente', tarifa: 8000 }];
   window.__fakeParams = { email: '${email}', seed: [
     ['hojasDeRuta/2026-09-24', { json: JSON.stringify({ titulo: 't', fecha: '2026-09-24', rows }) }],
-    ['config/app', { transportistas: ['juan@transportes.cl'] }]] };
+    ['config/app', { transportistas: ['juan@transportes.cl'], conLiquidacion: ['juan@transportes.cl'] }]] };
 })()`;
 const visible = (p, sel) => p.$eval(sel, e => !!(e.offsetWidth || e.offsetHeight) && getComputedStyle(e).visibility !== 'hidden');
 const tabs = p => p.$$eval('.movil-tab', bs => bs.filter(b => b.offsetWidth).map(b => b.textContent.trim()));
