@@ -38,7 +38,7 @@ for (const [w, nombre] of [[1280, 'computador'], [390, 'teléfono']]) {
   const p = await open(b, { setup: setup('transporte@barrientos.cl', '{ transportistas: ["transporte@barrientos.cl"] }'), width: w, height: 844 });
   await p.waitForTimeout(600);
   check('entra en vista transportista', await p.evaluate(() => document.body.classList.contains('modo-transportista')));
-  if (w > 820) check('menú lateral: solo Entregas y Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(',') === 'Entregas,Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(','));
+  if (w > 820) check('menú lateral: Entregas, Historial de entregas y Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(',') === 'Entregas,Historial de entregas,Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(','));
   else check('menú inferior: Entregas, Pagos, Más', (await visibles(p, '.movil-tab span')).join(',') === 'Entregas,Pagos,Más', (await visibles(p, '.movil-tab span')).join(','));
   check('no ve el aviso de permisos', !(await p.isVisible('#avisoPermisos')));
   check('abre en Entregas', !(await p.$eval('#viewChofer', e => e.hidden)));
@@ -91,7 +91,7 @@ await b.close();
       const trans = await p.evaluate(() => document.body.classList.contains('modo-transportista'));
       const menu = w > 820 ? await p.$$eval('.sidebar .side-item[data-view] span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','))
                            : await p.$$eval('.movil-tab span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','));
-      if (esperado === 'transportista') check((w > 820 ? 'computador' : 'teléfono') + ': solo ve ' + menu, trans && (menu === 'Entregas' || menu === 'Entregas,Más'), menu);
+      if (esperado === 'transportista') check((w > 820 ? 'computador' : 'teléfono') + ': solo ve ' + menu, trans && (menu === 'Entregas,Historial de entregas' || menu === 'Entregas,Más'), menu);
       else check((w > 820 ? 'computador' : 'teléfono') + ': ve el menú completo', !trans && menu.split(',').length >= 5, menu);
       sinErrores(p);
       await p.context().close();
@@ -116,10 +116,19 @@ await b.close();
     console.log('Ayudante sin liquidación (' + (w > 820 ? 'computador' : 'teléfono') + ')');
     const p = await open(b3, { setup: caso('ayudante@fletes.cl'), width: w, height: 844 });
     await p.waitForTimeout(600);
-    check('menú: solo Entregas', (await menu(p, w)) === (w > 820 ? 'Entregas' : 'Entregas,Más'), await menu(p, w));
+    check('menú: Entregas e Historial de entregas, sin Pagos', (await menu(p, w)) === (w > 820 ? 'Entregas,Historial de entregas' : 'Entregas,Más'), await menu(p, w));
     check('no ve el monto del despacho', !(await p.textContent('#choferList')).includes('$8.000'));
     await p.evaluate(() => document.querySelector('.side-item[data-view="liquidaciones"]').click()); await p.waitForTimeout(150);
     check('no puede abrir la liquidación por otro lado', await p.$eval('#viewLiquidaciones', e => e.hidden) && !(await p.$eval('#viewChofer', e => e.hidden)));
+    if (w > 820) await p.click('.side-item[data-view="entregashist"]');
+    else { await p.click('.movil-tab[data-tab="mas"]'); await p.waitForTimeout(150); await p.click('#movilMas [data-ir="entregashist"]'); }
+    await p.waitForTimeout(200);
+    await p.fill('#rDesdeE', '2026-09-01'); await p.dispatchEvent('#rDesdeE', 'change');
+    await p.fill('#rHastaE', '2026-09-30'); await p.dispatchEvent('#rHastaE', 'change');
+    await p.selectOption('#ehEstado', 'todas'); await p.waitForTimeout(400);
+    check('abre su Historial de entregas', !(await p.$eval('#viewEntregasHist', e => e.hidden)) && (await p.textContent('#ehFilas')).includes('Céline'));
+    check('el historial no muestra montos', !(await p.textContent('#viewEntregasHist')).includes('$'));
+    if (w <= 820) check('en el teléfono queda marcada la pestaña Más', (await p.textContent('.movil-tab.activa')).trim() === 'Más');
     sinErrores(p);
     await p.context().close();
   }
@@ -127,7 +136,7 @@ await b.close();
     console.log('Transportista con «Ve la liquidación» (' + (w > 820 ? 'computador' : 'teléfono') + ')');
     const p = await open(b3, { setup: caso('Dueno@Fletes.cl'), width: w, height: 844 });
     await p.waitForTimeout(600);
-    check('menú: Entregas y liquidación', (await menu(p, w)) === (w > 820 ? 'Entregas,Liquidación del día' : 'Entregas,Pagos,Más'), await menu(p, w));
+    check('menú: Entregas y liquidación', (await menu(p, w)) === (w > 820 ? 'Entregas,Historial de entregas,Liquidación del día' : 'Entregas,Pagos,Más'), await menu(p, w));
     check('ve el monto del despacho', (await p.textContent('#choferList')).includes('$8.000'));
     sinErrores(p);
     await p.context().close();

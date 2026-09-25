@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-25 · 3";
+const VERSION_APP = "2026-09-25 · 4";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1124,11 +1124,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <button class="side-item" type="button" data-view="despachos" id="navDespachos" data-solo-admin title="Ruta del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta del día</span></button>
         <button class="side-item" type="button" data-view="chofer" id="navChofer" title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
       </div>
-      <div class="side-grupo" data-solo-admin>
+      <div class="side-grupo">
         <div class="side-titulo">Reportes</div>
         <button class="side-item" type="button" data-view="reportes" id="navReportes" data-solo-admin title="KPIs del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
         <button class="side-item" type="button" data-view="historial" data-solo-admin title="Historial y reportes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Historial y reportes</span></button>
-        <button class="side-item" type="button" data-view="entregashist" data-solo-admin title="Historial de entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
+        <button class="side-item" type="button" data-view="entregashist" title="Historial de entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       </div>
       <div class="side-grupo" data-dinero>
         <div class="side-titulo">Pagos</div>
@@ -1171,7 +1171,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div><div class="movil-sheet-titulo" id="movilMasTitulo">Mi cuenta</div><div class="movil-sheet-email" id="movilMasEmail"></div></div>
       </div>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
-      <button class="movil-sheet-item" type="button" data-ir="entregashist" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="entregashist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
       <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Transportistas</span></button>
       <button class="movil-sheet-item" type="button" id="movilInstalar" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.5 11.5L12 14l2.5-2.5"/></svg><span>Instalar Ruteka en este teléfono</span></button>
@@ -1459,7 +1459,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <div id="viewConfig" hidden>
     <div class="content-header">
       <h1>Transportistas</h1>
-      <p>Los correos anotados aquí entran en vista transportista y solo ven Entregas. Marcá «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno.</p>
+      <p>Los correos anotados aquí entran en vista transportista: ven Entregas y el Historial de entregas, sin montos. Marcá «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno.</p>
     </div>
     <section class="card config-card">
       <form class="config-agregar" id="configForm">
@@ -1472,7 +1472,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <ul class="config-lista" id="configLista"></ul>
       <p class="config-msg" id="configMsg" role="status"></p>
     </section>
-    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas, aunque no esté en esta lista; la liquidación la ven solo los marcados con «Ve la liquidación».</p>
+    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas e Historial de entregas, aunque no esté en esta lista; la liquidación la ven solo los marcados con «Ve la liquidación».</p>
   </div>
 
   <div id="viewLiqPeriodo" hidden>
@@ -2273,7 +2273,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return [...new Set(liquidacionConfig.concat(liquidacionGlobal).map(e => String(e).trim().toLowerCase()).filter(Boolean))];
   }
   function vistasPermitidas(){
-    return verDinero ? ['chofer', 'liquidaciones'] : ['chofer'];
+    return verDinero ? ['chofer', 'liquidaciones', 'entregashist'] : ['chofer', 'entregashist'];
   }
 
   // Transportistas: config/app (lista general) + la lista guardada dentro de la ruta del día
@@ -2437,7 +2437,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(email === currentEmail()){ pintarConfig('Ese es tu propio correo: si lo agregás, dejarías de ver el menú de administrador.', true); return; }
     const ok = await registrarTransportista(email);
     $('configEmail').value = '';
-    pintarConfig(ok ? email + ' quedó como transportista en todas las rutas (solo Entregas; marcá «Ve la liquidación» si también revisa los pagos). Pedile que cierre y vuelva a abrir Ruteka.' : 'Quedó guardado solo en esta ruta (y las siguientes): Firebase no permitió guardarlo en la lista general. Revisá las reglas.', !ok);
+    pintarConfig(ok ? email + ' quedó como transportista en todas las rutas (Entregas e historial, sin montos; marcá «Ve la liquidación» si también revisa los pagos). Pedile que cierre y vuelva a abrir Ruteka.' : 'Quedó guardado solo en esta ruta (y las siguientes): Firebase no permitió guardarlo en la lista general. Revisá las reglas.', !ok);
   });
 
   /* ---------- Aviso cuando Firebase bloquea una parte de la app ---------- */
@@ -2735,7 +2735,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
   function marcarTabMovil(view){
     document.querySelectorAll('.movil-tab').forEach(b => {
-      const activa = b.dataset.tab === TAB_DE_VISTA[view];
+      // El transportista no tiene la pestaña Reportes: su historial queda bajo «Más».
+      const tab = modoTransportista && view === 'entregashist' ? 'mas' : TAB_DE_VISTA[view];
+      const activa = b.dataset.tab === tab;
       b.classList.toggle('activa', activa);
       if(activa) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });

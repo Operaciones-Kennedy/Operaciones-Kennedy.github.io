@@ -43,7 +43,7 @@ console.log('Transportista en el teléfono');
   check('menú inferior: Entregas, Pagos, Más', (await tabs(p)).join(',') === 'Entregas,Pagos,Más', (await tabs(p)).join(','));
   await p.click('.movil-tab[data-tab="mas"]'); await p.waitForTimeout(150);
   const items = await p.$$eval('.movil-sheet-item', bs => bs.filter(b => b.offsetWidth).map(b => b.textContent.trim()));
-  check('en Más solo ve Cerrar sesión (sin opciones de administrador)', items.join(',') === 'Cerrar sesión', items.join(','));
+  check('en Más solo ve Historial de entregas y Cerrar sesión (sin opciones de administrador)', items.join(',') === 'Historial de entregas,Cerrar sesión', items.join(','));
   sinErrores(p);
   await p.context().close();
 }
