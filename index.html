@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-25 · 4";
+const VERSION_APP = "2026-09-25 · 5";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -720,6 +720,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
   body.modo-transportista [data-solo-admin]{ display:none !important; }
   body.sin-dinero [data-dinero]{ display:none !important; }
+  body.sin-historial [data-historial]{ display:none !important; }
   .movil-sheet{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; }
   .movil-sheet-fondo{ position:absolute; inset:0; background:rgba(18,41,45,0.45); }
   .movil-sheet-panel{
@@ -756,8 +757,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   @media (max-width: 520px){
     .config-lista li{ flex-wrap:wrap; row-gap:8px; }
     .config-lista li span{ flex:1 1 100%; }
-    .config-lista li .config-liq{ flex:1; }
+    .config-lista li .config-permisos{ flex:1; }
   }
+  .config-permisos{ display:flex; flex-wrap:wrap; gap:6px 14px; }
   .config-liq{ display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--muted); white-space:nowrap; cursor:pointer; }
   .config-liq input{ width:18px; height:18px; accent-color:var(--marca-principal); }
   .config-lista .vacio{ color:var(--muted); font-weight:500; border-style:dashed; }
@@ -1124,11 +1126,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <button class="side-item" type="button" data-view="despachos" id="navDespachos" data-solo-admin title="Ruta del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta del día</span></button>
         <button class="side-item" type="button" data-view="chofer" id="navChofer" title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
       </div>
-      <div class="side-grupo">
+      <div class="side-grupo" data-historial>
         <div class="side-titulo">Reportes</div>
         <button class="side-item" type="button" data-view="reportes" id="navReportes" data-solo-admin title="KPIs del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
         <button class="side-item" type="button" data-view="historial" data-solo-admin title="Historial y reportes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Historial y reportes</span></button>
-        <button class="side-item" type="button" data-view="entregashist" title="Historial de entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
+        <button class="side-item" type="button" data-view="entregashist" data-historial title="Historial de entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       </div>
       <div class="side-grupo" data-dinero>
         <div class="side-titulo">Pagos</div>
@@ -1171,7 +1173,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div><div class="movil-sheet-titulo" id="movilMasTitulo">Mi cuenta</div><div class="movil-sheet-email" id="movilMasEmail"></div></div>
       </div>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
-      <button class="movil-sheet-item" type="button" data-ir="entregashist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
       <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Transportistas</span></button>
       <button class="movil-sheet-item" type="button" id="movilInstalar" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.5 11.5L12 14l2.5-2.5"/></svg><span>Instalar Ruteka en este teléfono</span></button>
@@ -1459,7 +1461,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <div id="viewConfig" hidden>
     <div class="content-header">
       <h1>Transportistas</h1>
-      <p>Los correos anotados aquí entran en vista transportista: ven Entregas y el Historial de entregas, sin montos. Marcá «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno.</p>
+      <p>Los correos anotados aquí entran en vista transportista y ven Entregas, sin montos. Marcá «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno, y «Ve el historial» a quien puede revisar las entregas pasadas.</p>
     </div>
     <section class="card config-card">
       <form class="config-agregar" id="configForm">
@@ -1472,7 +1474,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <ul class="config-lista" id="configLista"></ul>
       <p class="config-msg" id="configMsg" role="status"></p>
     </section>
-    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas e Historial de entregas, aunque no esté en esta lista; la liquidación la ven solo los marcados con «Ve la liquidación».</p>
+    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas, aunque no esté en esta lista; el historial y la liquidación los ven solo los que tengan marcada su casilla.</p>
   </div>
 
   <div id="viewLiqPeriodo" hidden>
@@ -2264,16 +2266,24 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   let transportistasConfig = [];
   let transportistasGlobal = []; // copia en hojasDeRuta/principal (Firebase ya permite esa colección)
   let modoTransportista = false;
-  // Transportistas que además ven la liquidación del día (montos y visto bueno).
-  // El resto solo ve Entregas, sin nada de dinero.
-  let liquidacionConfig = [];
-  let liquidacionGlobal = [];
-  let verDinero = true;
-  function listaConLiquidacion(){
-    return [...new Set(liquidacionConfig.concat(liquidacionGlobal).map(e => String(e).trim().toLowerCase()).filter(Boolean))];
+  // Permisos extra por transportista, marcados en la página Transportistas.
+  // Cada lista se guarda en config/app y en hojasDeRuta/principal (se usa la unión).
+  //  - conLiquidacion: ve la liquidación del día (montos y visto bueno).
+  //  - conHistorial: ve el Historial de entregas.
+  // Sin marcar, el transportista solo ve Entregas, sin nada de dinero.
+  const PERMISOS = {
+    conLiquidacion: { texto: 'Ve la liquidación', config: [], global: [] },
+    conHistorial: { texto: 'Ve el historial', config: [], global: [] }
+  };
+  function listaPermiso(campo){
+    const pm = PERMISOS[campo];
+    return [...new Set(pm.config.concat(pm.global).map(e => String(e).trim().toLowerCase()).filter(Boolean))];
   }
+  function listaConLiquidacion(){ return listaPermiso('conLiquidacion'); }
+  let verDinero = true;
+  let verHistorial = true;
   function vistasPermitidas(){
-    return verDinero ? ['chofer', 'liquidaciones', 'entregashist'] : ['chofer', 'entregashist'];
+    return ['chofer'].concat(verDinero ? ['liquidaciones'] : [], verHistorial ? ['entregashist'] : []);
   }
 
   // Transportistas: config/app (lista general) + la lista guardada dentro de la ruta del día
@@ -2313,8 +2323,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     modoTransportista = esAdminSesion === null ? esTransportista() : !esAdminSesion;
     const dineroAntes = verDinero;
     verDinero = !modoTransportista || listaConLiquidacion().includes(currentEmail());
+    verHistorial = !modoTransportista || listaPermiso('conHistorial').includes(currentEmail());
     document.body.classList.toggle('modo-transportista', modoTransportista);
     document.body.classList.toggle('sin-dinero', !verDinero);
+    document.body.classList.toggle('sin-historial', !verHistorial);
     $('rolChip').hidden = !modoTransportista;
     if(modoTransportista && !vistasPermitidas().includes(currentView)) switchView('chofer');
     if(antes !== modoTransportista && currentView === 'liquidaciones') renderLiquidaciones();
@@ -2327,14 +2339,16 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID).onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
       transportistasGlobal = (d.transportistas || []).map(e => String(e).toLowerCase());
-      liquidacionGlobal = (d.conLiquidacion || []).map(e => String(e).toLowerCase());
+      Object.keys(PERMISOS).forEach(k => { PERMISOS[k].global = (d[k] || []).map(e => String(e).toLowerCase()); });
       aplicarRol();
+      if(currentView === 'config') pintarConfig($('configMsg').textContent, $('configMsg').classList.contains('err'));
     }, err => console.warn('No se pudo leer la lista de transportistas (principal)', err));
     db.collection('config').doc('app').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
       transportistasConfig = (d.transportistas || []).map(e => String(e).toLowerCase());
-      liquidacionConfig = (d.conLiquidacion || []).map(e => String(e).toLowerCase());
+      Object.keys(PERMISOS).forEach(k => { PERMISOS[k].config = (d[k] || []).map(e => String(e).toLowerCase()); });
       aplicarRol();
+      if(currentView === 'config') pintarConfig($('configMsg').textContent, $('configMsg').classList.contains('err'));
     }, err => { console.warn('No se pudo leer config/app', err); marcarPermiso('config', err); });
   }
 
@@ -2374,26 +2388,29 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }
   }
 
-  // Marca o desmarca «Ve la liquidación» en la lista general (principal y config/app).
-  async function marcarLiquidacion(email, ver){
+  // Marca o desmarca un permiso extra (PERMISOS) en la lista general (principal y config/app).
+  async function marcarPermisoExtra(campo, email, ver){
     email = String(email || '').trim().toLowerCase();
     if(!email || !db) return false;
+    const pm = PERMISOS[campo];
     const cambiar = arr => { const l = new Set((arr || []).map(e => String(e).toLowerCase())); if(ver) l.add(email); else l.delete(email); return [...l].sort(); };
     let ok = false;
     try{
       const g = db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID);
       const gs = await g.get();
-      liquidacionGlobal = cambiar(gs.exists && gs.data().conLiquidacion);
-      await g.set({ conLiquidacion: liquidacionGlobal }, { merge: true });
+      const lista = cambiar(gs.exists && gs.data()[campo]);
+      await g.set({ [campo]: lista }, { merge: true });
+      pm.global = lista;
       ok = true;
-    }catch(err){ console.warn('No se pudo guardar «Ve la liquidación» (principal)', err); }
+    }catch(err){ console.warn('No se pudo guardar «' + pm.texto + '» (principal)', err); }
     try{
       const ref = db.collection('config').doc('app');
       const snap = await ref.get();
-      liquidacionConfig = cambiar(snap.exists && snap.data().conLiquidacion);
-      await ref.set({ conLiquidacion: liquidacionConfig }, { merge: true });
+      const lista = cambiar(snap.exists && snap.data()[campo]);
+      await ref.set({ [campo]: lista }, { merge: true });
+      pm.config = lista;
       ok = true;
-    }catch(err){ console.warn('No se pudo guardar «Ve la liquidación» en config/app', err); marcarPermiso('config', err); }
+    }catch(err){ console.warn('No se pudo guardar «' + pm.texto + '» en config/app', err); marcarPermiso('config', err); }
     return ok;
   }
 
@@ -2410,21 +2427,28 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const sp = document.createElement('span'); sp.textContent = email;
       const b = document.createElement('button'); b.type = 'button'; b.className = 'danger'; b.textContent = 'Quitar';
       b.setAttribute('aria-label', 'Quitar ' + email);
-      const liq = document.createElement('label'); liq.className = 'config-liq';
-      const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = listaConLiquidacion().includes(email);
-      chk.setAttribute('aria-label', email + ' ve la liquidación');
-      chk.addEventListener('change', async () => {
-        const ok = await marcarLiquidacion(email, chk.checked);
-        pintarConfig(ok ? (chk.checked ? email + ' ahora ve la liquidación del día.' : email + ' ya no ve la liquidación: solo Entregas.') + ' Pedile que cierre y vuelva a abrir Ruteka.' : 'Firebase no permitió guardar el cambio (revisá las reglas).', !ok);
+      const casillas = Object.keys(PERMISOS).map(campo => {
+        const pm = PERMISOS[campo];
+        const lab = document.createElement('label'); lab.className = 'config-liq'; lab.dataset.permiso = campo;
+        const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = listaPermiso(campo).includes(email);
+        chk.setAttribute('aria-label', email + ' ' + pm.texto.toLowerCase());
+        chk.addEventListener('change', async () => {
+          const ok = await marcarPermisoExtra(campo, email, chk.checked);
+          const que = campo === 'conLiquidacion' ? 'la liquidación del día' : 'el Historial de entregas';
+          pintarConfig(ok ? email + (chk.checked ? ' ahora ve ' : ' ya no ve ') + que + '. Pedile que cierre y vuelva a abrir Ruteka.' : 'Firebase no permitió guardar el cambio (revisá las reglas).', !ok);
+        });
+        lab.append(chk, document.createTextNode(pm.texto));
+        return lab;
       });
-      liq.append(chk, document.createTextNode('Ve la liquidación'));
+      const permisos = document.createElement('div'); permisos.className = 'config-permisos';
+      casillas.forEach(c => permisos.appendChild(c));
       b.addEventListener('click', async () => {
-        if(listaConLiquidacion().includes(email)) await marcarLiquidacion(email, false);
+        for(const campo of Object.keys(PERMISOS)) if(listaPermiso(campo).includes(email)) await marcarPermisoExtra(campo, email, false);
         const ok = await registrarTransportista(email, true);
         pintarConfig(ok ? email + ' ya no es transportista.' : 'Se quitó solo de esta ruta: Firebase no permitió actualizar la lista general (revisá las reglas).', !ok);
         aplicarRol();
       });
-      li.append(sp, liq, b);
+      li.append(sp, permisos, b);
       ul.appendChild(li);
     });
     $('configMsg').textContent = msg || '';
@@ -2437,7 +2461,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(email === currentEmail()){ pintarConfig('Ese es tu propio correo: si lo agregás, dejarías de ver el menú de administrador.', true); return; }
     const ok = await registrarTransportista(email);
     $('configEmail').value = '';
-    pintarConfig(ok ? email + ' quedó como transportista en todas las rutas (Entregas e historial, sin montos; marcá «Ve la liquidación» si también revisa los pagos). Pedile que cierre y vuelva a abrir Ruteka.' : 'Quedó guardado solo en esta ruta (y las siguientes): Firebase no permitió guardarlo en la lista general. Revisá las reglas.', !ok);
+    pintarConfig(ok ? email + ' quedó como transportista en todas las rutas (solo Entregas, sin montos; marcá sus casillas si también debe ver la liquidación o el historial). Pedile que cierre y vuelva a abrir Ruteka.' : 'Quedó guardado solo en esta ruta (y las siguientes): Firebase no permitió guardarlo en la lista general. Revisá las reglas.', !ok);
   });
 
   /* ---------- Aviso cuando Firebase bloquea una parte de la app ---------- */
