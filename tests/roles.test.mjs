@@ -38,7 +38,7 @@ for (const [w, nombre] of [[1280, 'computador'], [390, 'teléfono']]) {
   const p = await open(b, { setup: setup('transporte@barrientos.cl', '{ transportistas: ["transporte@barrientos.cl"] }'), width: w, height: 844 });
   await p.waitForTimeout(600);
   check('entra en vista transportista', await p.evaluate(() => document.body.classList.contains('modo-transportista')));
-  if (w > 820) check('menú lateral: Entregas, Historial de entregas y Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(',') === 'Entregas,Historial de entregas,Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(','));
+  if (w > 820) check('menú lateral: solo Entregas y Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(',') === 'Entregas,Liquidación del día', (await visibles(p, '.sidebar .side-item[data-view] span')).join(','));
   else check('menú inferior: Entregas, Pagos, Más', (await visibles(p, '.movil-tab span')).join(',') === 'Entregas,Pagos,Más', (await visibles(p, '.movil-tab span')).join(','));
   check('no ve el aviso de permisos', !(await p.isVisible('#avisoPermisos')));
   check('abre en Entregas', !(await p.$eval('#viewChofer', e => e.hidden)));
@@ -91,7 +91,7 @@ await b.close();
       const trans = await p.evaluate(() => document.body.classList.contains('modo-transportista'));
       const menu = w > 820 ? await p.$$eval('.sidebar .side-item[data-view] span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','))
                            : await p.$$eval('.movil-tab span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','));
-      if (esperado === 'transportista') check((w > 820 ? 'computador' : 'teléfono') + ': solo ve ' + menu, trans && (menu === 'Entregas,Historial de entregas' || menu === 'Entregas,Más'), menu);
+      if (esperado === 'transportista') check((w > 820 ? 'computador' : 'teléfono') + ': solo ve ' + menu, trans && (menu === 'Entregas' || menu === 'Entregas,Más'), menu);
       else check((w > 820 ? 'computador' : 'teléfono') + ': ve el menú completo', !trans && menu.split(',').length >= 5, menu);
       sinErrores(p);
       await p.context().close();
@@ -108,7 +108,7 @@ await b.close();
     const rows = [{ id: 'a', cliente: 'Céline', direccion: 'Las Hualtatas 6172', comuna: 'Vitacura', contacto: '', productos: '', estado: 'pendiente', tarifa: 8000 }];
     window.__fakeParams = { email: '${email}', admins: ['jefe@prueba.cl'], seed: [
       ['hojasDeRuta/2026-09-23', { json: JSON.stringify({ titulo: 't', fecha: '2026-09-23', rows }) }],
-      ['config/app', { transportistas: ['dueno@fletes.cl', 'ayudante@fletes.cl'], conLiquidacion: ['dueno@fletes.cl'] }]] };
+      ['config/app', { transportistas: ['dueno@fletes.cl', 'ayudante@fletes.cl', 'nuevo@fletes.cl'], conLiquidacion: ['dueno@fletes.cl'], conHistorial: ['ayudante@fletes.cl'] }]] };
   })()`;
   const menu = (p, w) => w > 820 ? p.$$eval('.sidebar .side-item[data-view] span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','))
                                  : p.$$eval('.movil-tab span', ss => ss.filter(x => x.offsetWidth).map(x => x.textContent).join(','));
@@ -136,8 +136,22 @@ await b.close();
     console.log('Transportista con «Ve la liquidación» (' + (w > 820 ? 'computador' : 'teléfono') + ')');
     const p = await open(b3, { setup: caso('Dueno@Fletes.cl'), width: w, height: 844 });
     await p.waitForTimeout(600);
-    check('menú: Entregas y liquidación', (await menu(p, w)) === (w > 820 ? 'Entregas,Historial de entregas,Liquidación del día' : 'Entregas,Pagos,Más'), await menu(p, w));
+    check('menú: Entregas y liquidación', (await menu(p, w)) === (w > 820 ? 'Entregas,Liquidación del día' : 'Entregas,Pagos,Más'), await menu(p, w));
     check('ve el monto del despacho', (await p.textContent('#choferList')).includes('$8.000'));
+    sinErrores(p);
+    await p.context().close();
+  }
+  for (const w of [1280, 390]) {
+    console.log('Transportista sin casillas marcadas (' + (w > 820 ? 'computador' : 'teléfono') + ')');
+    const p = await open(b3, { setup: caso('nuevo@fletes.cl'), width: w, height: 844 });
+    await p.waitForTimeout(600);
+    check('menú: solo Entregas', (await menu(p, w)) === (w > 820 ? 'Entregas' : 'Entregas,Más'), await menu(p, w));
+    await p.evaluate(() => document.querySelector('.side-item[data-view="entregashist"]').click()); await p.waitForTimeout(150);
+    check('no puede abrir el historial por otro lado', await p.$eval('#viewEntregasHist', e => e.hidden) && !(await p.$eval('#viewChofer', e => e.hidden)));
+    if (w <= 820) {
+      await p.click('.movil-tab[data-tab="mas"]'); await p.waitForTimeout(150);
+      check('en Más no aparece Historial de entregas', !(await p.isVisible('#movilMas [data-ir="entregashist"]')));
+    }
     sinErrores(p);
     await p.context().close();
   }
@@ -147,15 +161,23 @@ await b.close();
     await p.waitForTimeout(600);
     await p.click('.side-item[data-view="config"]'); await p.waitForTimeout(150);
     const casillas = () => p.$$eval('#configLista li', lis => lis.map(li => li.querySelector('span').textContent + '=' + li.querySelector('input').checked).join(','));
-    check('la lista muestra quién ve la liquidación', (await casillas()) === 'ayudante@fletes.cl=false,dueno@fletes.cl=true', await casillas());
+    check('la lista muestra quién ve la liquidación', (await casillas()) === 'ayudante@fletes.cl=false,dueno@fletes.cl=true,nuevo@fletes.cl=false', await casillas());
     await p.check('#configLista li:first-child input'); await p.waitForTimeout(500);
     const cfg = await p.evaluate(() => window.__fs.docs['config/app']);
     const pr = await p.evaluate(() => window.__fs.docs['hojasDeRuta/principal']);
     check('se guarda en config/app y en la copia general', cfg.conLiquidacion.includes('ayudante@fletes.cl') && pr.conLiquidacion.includes('ayudante@fletes.cl'), JSON.stringify(cfg));
-    await p.uncheck('#configLista li:last-child input'); await p.waitForTimeout(500);
+    await p.uncheck('#configLista li:nth-child(2) input'); await p.waitForTimeout(500);
     const cfg2 = await p.evaluate(() => window.__fs.docs['config/app']);
     check('desmarcar lo quita', !cfg2.conLiquidacion.includes('dueno@fletes.cl') && cfg2.conLiquidacion.includes('ayudante@fletes.cl'), JSON.stringify(cfg2));
-    check('el administrador sigue viendo todo', !(await p.evaluate(() => document.body.classList.contains('sin-dinero'))));
+    check('el administrador sigue viendo todo', !(await p.evaluate(() => document.body.classList.contains('sin-dinero') || document.body.classList.contains('sin-historial'))));
+    const hist = () => p.$$eval('#configLista li', lis => lis.map(li => li.querySelector('span').textContent + '=' + li.querySelector('[data-permiso="conHistorial"] input').checked).join(','));
+    check('muestra quién ve el historial', (await hist()) === 'ayudante@fletes.cl=true,dueno@fletes.cl=false,nuevo@fletes.cl=false', await hist());
+    await p.check('#configLista li:nth-child(3) [data-permiso="conHistorial"] input'); await p.waitForTimeout(500);
+    const cfg3 = await p.evaluate(() => window.__fs.docs['config/app']);
+    check('«Ve el historial» se guarda', cfg3.conHistorial.includes('nuevo@fletes.cl') && cfg3.conHistorial.includes('ayudante@fletes.cl'), JSON.stringify(cfg3));
+    await p.evaluate(() => window.__fs.remoteWrite('config', 'app', Object.assign({}, window.__fs.docs['config/app'], { conLiquidacion: ['dueno@fletes.cl', 'nuevo@fletes.cl'] })));
+    await p.waitForTimeout(300);
+    check('la página se actualiza sola si la lista cambia en línea', (await casillas()).includes('nuevo@fletes.cl=true'), await casillas());
     sinErrores(p);
     await p.context().close();
   }
