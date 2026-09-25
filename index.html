@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-24 · 7";
+const VERSION_APP = "2026-09-25 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1565,8 +1565,29 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   function uid(){ return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
+  // Filas en blanco agregadas en este dispositivo con «Agregar despacho».
+  // No se guardan en línea hasta que tengan algún dato.
+  const filasNuevas = new Set();
   function defaultRow(){
     return { id: uid(), cliente:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false };
+  }
+  function filaVacia(r){
+    if(r.estado && r.estado !== 'pendiente') return false;
+    return Object.keys(r).every(k => k === 'id' || k === 'estado' || k === 'pagado' || r[k] == null || r[k] === '' || r[k] === false || (Array.isArray(r[k]) && !r[k].length));
+  }
+  function sinVacias(st){
+    const c = JSON.parse(JSON.stringify(st));
+    c.rows = (c.rows || []).filter(r => !filaVacia(r));
+    return c;
+  }
+  // Lo que llega de Firebase, sin filas en blanco, más las filas en blanco que se
+  // acaban de crear aquí (así no desaparecen mientras se completan).
+  function conVaciasLocales(remoto){
+    const st = sinVacias(remoto);
+    const ids = new Set(st.rows.map(r => r.id));
+    st.rows = st.rows.concat((state.rows || []).filter(r => filaVacia(r) && filasNuevas.has(r.id) && !ids.has(r.id)));
+    if(!st.rows.length) st.rows = [defaultRow()];
+    return st;
   }
 
   function defaultState(){
@@ -1575,7 +1596,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       puntoPartida: 'Av. Presidente Kennedy 5757, piso -3',
       transportista: '— nombre —',
       fecha: '',
-      rows: [defaultRow(), defaultRow(), defaultRow()]
+      rows: [defaultRow()]
     };
   }
 
@@ -2855,8 +2876,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   function updateKpis(){
     const counts = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
-    state.rows.forEach(r => { counts[r.estado] = (counts[r.estado] || 0) + 1; });
-    const total = state.rows.length || 1;
+    const conDatos = state.rows.filter(r => !filaVacia(r));
+    conDatos.forEach(r => { counts[r.estado] = (counts[r.estado] || 0) + 1; });
+    const total = conDatos.length || 1;
     const pct = Math.round((counts.entregado / total) * 100);
     $('countPendiente').textContent = counts.pendiente;
     $('countEnRuta').textContent = counts['en-ruta'];
@@ -2986,10 +3008,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   function renderReportes(){
     const rows = state.rows.filter(r => r.cliente || r.direccion || Number(r.tarifa));
-    const total = state.rows.length;
+    const total = state.rows.filter(r => !filaVacia(r)).length;
     const totalTarifa = state.rows.reduce((acc, r) => acc + (Number(r.tarifa) || 0), 0);
     const counts = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
-    state.rows.forEach(r => { counts[r.estado] = (counts[r.estado] || 0) + 1; });
+    state.rows.filter(r => !filaVacia(r)).forEach(r => { counts[r.estado] = (counts[r.estado] || 0) + 1; });
     const pct = total ? Math.round((counts.entregado / total) * 100) : 0;
 
     $('statTotalDespachos').textContent = total;
@@ -3083,7 +3105,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function renderChofer(){
     const container = $('choferList');
     container.innerHTML = '';
-    const pendientes = state.rows.filter(r => r.estado === 'pendiente' || r.estado === 'en-ruta');
+    const pendientes = state.rows.filter(r => (r.estado === 'pendiente' || r.estado === 'en-ruta') && !filaVacia(r));
     const resueltos = state.rows.filter(r => r.estado === 'entregado' || r.estado === 'no-entregado');
 
     if(!pendientes.length && !resueltos.length){
@@ -3665,7 +3687,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   // La fecha de la ruta ahora es la hoja elegida arriba (barra "Ruta del …").
 
   $('btnAddRow').addEventListener('click', () => {
-    state.rows.push(defaultRow());
+    const row = defaultRow();
+    filasNuevas.add(row.id);
+    state.rows.push(row);
     commit();
     renderRows();
   });
@@ -4209,10 +4233,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   document.addEventListener('focusout', () => {
     setTimeout(() => {
       if(pendingRemote && !isEditingNow()){
-        state = pendingRemote;
+        state = conVaciasLocales(pendingRemote);
         baseState = clonar(pendingRemote);
         pendingRemote = null;
-        if(!state.rows || !state.rows.length) state.rows = [defaultRow()];
         bindHeaderFields();
         renderRows();
         cacheLocal();
@@ -4269,7 +4292,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const pos = new Map(local.rows.map((r, i) => [r.id, i]));
       rows = rows.map((r, i) => [r, pos.has(r.id) ? pos.get(r.id) : 1e6 + i]).sort((x, y) => x[1] - y[1]).map(x => x[0]);
     }
-    res.rows = rows.length ? rows : [defaultRow()];
+    res.rows = rows;
     return res;
   }
 
@@ -4307,7 +4330,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   async function guardarAhora(){
     saveTimer = null;
     const who = (auth && auth.currentUser && auth.currentUser.email) || 'alguien';
-    const local = clonar(state);
+    const local = sinVacias(state); // las filas en blanco no se guardan en línea
     const ref = docRef, id = hojaId, base = baseState;
     try{
       const final = await db.runTransaction(async tx => {
@@ -4322,7 +4345,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       baseState = clonar(final);
       if(JSON.stringify(final) !== JSON.stringify(local) && !isEditingNow()){
         // Llegaron cambios de otra persona mientras se guardaba: se muestran.
-        state = final; bindHeaderFields(); renderRows(); cacheLocal();
+        state = conVaciasLocales(final); bindHeaderFields(); renderRows(); cacheLocal();
       }
       setSync('ok', 'Sincronizado');
     }catch(err){
@@ -4351,13 +4374,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       if(snap.exists && snap.data().json){
         if(snap.metadata && snap.metadata.hasPendingWrites) return; // eco de lo que se está guardando aquí
         const remote = JSON.parse(snap.data().json);
-        if(!remote.rows || !remote.rows.length) remote.rows = [defaultRow()];
+        if(!remote.rows) remote.rows = [];
         if(isEditingNow()){
           pendingRemote = remote;
           setSync('saving', 'Hay cambios nuevos — tocá afuera de una celda para verlos');
           return;
         }
-        state = remote;
+        state = conVaciasLocales(remote);
         baseState = clonar(remote);
         bindHeaderFields();
         renderRows();
