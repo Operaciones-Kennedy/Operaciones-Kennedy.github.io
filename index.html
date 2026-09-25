@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-25 · 2";
+const VERSION_APP = "2026-09-25 · 3";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -779,6 +779,15 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .hist-table td{ font-size:13px; }
   .hist-table a.hist-fecha{ color:var(--accent-dark); font-weight:800; text-decoration:none; white-space:nowrap; }
   .hist-table a.hist-fecha:hover{ text-decoration:underline; }
+  .eh-filtros{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+  .eh-filtros .hist-buscar{ flex:1 1 260px; width:auto; margin:0; }
+  .eh-filtros select{ border:1px solid var(--border); border-radius:10px; padding:10px 12px; font:inherit; font-size:14px; background:#fff; }
+  table.eh-table{ min-width:900px; }
+  .eh-table .estado-pill{ white-space:nowrap; }
+  .eh-respaldo{ display:flex; gap:6px; }
+  .eh-table td{ vertical-align:top; }
+  .eh-table .eh-hora{ white-space:nowrap; font-weight:700; }
+  .eh-table .eh-firma{ background:#fff; object-fit:contain; }
   .hist-foto{ width:44px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--border); display:block; }
   @media (max-width:480px){ .rango-info{ margin-left:0; width:100%; } .hist-charts{ grid-template-columns:1fr; } }
 
@@ -1119,6 +1128,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div class="side-titulo">Reportes</div>
         <button class="side-item" type="button" data-view="reportes" id="navReportes" data-solo-admin title="KPIs del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
         <button class="side-item" type="button" data-view="historial" data-solo-admin title="Historial y reportes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Historial y reportes</span></button>
+        <button class="side-item" type="button" data-view="entregashist" data-solo-admin title="Historial de entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       </div>
       <div class="side-grupo" data-dinero>
         <div class="side-titulo">Pagos</div>
@@ -1161,6 +1171,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div><div class="movil-sheet-titulo" id="movilMasTitulo">Mi cuenta</div><div class="movil-sheet-email" id="movilMasEmail"></div></div>
       </div>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="entregashist" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
       <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Transportistas</span></button>
       <button class="movil-sheet-item" type="button" id="movilInstalar" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.5 11.5L12 14l2.5-2.5"/></svg><span>Instalar Ruteka en este teléfono</span></button>
@@ -1401,6 +1412,47 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         </table>
       </div>
       <p class="chart-note" id="hResultadosNota"></p>
+    </section>
+  </div>
+
+  <div id="viewEntregasHist" hidden>
+    <div class="content-header">
+      <h1>Historial de entregas</h1>
+      <p>Cada entrega del período: quién recibió, a qué hora, quién la registró y la foto y firma de respaldo.</p>
+    </div>
+    <section class="card rango-bar">
+      <label for="rDesdeE">Desde</label><input type="date" id="rDesdeE">
+      <label for="rHastaE">Hasta</label><input type="date" id="rHastaE">
+      <span class="rango-atajos">
+        <button data-rango="semana">Esta semana</button>
+        <button data-rango="mes">Este mes</button>
+        <button data-rango="mespasado">Mes pasado</button>
+      </span>
+      <span class="rango-info" id="rInfoE"></span>
+    </section>
+    <section class="stat-grid">
+      <div class="card stat-tile"><span class="stat-label">Entregados</span><span class="stat-value" id="ehEntregados">0</span><span class="stat-note" id="ehConFoto"></span></div>
+      <div class="card stat-tile"><span class="stat-label">No entregados</span><span class="stat-value" id="ehNoEntregados">0</span><span class="stat-note" id="ehConMotivo"></span></div>
+      <div class="card stat-tile"><span class="stat-label">Sin cerrar</span><span class="stat-value" id="ehPendientes">0</span><span class="stat-note">Pendientes o en ruta</span></div>
+    </section>
+    <section class="card chart-card">
+      <div class="eh-filtros">
+        <input type="search" id="ehBuscar" class="hist-buscar" placeholder="Buscar cliente, dirección, quién recibió o transportista…" autocomplete="off">
+        <select id="ehEstado" aria-label="Filtrar por estado">
+          <option value="cerradas">Entregados y no entregados</option>
+          <option value="entregado">Solo entregados</option>
+          <option value="no-entregado">Solo no entregados</option>
+          <option value="todas">Todos (incluye pendientes)</option>
+        </select>
+        <button class="excel" type="button" id="ehExcel">📤 Exportar Excel</button>
+      </div>
+      <div class="table-wrap">
+        <table class="hist-table eh-table">
+          <thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>Recibió / Motivo</th><th>Registrado por</th><th>Foto y firma</th></tr></thead>
+          <tbody id="ehFilas"></tbody>
+        </table>
+      </div>
+      <p class="chart-note" id="ehNota"></p>
     </section>
   </div>
 
@@ -2680,7 +2732,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('btnInstalar').addEventListener('click', instalarApp);
 
   /* ---------- Teléfono: menú inferior y panel "Más" ---------- */
-  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
+  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
   function marcarTabMovil(view){
     document.querySelectorAll('.movil-tab').forEach(b => {
       const activa = b.dataset.tab === TAB_DE_VISTA[view];
@@ -2732,7 +2784,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function pintarRangos(){
-    ['H', 'L'].forEach(suf => {
+    ['H', 'L', 'E'].forEach(suf => {
       $('rDesde' + suf).value = periodo.desde;
       $('rHasta' + suf).value = periodo.hasta;
       $('rInfo' + suf).textContent = periodo.cargando ? 'Cargando…' : (periodo.rutas + ' ruta(s) · ' + periodo.rows.length + ' despacho(s)');
@@ -2790,7 +2842,89 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     pintarRangos();
     if(currentView === 'historial') pintarHistorial();
     if(currentView === 'liqperiodo') pintarLiqPeriodo();
+    if(currentView === 'entregashist') pintarEntregasHist();
   }
+
+  /* ---------- Historial de entregas ---------- */
+  function filasEntregasHist(){
+    const q = normalizeHeaderText($('ehBuscar').value).trim();
+    const est = $('ehEstado').value;
+    return periodo.rows
+      .filter(r => est === 'todas' ? true : est === 'cerradas' ? (r.estado === 'entregado' || r.estado === 'no-entregado') : r.estado === est)
+      .filter(r => !q || normalizeHeaderText([r.cliente, r.direccion, r.comuna, r.contacto, r.entrega && r.entrega.recibidoPor, r.entrega && r.entrega.registradoPor, r._transportista].join(' ')).includes(q))
+      .map((r, i) => [r, i])
+      .sort((a, b) => (b[0]._fecha + (horaEntregaDe(b[0]) || '')).localeCompare(a[0]._fecha + (horaEntregaDe(a[0]) || '')) || b[1] - a[1]) // lo más reciente primero
+      .map(x => x[0]);
+  }
+  function miniaturaEh(url, alt, cls){
+    if(!url) return '—';
+    const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Ver ' + alt.toLowerCase();
+    const img = document.createElement('img'); img.src = url; img.alt = alt; img.className = 'hist-foto' + (cls ? ' ' + cls : ''); img.loading = 'lazy';
+    a.appendChild(img);
+    return a;
+  }
+  function pintarEntregasHist(){
+    const todas = periodo.rows;
+    const ent = todas.filter(r => r.estado === 'entregado');
+    const noEnt = todas.filter(r => r.estado === 'no-entregado');
+    $('ehEntregados').textContent = ent.length;
+    $('ehConFoto').textContent = ent.length ? ent.filter(r => r.entrega && r.entrega.fotoUrl).length + ' con foto de respaldo' : '';
+    $('ehNoEntregados').textContent = noEnt.length;
+    $('ehConMotivo').textContent = noEnt.length ? noEnt.filter(r => r.entrega && r.entrega.motivo).length + ' con motivo' : '';
+    $('ehPendientes').textContent = todas.filter(r => r.estado === 'pendiente' || r.estado === 'en-ruta').length;
+    const lista = filasEntregasHist();
+    const tb = $('ehFilas');
+    tb.innerHTML = '';
+    const MAX = 300;
+    lista.slice(0, MAX).forEach(r => {
+      const e = r.entrega || {};
+      const tr = document.createElement('tr');
+      const td = (content, cls) => { const c = document.createElement('td'); if(cls) c.className = cls; if(content instanceof Node) c.appendChild(content); else c.textContent = content; tr.appendChild(c); return c; };
+      td(enlaceFecha(r._fecha));
+      td(horaEntregaDe(r) || '—', 'eh-hora');
+      td(r.cliente || '(sin cliente)');
+      td([r.direccion, r.comuna].filter(Boolean).join(', '));
+      const info = ESTADOS.find(x => x.value === r.estado) || ESTADOS[0];
+      const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label; td(pill);
+      td(r.estado === 'no-entregado' ? (e.motivo ? 'Motivo: ' + e.motivo : '—') : (e.recibidoPor || '—'));
+      td(e.registradoPor || r._transportista || '—');
+      const resp = document.createElement('div'); resp.className = 'eh-respaldo';
+      [miniaturaEh(e.fotoUrl, 'Foto de entrega'), miniaturaEh(e.firmaUrl, 'Firma', 'eh-firma')].filter(x => x instanceof Node).forEach(x => resp.appendChild(x));
+      td(resp.childNodes.length ? resp : '—');
+      tb.appendChild(tr);
+    });
+    $('ehNota').textContent = !lista.length
+      ? (todas.length ? 'No hay entregas que coincidan con el filtro.' : 'No hay rutas guardadas en este período.')
+      : (lista.length > MAX ? 'Se muestran las ' + MAX + ' más recientes de ' + lista.length + '. Afiná la búsqueda o el período para ver otras.' : lista.length + ' registro(s).');
+  }
+  $('ehBuscar').addEventListener('input', pintarEntregasHist);
+  $('ehEstado').addEventListener('change', pintarEntregasHist);
+  $('ehExcel').addEventListener('click', () => {
+    if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisá tu conexión e intentá de nuevo en unos segundos.'); return; }
+    const estadoLabel = v => (ESTADOS.find(x => x.value === v) || {}).label || v;
+    const data = filasEntregasHist().map(r => {
+      const e = r.entrega || {};
+      return {
+        'Fecha': r._fecha.split('-').reverse().join('/'),
+        'Hora': horaEntregaDe(r) || '',
+        'Cliente': r.cliente || '',
+        'Dirección': r.direccion || '',
+        'Comuna': r.comuna || '',
+        'Estado': estadoLabel(r.estado),
+        'Recibió': e.recibidoPor || '',
+        'Motivo': e.motivo || '',
+        'Registrado por': e.registradoPor || '',
+        'Transportista': r._transportista || '',
+        'Foto': e.fotoUrl && !/^data:/.test(e.fotoUrl) ? e.fotoUrl : '',
+        'Firma': e.firmaUrl && !/^data:/.test(e.firmaUrl) ? e.firmaUrl : ''
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [{wch:11},{wch:7},{wch:24},{wch:28},{wch:14},{wch:13},{wch:20},{wch:24},{wch:26},{wch:20},{wch:40},{wch:40}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Entregas');
+    XLSX.writeFile(wb, 'historial-entregas-' + periodo.desde + '-al-' + periodo.hasta + '.xlsx');
+  });
 
   function pintarHistorial(){
     const rows = periodo.rows;
@@ -2970,9 +3104,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('viewLiquidaciones').hidden = view !== 'liquidaciones';
     $('viewHistorial').hidden = view !== 'historial';
     $('viewLiqPeriodo').hidden = view !== 'liqperiodo';
+    $('viewEntregasHist').hidden = view !== 'entregashist';
     // La barra "Ruta del …" no aplica a las vistas del período.
     $('viewConfig').hidden = view !== 'config';
-    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'config';
+    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'config';
     if(view === 'config') pintarConfig();
 
     marcarMenuLateral(view);
@@ -2980,7 +3115,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(view === 'reportes') renderReportes();
     if(view === 'chofer') renderChofer();
     if(view === 'liquidaciones') renderLiquidaciones();
-    if(view === 'historial' || view === 'liqperiodo') cargarPeriodo();
+    if(view === 'historial' || view === 'liqperiodo' || view === 'entregashist') cargarPeriodo();
     marcarTabMovil(view);
   }
 
