@@ -10,7 +10,7 @@ const setup = (email) => `(() => {
     { id: 'b', cliente: 'Gino Costa', direccion: 'Mar Jónico 8020', comuna: 'Vitacura', contacto: '9 9991 1866', productos: '6x', estado: 'pendiente', tarifa: 8000, pagado: false, lat: -33.38, lng: -70.55 }];
   window.__fakeParams = { email: '${email}', seed: [
     ['hojasDeRuta/2026-09-24', { json: JSON.stringify({ titulo: 't', transportista: 'Juan', fecha: '2026-09-24', rows }), fecha: '2026-09-24' }],
-    ['config/app', { transportistas: ['juan@transportes.cl'] }]] };
+    ['config/app', { transportistas: ['juan@transportes.cl'], conLiquidacion: ['juan@transportes.cl'] }]] };
 })()`;
 console.log('Transportista');
 {
