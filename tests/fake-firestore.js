@@ -19,6 +19,22 @@
     notify(key);
   }
   // params.denegar: colecciones que las "reglas" bloquean (como un Firebase sin reglas nuevas).
+  // Auth: un solo objeto. signOut imita a Firebase: los oyentes que siguen abiertos
+  // reciben «permission-denied» (ya no hay usuario) y mueren.
+  const errores = new Map();
+  const authCbs = [];
+  const authObj = {
+    currentUser: user,
+    onAuthStateChanged(cb){ authCbs.push(cb); setTimeout(() => cb(authObj.currentUser), 30); },
+    signOut(){
+      authObj.currentUser = null;
+      Object.keys(listeners).forEach(k => { listeners[k].forEach(cb => { const e = errores.get(cb); if(e) setTimeout(() => e(permiso()), 0); }); listeners[k] = []; });
+      setTimeout(() => authCbs.forEach(cb => cb(null)), 10);
+    },
+    signInWithEmailAndPassword(email){ authObj.currentUser = { email }; setTimeout(() => authCbs.forEach(cb => cb(authObj.currentUser)), 10); return Promise.resolve(); },
+    setPersistence(){}, sendPasswordResetEmail(){}
+  };
+  window.__auth = authObj;
   const denegada = coll => (params.denegar || []).includes(coll);
   const permiso = () => Object.assign(new Error('Missing or insufficient permissions.'), { code: 'permission-denied' });
   function ref(coll, id){
@@ -27,7 +43,13 @@
       __key: key, id,
       get: async () => { if(denegada(coll)) throw permiso(); return snap(key); },
       set: async (data, opts) => { if(denegada(coll)) throw permiso(); if(params.offline) throw Object.assign(new Error('offline'), { code: 'unavailable' }); write(key, data, opts); },
-      onSnapshot(cb, onErr){ if(denegada(coll)){ setTimeout(() => onErr && onErr(permiso()), 0); return () => {}; } (listeners[key] = listeners[key] || []).push(cb); setTimeout(() => cb(snap(key)), 0); return () => { listeners[key] = listeners[key].filter(x => x !== cb); }; }
+      onSnapshot(cb, onErr){
+        if(denegada(coll)){ setTimeout(() => onErr && onErr(permiso()), 0); return () => {}; }
+        (listeners[key] = listeners[key] || []).push(cb);
+        if(onErr) errores.set(cb, onErr);
+        setTimeout(() => cb(snap(key)), 0);
+        return () => { listeners[key] = listeners[key].filter(x => x !== cb); errores.delete(cb); };
+      }
     };
   }
   function query(coll, field, dir, n){
@@ -70,7 +92,7 @@
   (params.seed || []).forEach(([k, d]) => { docs[k] = d; });
   window.firebase = {
     initializeApp(){},
-    auth: Object.assign(() => ({ currentUser: user, onAuthStateChanged(cb){ setTimeout(() => cb(user), 30); }, signOut(){}, setPersistence(){}, signInWithEmailAndPassword(){}, sendPasswordResetEmail(){} }), { Auth: { Persistence: { LOCAL: 'local' } } }),
+    auth: Object.assign(() => authObj, { Auth: { Persistence: { LOCAL: 'local' } } }),
     firestore: Object.assign(() => db, { FieldValue: { serverTimestamp(){ return { __ts: true }; } } }),
     storage(){ return { ref(path){ return {
       async put(blob, meta){ window.__uploads.push({ path, type: meta && meta.contentType, size: blob.size }); this._url = URL.createObjectURL(blob); },

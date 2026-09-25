@@ -196,3 +196,25 @@ console.log('Página Transportistas en el teléfono');
   await p.context().close();
   await b4.close();
 }
+console.log('Cambiar de cuenta en la misma pestaña no deja el aviso de permisos');
+{
+  const b5 = await launch();
+  const p = await open(b5, { setup: `(() => { localStorage.setItem('hojaDeRuta_actual', '2026-09-23'); window.__fakeParams = { email: 'ruben@fletes.cl', admins: ['jefe@prueba.cl'], seed: [['config/app', { transportistas: ['ruben@fletes.cl'], conHistorial: ['ruben@fletes.cl'] }]] }; })()`, width: 1280 });
+  await p.waitForTimeout(600);
+  // Cierre de sesión «por fuera» (como cuando vence la sesión): los oyentes siguen abiertos.
+  await p.evaluate(() => window.__auth.signOut()); await p.waitForTimeout(300);
+  check('muestra la pantalla de ingreso', await p.isVisible('#loginScreen'));
+  await p.evaluate(() => window.__auth.signInWithEmailAndPassword('jefe@prueba.cl')); await p.waitForTimeout(700);
+  check('entra como administrador', !(await p.evaluate(() => document.body.classList.contains('modo-transportista'))));
+  check('sin aviso de permisos', !(await p.isVisible('#avisoPermisos')));
+  await p.click('.side-item[data-view="config"]'); await p.waitForTimeout(200);
+  check('la lista de transportistas sigue cargada', (await p.$$eval('#configLista li span', s => s.map(x => x.textContent))).includes('ruben@fletes.cl'));
+  // Botón «Cerrar sesión» y vuelta a entrar
+  await p.click('#btnLogout'); await p.waitForTimeout(300);
+  await p.evaluate(() => window.__auth.signInWithEmailAndPassword('ruben@fletes.cl')); await p.waitForTimeout(700);
+  check('vuelve a entrar como transportista con su historial', await p.evaluate(() => document.body.classList.contains('modo-transportista') && !document.body.classList.contains('sin-historial')));
+  check('sigue sin aviso de permisos', !(await p.isVisible('#avisoPermisos')));
+  sinErrores(p);
+  await p.context().close();
+  await b5.close();
+}

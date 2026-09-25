@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-25 · 5";
+const VERSION_APP = "2026-09-25 · 6";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -2333,23 +2333,34 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(dineroAntes !== verDinero && currentView === 'chofer') renderChofer();
   }
 
+  // Se cortan al cerrar sesión: si no, Firebase los rechaza (ya no hay usuario)
+  // y quedaba el aviso de permisos al entrar con otra cuenta en la misma pestaña.
+  let unsubConfig = [];
+  function dejarDeEscucharConfig(){ unsubConfig.forEach(f => { try{ f(); }catch(e){} }); unsubConfig = []; }
+  const sinSesion = () => !auth || !auth.currentUser;
+  function cerrarSesion(){
+    dejarDeEscucharConfig();
+    if(unsub){ unsub(); unsub = null; }
+    if(auth) auth.signOut();
+  }
   function escucharConfig(){
     if(!db) return;
+    dejarDeEscucharConfig();
     // Copia de la lista que vale para todos los días, en un documento que las reglas actuales ya dejan leer.
-    db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID).onSnapshot(snap => {
+    unsubConfig.push(db.collection('hojasDeRuta').doc(HOJA_LEGACY_ID).onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
       transportistasGlobal = (d.transportistas || []).map(e => String(e).toLowerCase());
       Object.keys(PERMISOS).forEach(k => { PERMISOS[k].global = (d[k] || []).map(e => String(e).toLowerCase()); });
       aplicarRol();
       if(currentView === 'config') pintarConfig($('configMsg').textContent, $('configMsg').classList.contains('err'));
-    }, err => console.warn('No se pudo leer la lista de transportistas (principal)', err));
-    db.collection('config').doc('app').onSnapshot(snap => {
+    }, err => console.warn('No se pudo leer la lista de transportistas (principal)', err)));
+    unsubConfig.push(db.collection('config').doc('app').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
       transportistasConfig = (d.transportistas || []).map(e => String(e).toLowerCase());
       Object.keys(PERMISOS).forEach(k => { PERMISOS[k].config = (d[k] || []).map(e => String(e).toLowerCase()); });
       aplicarRol();
       if(currentView === 'config') pintarConfig($('configMsg').textContent, $('configMsg').classList.contains('err'));
-    }, err => { console.warn('No se pudo leer config/app', err); marcarPermiso('config', err); });
+    }, err => { if(sinSesion()) return; console.warn('No se pudo leer config/app', err); marcarPermiso('config', err); }));
   }
 
   // Guarda el cambio en la ruta abierta (siempre) y en config/app (si Firebase lo permite).
@@ -2466,6 +2477,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   /* ---------- Aviso cuando Firebase bloquea una parte de la app ---------- */
   const permisosFaltan = {};
+  function limpiarAvisoPermisos(){
+    Object.keys(permisosFaltan).forEach(k => delete permisosFaltan[k]);
+    $('avisoPermisos').hidden = true;
+  }
   function marcarPermiso(que, err){
     if(!err || err.code !== 'permission-denied') return;
     permisosFaltan[que] = true;
@@ -2782,7 +2797,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('movilMas').addEventListener('keydown', e => { if(e.key === 'Escape') cerrarMas(); });
   $('movilMas').querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', () => { cerrarMas(); switchView(b.dataset.ir); window.scrollTo(0, 0); }));
   $('movilInstalar').addEventListener('click', () => { cerrarMas(); instalarApp(); });
-  $('movilSalir').addEventListener('click', () => { cerrarMas(); if(auth) auth.signOut(); });
+  $('movilSalir').addEventListener('click', () => { cerrarMas(); cerrarSesion(); });
   if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
     navigator.serviceWorker.register('sw.js').catch(err => console.warn('No se pudo registrar el service worker', err));
   }
@@ -4613,6 +4628,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       }
       pintarBarraHoja();
     }, err => {
+      if(sinSesion()) return; // se cerró la sesión: no es un error de la ruta
       console.error(err);
       setSync('err', err && err.code === 'permission-denied'
         ? 'Firestore no permite leer esta ruta (revisá las reglas de seguridad)'
@@ -4775,10 +4791,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('btnLogin').addEventListener('click', doLogin);
     $('lPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
     $('btnReset').addEventListener('click', doReset);
-    $('btnLogout').addEventListener('click', () => auth.signOut());
+    $('btnLogout').addEventListener('click', cerrarSesion);
 
     auth.onAuthStateChanged(user => {
       if(unsub){ unsub(); unsub = null; }
+      dejarDeEscucharConfig();
+      limpiarAvisoPermisos(); // cada sesión parte sin avisos de la anterior
       firebaseReady = false;
       baseState = null;
       esAdminSesion = null;
