@@ -12,6 +12,7 @@ Se publica sola con GitHub Pages en **https://operaciones-kennedy.github.io**. C
 | **Despachos** | Lista del día, importar/exportar Excel (con las fotos de respaldo y la hora de entrega), mapa, **🧭 Optimizar ruta** con horas estimadas y **💬 WhatsApp** al cliente. |
 | **Entregas** | Lo que usa el transportista: cómo llegar (Google Maps/Waze), llamar, avisar por WhatsApp, y registrar la entrega con foto y firma. Funciona sin señal: la foto se sube sola al volver la conexión. |
 | **Reportes → KPIs del día** | Estados, comunas y tarifas de la ruta abierta. |
+| **Reportes → Historial de entregas** | Cada entrega del período con hora, quién recibió (o el motivo si no se entregó), quién la registró, foto y firma; filtro, buscador y exportar a Excel. |
 | **Reportes → Historial y reportes del período** | Cumplimiento, gasto en fletes, gráficos por día/mes, comuna y transportista, y buscador de clientes con su foto de entrega. |
 | **Gestión de flotas → Liquidación del día / del período** | Pagos, facturas, visto bueno del transportista (Conforme / Observar) y comprobante en PDF. |
 
