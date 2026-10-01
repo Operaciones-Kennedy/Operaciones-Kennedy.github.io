@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-01 · 3";
+const VERSION_APP = "2026-10-01 · 4";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -739,6 +739,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .seg-gps{ font-size:13px; font-weight:700; padding:6px 10px; border-radius:999px; background:#eef3f2; color:#5b6b6e; }
   .seg-gps.vivo{ background:var(--ok-bg); color:var(--marca-principal-oscuro); }
   .seg-barra{ height:10px; border-radius:999px; background:#e3ecea; overflow:hidden; }
+  .seg-ruta .seg-barra{ background:repeating-linear-gradient(90deg, #e3ecea 0 14px, #d2dedb 14px 22px); }
   .seg-barra span{ display:block; height:100%; width:0; background:linear-gradient(90deg, var(--marca-principal), var(--marca-principal-claro)); transition:width .4s; }
   .seg-chips{ display:flex; flex-wrap:wrap; gap:8px; font-size:13px; font-weight:700; }
   .seg-mapa{ height:340px; border-radius:12px; background:#e9efee; }
@@ -762,9 +763,47 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .seg-paso.fallo .seg-punto{ background:#E5484D; }
   .seg-paso.actual:not(.fallo) .seg-punto{ background:#fff; box-shadow:0 0 0 3px var(--marca-principal-claro); }
   .seg-paso.actual.hecho:last-child:not(.fallo) .seg-punto{ background:var(--marca-principal); color:#fff; }
-  .seg-camion{ display:inline-block; font-size:19px; transform:scaleX(-1); animation:segCamion 1.4s ease-in-out infinite; }
-  @keyframes segCamion{ 0%, 100%{ transform:scaleX(-1) translateX(0); } 50%{ transform:scaleX(-1) translateX(-3px); } }
-  @media (prefers-reduced-motion: reduce){ .seg-camion{ animation:none; } }
+  .seg-camion{ display:block; width:30px; animation:segCamion 1.2s ease-in-out infinite; }
+  .seg-camion svg, .seg-ruta-camion svg{ display:block; width:100%; height:auto; }
+  @keyframes segCamion{ 0%, 100%{ transform:translateY(0); } 50%{ transform:translateY(-2px); } }
+  .seg-paso.actual .seg-punto{ width:44px; height:44px; margin-top:-5px; }
+  .seg-ruta{ position:relative; padding:26px 26px 0 0; }
+  .seg-ruta .seg-barra{ height:12px; }
+  .seg-ruta-camion{ position:absolute; top:0; left:0; width:44px; margin-left:-22px; transition:left .6s ease; animation:segCamion 1.2s ease-in-out infinite; }
+  .seg-ruta-meta{ position:absolute; right:0; bottom:-6px; font-size:20px; }
+  @media (prefers-reduced-motion: reduce){ .seg-camion, .seg-ruta-camion{ animation:none; } }
+  /* Solicitudes de ruta */
+  .sol-form{ padding:18px 20px; display:flex; flex-direction:column; gap:12px; }
+  .sol-form h2{ margin:0; font-size:17px; }
+  .sol-campo{ display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+  .sol-campo input, .sol-campo textarea, .sol-desp input{ font:inherit; font-size:14px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:9px 11px; background:#fff; }
+  .sol-campo input[type="date"]{ max-width:220px; }
+  .sol-filas{ display:flex; flex-direction:column; gap:10px; }
+  .sol-desp{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px; border:1px dashed var(--border); border-radius:12px; }
+  .sol-desp .seg-num{ flex:none; width:26px; height:26px; }
+  .sol-desp input{ flex:1 1 150px; min-width:0; box-sizing:border-box; }
+  .sol-desp .icon-btn{ flex:none; }
+  @media (max-width: 520px){ .sol-desp input{ flex-basis:100%; } .sol-desp .icon-btn{ order:-1; margin-left:auto; } .sol-desp .seg-num{ order:-2; } }
+  .sol-acciones{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .sol-filtros{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 12px; }
+  .sol-filtros button{ border-radius:999px; padding:6px 14px; }
+  .sol-filtros button.activo{ background:var(--marca-principal); color:#fff; border-color:var(--marca-principal); }
+  .sol-lista{ display:flex; flex-direction:column; gap:12px; }
+  .sol-card{ padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .sol-card-top{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+  .sol-card-top b{ font-size:15px; }
+  .sol-card-top small{ display:block; color:var(--muted); font-size:12px; margin-top:2px; }
+  .sol-estado{ font-size:12px; font-weight:800; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+  .sol-estado.pendiente{ background:#fff3d6; color:#9a6200; }
+  .sol-estado.programada{ background:var(--ok-bg); color:var(--marca-principal-oscuro); }
+  .sol-estado.rechazada{ background:#fde8e8; color:#c2333a; }
+  .sol-card ul{ margin:0; padding-left:18px; font-size:13px; }
+  .sol-card ul li span{ color:var(--muted); }
+  .sol-nota{ font-size:13px; color:var(--muted); font-style:italic; }
+  .sol-admin{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:8px; border-top:1px solid var(--border); }
+  .sol-admin input{ font:inherit; font-size:14px; border:1px solid var(--border); border-radius:8px; padding:7px 9px; }
+  .sol-admin input[type="text"]{ flex:1; min-width:160px; }
+  .side-badge{ margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--marca-acento); color:#fff; font-size:11px; font-weight:800; display:inline-grid; place-items:center; }
   .seg-paso b{ font-size:12px; color:var(--text); line-height:1.2; margin-top:2px; }
   .seg-paso:not(.hecho) b{ color:var(--muted); font-weight:600; }
   .seg-paso small{ font-size:11px; font-weight:700; color:var(--marca-principal-oscuro); }
@@ -1185,6 +1224,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <button class="side-item" type="button" data-view="despachos" id="navDespachos" data-solo-admin title="Ruta del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta del día</span></button>
         <button class="side-item" type="button" data-view="chofer" id="navChofer" data-no-agencia title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
         <button class="side-item" type="button" data-view="seguimiento" data-seguimiento title="Seguimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
+        <button class="side-item" type="button" data-view="solicitudes" data-seguimiento title="Solicitudes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span><b class="side-badge" id="solBadge" hidden></b></button>
       </div>
       <div class="side-grupo" data-historial>
         <div class="side-titulo">Reportes</div>
@@ -1220,6 +1260,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <nav class="movil-nav" aria-label="Menú principal">
     <button class="movil-tab" type="button" data-tab="despachos" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta</span></button>
     <button class="movil-tab" type="button" data-tab="seguimiento" data-solo-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
+    <button class="movil-tab" type="button" data-tab="solicitudes" data-solo-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span></button>
     <button class="movil-tab" type="button" data-tab="chofer" data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
     <button class="movil-tab" type="button" data-tab="historial" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Reportes</span></button>
     <button class="movil-tab" type="button" data-tab="liquidaciones" data-dinero><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M15.5 15h2.5"/></svg><span>Pagos</span></button>
@@ -1234,6 +1275,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div><div class="movil-sheet-titulo" id="movilMasTitulo">Mi cuenta</div><div class="movil-sheet-email" id="movilMasEmail"></div></div>
       </div>
       <button class="movil-sheet-item" type="button" data-ir="seguimiento" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="solicitudes" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span></button>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
       <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
@@ -1406,6 +1448,26 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <div id="choferList"></div>
   </div>
 
+  <div id="viewSolicitudes" hidden>
+    <div class="content-header">
+      <h1>Solicitudes de ruta</h1>
+      <p id="solSub">La agencia pide los despachos y la fecha; la operación los revisa y los programa en la ruta de ese día.</p>
+    </div>
+    <section class="card sol-form">
+      <h2>Nueva solicitud</h2>
+      <label class="sol-campo">Fecha de despacho <input type="date" id="solFecha"></label>
+      <div id="solFilas" class="sol-filas"></div>
+      <button type="button" id="solAgregar">+ Agregar otro despacho</button>
+      <label class="sol-campo">Observaciones <textarea id="solNotas" rows="2" placeholder="Horario de recepción, contacto en bodega, etc."></textarea></label>
+      <div class="sol-acciones"><button type="button" class="primary" id="solEnviar">Enviar solicitud</button><span class="config-msg" id="solMsg" role="status"></span></div>
+    </section>
+    <h2 class="config-titulo2">Solicitudes enviadas</h2>
+    <div class="sol-filtros" id="solFiltros">
+      <button type="button" data-f="pendiente" class="activo">Pendientes</button><button type="button" data-f="programada">Programadas</button><button type="button" data-f="rechazada">Rechazadas</button><button type="button" data-f="todas">Todas</button>
+    </div>
+    <div id="solLista" class="sol-lista"></div>
+  </div>
+
   <div id="viewSeguimiento" hidden>
     <div class="content-header">
       <h1>Seguimiento</h1>
@@ -1416,7 +1478,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div><span class="stat-label">Transportista</span><b id="segTransportista">—</b></div>
         <span class="seg-gps" id="segGps">Ubicación del camión: no se está compartiendo</span>
       </div>
-      <div class="seg-barra" aria-hidden="true"><span id="segBarra"></span></div>
+      <div class="seg-ruta" aria-hidden="true"><div class="seg-barra"><span id="segBarra"></span></div><span class="seg-ruta-camion" id="segBarraCamion"></span><span class="seg-ruta-meta">🏁</span></div>
       <div class="seg-chips" id="segChips"></div>
     </section>
     <section class="card chart-card">
@@ -2429,7 +2491,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
   let modoAgencia = false;
   function vistasPermitidas(){
-    if(modoAgencia) return ['seguimiento', 'entregashist'];
+    if(modoAgencia) return ['seguimiento', 'solicitudes', 'entregashist'];
     return ['chofer'].concat(verDinero ? ['liquidaciones'] : [], verHistorial ? ['entregashist'] : []);
   }
   function vistaInicial(){ return modoAgencia ? 'seguimiento' : 'chofer'; }
@@ -2958,11 +3020,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('btnInstalar').addEventListener('click', instalarApp);
 
   /* ---------- Teléfono: menú inferior y panel "Más" ---------- */
-  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', seguimiento: 'seguimiento', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
+  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', seguimiento: 'seguimiento', solicitudes: 'solicitudes', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
   function marcarTabMovil(view){
     document.querySelectorAll('.movil-tab').forEach(b => {
       // El transportista no tiene la pestaña Reportes: su historial queda bajo «Más».
-      const tab = (modoTransportista && !modoAgencia && view === 'entregashist') || (!modoAgencia && view === 'seguimiento') || (modoAgencia && view === 'entregashist') ? 'mas' : TAB_DE_VISTA[view];
+      const tab = (modoTransportista && !modoAgencia && view === 'entregashist') || (!modoAgencia && (view === 'seguimiento' || view === 'solicitudes')) || (modoAgencia && view === 'entregashist') ? 'mas' : TAB_DE_VISTA[view];
       const activa = b.dataset.tab === tab;
       b.classList.toggle('activa', activa);
       if(activa) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -3402,6 +3464,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('viewDespachos').hidden = view !== 'despachos';
     $('viewChofer').hidden = view !== 'chofer';
     $('viewSeguimiento').hidden = view !== 'seguimiento';
+    $('viewSolicitudes').hidden = view !== 'solicitudes';
     $('viewReportes').hidden = view !== 'reportes';
     $('viewLiquidaciones').hidden = view !== 'liquidaciones';
     $('viewHistorial').hidden = view !== 'historial';
@@ -3409,7 +3472,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('viewEntregasHist').hidden = view !== 'entregashist';
     // La barra "Ruta del …" no aplica a las vistas del período.
     $('viewConfig').hidden = view !== 'config';
-    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'config';
+    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'config' || view === 'solicitudes';
     if(view === 'config') pintarConfig();
 
     marcarMenuLateral(view);
@@ -3419,6 +3482,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(view === 'reportes') renderReportes();
     if(view === 'chofer') renderChofer();
     if(view === 'seguimiento') renderSeguimiento();
+    if(view === 'solicitudes') pintarSolicitudes();
     if(view === 'liquidaciones') renderLiquidaciones();
     if(view === 'historial' || view === 'liqperiodo' || view === 'entregashist') cargarPeriodo();
     marcarTabMovil(view);
@@ -4918,6 +4982,221 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   /* ============================================================
+     SOLICITUDES DE RUTA (agencia → operación)
+     Cada mes en hojasDeRuta/sol_AAAA-MM (campo json con la lista), así no hace
+     falta cambiar las reglas de Firebase. Se escuchan el mes actual y el anterior.
+     ============================================================ */
+  const SOL_PREFIJO = 'sol_';
+  let solicitudesPorMes = {};
+  let solFiltro = 'pendiente';
+  const mesDe = d => fechaLocal(d).slice(0, 7);
+  function todasLasSolicitudes(){
+    return Object.values(solicitudesPorMes).flat().sort((a, b) => String(b.creadoAt).localeCompare(String(a.creadoAt)));
+  }
+  function escucharSolicitudes(){
+    if(!db) return;
+    solicitudesPorMes = {};
+    const hoy = new Date();
+    [mesDe(hoy), mesDe(new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1))].forEach(mes => {
+      unsubConfig.push(db.collection('hojasDeRuta').doc(SOL_PREFIJO + mes).onSnapshot(sn => {
+        solicitudesPorMes[mes] = sn.exists && sn.data().json ? (JSON.parse(sn.data().json).solicitudes || []) : [];
+        pintarBadgeSolicitudes();
+        if(currentView === 'solicitudes') pintarSolicitudes();
+      }, () => {}));
+    });
+  }
+  function pintarBadgeSolicitudes(){
+    const n = todasLasSolicitudes().filter(x => x.estado === 'pendiente').length;
+    $('solBadge').hidden = !n || modoTransportista;
+    $('solBadge').textContent = n;
+  }
+  // Cambia la lista del mes dentro de una transacción (varias personas pueden escribir a la vez).
+  async function cambiarSolicitudes(mes, cambiar){
+    const ref = db.collection('hojasDeRuta').doc(SOL_PREFIJO + mes);
+    return db.runTransaction(async tx => {
+      const sn = await tx.get(ref);
+      const lista = sn.exists && sn.data().json ? (JSON.parse(sn.data().json).solicitudes || []) : [];
+      const res = cambiar(lista);
+      tx.set(ref, { json: JSON.stringify({ solicitudes: lista }), mes, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: currentEmail() }, { merge: true });
+      solicitudesPorMes[mes] = lista;
+      return res;
+    });
+  }
+
+  // Formulario «Nueva solicitud»
+  function filaSolicitud(datos){
+    const div = document.createElement('div');
+    div.className = 'sol-desp';
+    const num = document.createElement('span'); num.className = 'seg-num';
+    div.appendChild(num);
+    [['cliente', 'Cliente / local'], ['direccion', 'Dirección'], ['comuna', 'Comuna'], ['contacto', 'Contacto (teléfono)'], ['productos', 'Productos']].forEach(([k, ph]) => {
+      const i = document.createElement('input'); i.type = 'text'; i.placeholder = ph; i.dataset.k = k; i.value = (datos && datos[k]) || '';
+      i.setAttribute('aria-label', ph);
+      div.appendChild(i);
+    });
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'icon-btn'; x.textContent = '✕'; x.title = 'Quitar este despacho';
+    x.addEventListener('click', () => { div.remove(); numerarFilasSolicitud(); });
+    div.appendChild(x);
+    $('solFilas').appendChild(div);
+    numerarFilasSolicitud();
+    return div;
+  }
+  function numerarFilasSolicitud(){
+    const filas = [...$('solFilas').children];
+    if(!filas.length){ filaSolicitud(); return; }
+    filas.forEach((f, i) => { f.querySelector('.seg-num').textContent = i + 1; });
+  }
+  function limpiarFormSolicitud(){
+    const man = new Date(); man.setDate(man.getDate() + 1);
+    $('solFecha').value = fechaLocal(man);
+    $('solFilas').innerHTML = '';
+    $('solNotas').value = '';
+    filaSolicitud();
+  }
+  $('solAgregar').addEventListener('click', () => filaSolicitud().querySelector('input').focus());
+  $('solEnviar').addEventListener('click', async () => {
+    const fecha = $('solFecha').value;
+    const despachos = [...$('solFilas').children].map(f => {
+      const o = {};
+      f.querySelectorAll('input[data-k]').forEach(i => { o[i.dataset.k] = i.value.trim(); });
+      return o;
+    }).filter(o => o.cliente || o.direccion);
+    const msg = $('solMsg');
+    msg.classList.remove('err');
+    if(!fecha){ msg.textContent = 'Elegí la fecha de despacho.'; msg.classList.add('err'); return; }
+    if(!despachos.length){ msg.textContent = 'Agregá al menos un despacho con cliente o dirección.'; msg.classList.add('err'); return; }
+    if(!db){ msg.textContent = 'Sin conexión con Firebase.'; msg.classList.add('err'); return; }
+    const ahora = new Date();
+    const sol = { id: 'sol' + uid(), creadoAt: ahora.toISOString(), mes: mesDe(ahora), por: currentEmail(), fecha, notas: $('solNotas').value.trim(), estado: 'pendiente', despachos };
+    $('solEnviar').disabled = true;
+    try{
+      await cambiarSolicitudes(sol.mes, lista => { lista.push(sol); });
+      limpiarFormSolicitud();
+      solFiltro = 'pendiente';
+      pintarSolicitudes();
+      msg.textContent = 'Solicitud enviada para el ' + fechaLarga(fecha) + ' (' + despachos.length + ' despacho(s)). Te avisamos aquí cuando quede programada.';
+    }catch(err){
+      console.error(err);
+      msg.textContent = 'No se pudo enviar la solicitud: ' + err.message;
+      msg.classList.add('err');
+    }finally{ $('solEnviar').disabled = false; }
+  });
+  $('solFiltros').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { solFiltro = b.dataset.f; pintarSolicitudes(); }));
+
+  // La operación programa la solicitud: sus despachos pasan a la ruta del día elegido.
+  async function programarSolicitud(sol, fecha){
+    const quien = currentEmail();
+    const ahora = new Date().toISOString();
+    // 1) Se marca primero, para que nadie la programe dos veces.
+    const ok = await cambiarSolicitudes(sol.mes, lista => {
+      const s = lista.find(x => x.id === sol.id);
+      if(!s || s.estado !== 'pendiente') return false;
+      Object.assign(s, { estado: 'programada', rutaFecha: fecha, resueltoPor: quien, resueltoAt: ahora });
+      return true;
+    });
+    if(!ok){ showDialog('Esa solicitud ya fue resuelta por otra persona.'); return; }
+    // 2) Los despachos se agregan a la ruta de ese día (se crea si no existe).
+    try{
+      const ref = db.collection('hojasDeRuta').doc(fecha);
+      const final = await db.runTransaction(async tx => {
+        const sn = await tx.get(ref);
+        const st = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : {
+          titulo: state.titulo || '', puntoPartida: state.puntoPartida || '', startLat: state.startLat, startLng: state.startLng,
+          transportista: state.transportista || '', transportistaEmail: state.transportistaEmail || '', transportistas: state.transportistas || [], fecha, rows: []
+        };
+        st.rows = (st.rows || []).concat(sol.despachos.map(d => Object.assign(defaultRow(), {
+          cliente: d.cliente || '', direccion: d.direccion || '', comuna: d.comuna || '', contacto: d.contacto || '', productos: d.productos || '',
+          creadoAt: sol.creadoAt, solicitudId: sol.id,
+          eventos: [{ tipo: 'solicitado', at: sol.creadoAt, por: sol.por || '' }, { tipo: 'programado', at: ahora, por: quien }]
+        })));
+        tx.set(ref, { json: JSON.stringify(st), fecha, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: quien }, { merge: true });
+        return st;
+      });
+      guardarResumen(final, fecha, quien);
+      pintarSolicitudes();
+    }catch(err){
+      console.error(err);
+      await cambiarSolicitudes(sol.mes, lista => { const s = lista.find(x => x.id === sol.id); if(s) Object.assign(s, { estado: 'pendiente', rutaFecha: '', resueltoPor: '', resueltoAt: '' }); });
+      showDialog('No se pudo agregar a la ruta del ' + fecha.split('-').reverse().join('/') + ': ' + err.message);
+      pintarSolicitudes();
+    }
+  }
+  async function rechazarSolicitud(sol, motivo){
+    await cambiarSolicitudes(sol.mes, lista => {
+      const s = lista.find(x => x.id === sol.id);
+      if(s && s.estado === 'pendiente') Object.assign(s, { estado: 'rechazada', motivo, resueltoPor: currentEmail(), resueltoAt: new Date().toISOString() });
+    });
+    pintarSolicitudes();
+  }
+
+  function pintarSolicitudes(){
+    if($('viewSolicitudes').hidden) return;
+    if(!$('solFilas').children.length) limpiarFormSolicitud();
+    $('solFiltros').querySelectorAll('button').forEach(b => b.classList.toggle('activo', b.dataset.f === solFiltro));
+    const todas = todasLasSolicitudes();
+    const lista = todas.filter(x => solFiltro === 'todas' || x.estado === solFiltro);
+    const cont = $('solLista');
+    cont.innerHTML = '';
+    if(!lista.length){ cont.innerHTML = '<p class="chart-empty">' + (todas.length ? 'No hay solicitudes en este filtro.' : 'Todavía no hay solicitudes.') + '</p>'; return; }
+    const esAdmin = !modoTransportista;
+    const ESTADO_SOL = { pendiente: 'Pendiente', programada: 'Programada', rechazada: 'Rechazada' };
+    lista.forEach(sol => {
+      const card = document.createElement('section'); card.className = 'card sol-card';
+      const top = document.createElement('div'); top.className = 'sol-card-top';
+      const t = document.createElement('div');
+      const b = document.createElement('b'); b.textContent = 'Para el ' + fechaLarga(sol.fecha) + ' · ' + sol.despachos.length + ' despacho(s)';
+      const sm = document.createElement('small'); sm.textContent = 'Solicitada por ' + (sol.por || '—') + ' · ' + fechaCorta(sol.creadoAt);
+      t.append(b, sm);
+      const est = document.createElement('span'); est.className = 'sol-estado ' + sol.estado; est.textContent = ESTADO_SOL[sol.estado] || sol.estado;
+      top.append(t, est);
+      card.appendChild(top);
+      const ul = document.createElement('ul');
+      sol.despachos.forEach(d => {
+        const li = document.createElement('li');
+        li.appendChild(document.createTextNode(d.cliente || '(sin cliente)'));
+        const sp = document.createElement('span'); sp.textContent = ' — ' + [d.direccion, d.comuna].filter(Boolean).join(', ') + (d.productos ? ' · ' + d.productos : '') + (d.contacto ? ' · ' + d.contacto : '');
+        li.appendChild(sp);
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
+      if(sol.notas){ const n = document.createElement('div'); n.className = 'sol-nota'; n.textContent = '«' + sol.notas + '»'; card.appendChild(n); }
+      const pie = document.createElement('div'); pie.className = 'sol-admin';
+      if(sol.estado === 'programada'){
+        const txt = document.createElement('span');
+        txt.textContent = '✅ Programada en la ruta del ' + sol.rutaFecha.split('-').reverse().join('/') + ' por ' + (sol.resueltoPor || '—') + ' · ' + fechaCorta(sol.resueltoAt);
+        const ver = document.createElement('button'); ver.type = 'button'; ver.textContent = '📍 Ver seguimiento';
+        ver.addEventListener('click', () => {
+          modoRango = false; try{ localStorage.setItem('ruteka_modo', 'dia'); }catch(e){}
+          abrirHoja(sol.rutaFecha); switchView('seguimiento'); window.scrollTo(0, 0);
+        });
+        pie.append(txt, ver);
+      } else if(sol.estado === 'rechazada'){
+        const txt = document.createElement('span');
+        txt.textContent = '✕ Rechazada por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : '');
+        pie.appendChild(txt);
+      } else if(esAdmin){
+        const lab = document.createElement('label'); lab.textContent = 'Programar en la ruta del ';
+        const f = document.createElement('input'); f.type = 'date'; f.value = sol.fecha;
+        lab.appendChild(f);
+        const prog = document.createElement('button'); prog.type = 'button'; prog.className = 'primary'; prog.textContent = '🚚 Programar';
+        prog.addEventListener('click', async () => { prog.disabled = true; await programarSolicitud(sol, f.value || sol.fecha); });
+        const motivo = document.createElement('input'); motivo.type = 'text'; motivo.placeholder = 'Motivo si la rechazás';
+        const rech = document.createElement('button'); rech.type = 'button'; rech.className = 'danger'; rech.textContent = 'Rechazar';
+        rech.addEventListener('click', () => {
+          if(!motivo.value.trim()){ motivo.focus(); motivo.placeholder = 'Escribí el motivo para rechazar'; return; }
+          rechazarSolicitud(sol, motivo.value.trim());
+        });
+        pie.append(lab, prog, motivo, rech);
+      } else {
+        const txt = document.createElement('span'); txt.textContent = '⏳ Esperando que la operación la programe.';
+        pie.appendChild(txt);
+      }
+      card.appendChild(pie);
+      cont.appendChild(card);
+    });
+  }
+
+  /* ============================================================
      UBICACIÓN DEL CAMIÓN (GPS) Y SEGUIMIENTO PARA LA AGENCIA
      La posición va en hojasDeRuta/gps_AAAA-MM-DD (aparte de la ruta, para no
      reescribir los despachos cada 30 s). Solo se envía con Ruteka abierta.
@@ -4983,7 +5262,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   pintarGps();
 
   let segMap = null, segMarcadores = [], segEncuadre = '';
-  const NOMBRE_EVENTO = { 'en-ruta': 'Salió a ruta', 'entregado': 'Entregado', 'no-entregado': 'No entregado', 'pendiente': 'Volvió a pendiente' };
+  const NOMBRE_EVENTO = { 'solicitado': 'Solicitado por la agencia', 'programado': 'Programado en la ruta', 'en-ruta': 'Salió a ruta', 'entregado': 'Entregado', 'no-entregado': 'No entregado', 'pendiente': 'Volvió a pendiente' };
   function horaCorta(iso, fecha){
     const d = new Date(iso);
     if(isNaN(d)) return '';
@@ -5034,6 +5313,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const sinUbicar = rows.filter(r => r.lat == null || r.lng == null).length;
     $('segMapaNota').textContent = sinUbicar ? sinUbicar + ' despacho(s) todavía sin ubicar en el mapa.' : '';
   }
+  const CAMION_SVG = '<svg viewBox="0 0 64 40" role="img" aria-label="Camión"><rect x="2" y="6" width="36" height="22" rx="3" fill="#0B7A6B"/><path d="M38 12h12.5l7.5 9v7H38z" fill="#FF8A3D"/><path d="M42 15h7.6l4.6 6H42z" fill="#dff3ef"/><rect x="2" y="26" width="58" height="4" rx="2" fill="#12292D"/><circle cx="14" cy="31" r="5" fill="#12292D"/><circle cx="14" cy="31" r="2" fill="#fff"/><circle cx="48" cy="31" r="5" fill="#12292D"/><circle cx="48" cy="31" r="2" fill="#fff"/><path d="M8 13h16M8 18h22" stroke="#14A38E" stroke-width="2.5" stroke-linecap="round"/></svg>';
   // Pasos del envío: pedido creado → programado → en ruta → entregado, con el camión en el paso actual.
   function pasosEnvio(r, ev){
     const fecha = fechaDe(r);
@@ -5058,7 +5338,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const punto = document.createElement('span');
       punto.className = 'seg-punto';
       punto.setAttribute('aria-hidden', 'true');
-      if(i === actual && i < 3) punto.innerHTML = '<span class="seg-camion">🚚</span>';
+      if(i === actual && i < 3) punto.innerHTML = '<span class="seg-camion">' + CAMION_SVG + '</span>';
       else punto.textContent = x.fallo ? '✕' : (x.hecho ? '✓' : '');
       const b = document.createElement('b'); b.textContent = x.t;
       li.append(punto, b);
@@ -5141,7 +5421,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const c = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
     rows.forEach(r => { c[r.estado] = (c[r.estado] || 0) + 1; });
     const cerrados = c.entregado + c['no-entregado'];
-    $('segBarra').style.width = (rows.length ? Math.round(cerrados / rows.length * 100) : 0) + '%';
+    const pctRuta = rows.length ? Math.round(cerrados / rows.length * 100) : 0;
+    $('segBarra').style.width = pctRuta + '%';
+    if(!$('segBarraCamion').firstChild) $('segBarraCamion').innerHTML = CAMION_SVG;
+    $('segBarraCamion').style.left = pctRuta + '%';
+    $('segBarraCamion').title = pctRuta + '% de la ruta cerrada';
     $('segChips').innerHTML = '';
     [['pendiente', 'Pendiente'], ['en-ruta', 'En ruta'], ['entregado', 'Entregado'], ['no-entregado', 'No entregado']].forEach(([k, t]) => {
       const sp = document.createElement('span'); sp.className = 'estado-pill ' + ((ESTADOS.find(e => e.value === k) || {}).cls || ''); sp.textContent = c[k] + ' ' + t; $('segChips').appendChild(sp);
@@ -5352,6 +5636,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         cargarRecientes();
         pintarBarraHoja();
         escucharConfig();
+        escucharSolicitudes();
         aplicarRol();
         procesarCola();
         if(gpsRecordado() && !modoAgencia) iniciarGps();

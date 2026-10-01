@@ -45,7 +45,7 @@ for (const w of [1280, 390]) {
   const p = await open(b, { setup: setup('ops@agencia.cl', gps), width: w, height: 844 });
   await p.waitForTimeout(700);
   check('entra en vista agencia', await p.evaluate(() => document.body.classList.contains('modo-agencia')) && (await p.textContent('#rolChip')) === 'Vista agencia');
-  check('menú: Seguimiento e Historial de entregas', (await menu(p, w)) === (w > 820 ? 'Seguimiento,Historial de entregas' : 'Seguimiento,Más'), await menu(p, w));
+  check('menú: Seguimiento, Solicitudes e Historial de entregas', (await menu(p, w)) === (w > 820 ? 'Seguimiento,Solicitudes,Historial de entregas' : 'Seguimiento,Solicitudes,Más'), await menu(p, w));
   check('abre en Seguimiento', !(await p.$eval('#viewSeguimiento', e => e.hidden)));
   const txt = await p.textContent('#viewSeguimiento');
   check('muestra los envíos con su estado', txt.includes('Radio Infinita') && txt.includes('Chilevisión') && txt.includes('1 Entregado'));
