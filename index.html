@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-09-25 · 6";
+const VERSION_APP = "2026-10-01 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -700,13 +700,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }
     .movil-avatar:hover{ background:rgba(255,255,255,0.22); }
     .movil-nav{
-      display:grid; grid-template-columns:repeat(var(--tabs, 5), minmax(0, 1fr));
+      display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr);
       position:fixed; left:0; right:0; bottom:0; z-index:40;
       background:#fff; border-top:1px solid var(--border); box-shadow:0 -6px 20px rgba(18,41,45,0.08);
       padding:6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
     }
-    body.modo-transportista .movil-nav{ --tabs:3; }
-    body.modo-transportista.sin-dinero .movil-nav{ --tabs:2; }
     .movil-tab{
       display:flex; flex-direction:column; align-items:center; gap:3px; min-height:56px; justify-content:center;
       border:0; background:none; border-radius:12px; padding:6px 2px; font:inherit; font-size:12px; font-weight:600; color:#5b6b6e; cursor:pointer;
@@ -721,6 +719,41 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   body.modo-transportista [data-solo-admin]{ display:none !important; }
   body.sin-dinero [data-dinero]{ display:none !important; }
   body.sin-historial [data-historial]{ display:none !important; }
+  body.modo-agencia [data-no-agencia]{ display:none !important; }
+  body:not(.modo-agencia) [data-solo-agencia]{ display:none !important; }
+  body.modo-transportista:not(.modo-agencia) [data-seguimiento]{ display:none !important; }
+  /* Seguimiento (agencia) */
+  .seg-resumen{ display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:16px 18px; }
+  .seg-top{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; align-items:center; }
+  .seg-top .stat-label{ display:block; }
+  .seg-top b{ font-size:16px; }
+  .seg-gps{ font-size:13px; font-weight:700; padding:6px 10px; border-radius:999px; background:#eef3f2; color:#5b6b6e; }
+  .seg-gps.vivo{ background:var(--ok-bg); color:var(--marca-principal-oscuro); }
+  .seg-barra{ height:10px; border-radius:999px; background:#e3ecea; overflow:hidden; }
+  .seg-barra span{ display:block; height:100%; width:0; background:linear-gradient(90deg, var(--marca-principal), var(--marca-principal-claro)); transition:width .4s; }
+  .seg-chips{ display:flex; flex-wrap:wrap; gap:8px; font-size:13px; font-weight:700; }
+  .seg-mapa{ height:340px; border-radius:12px; background:#e9efee; }
+  @media (max-width: 820px){ .seg-mapa{ height:240px; } }
+  .seg-lista{ display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+  .seg-card{ padding:14px 16px; }
+  .seg-card-top{ display:flex; gap:10px; align-items:flex-start; }
+  .seg-num{ flex:none; width:28px; height:28px; border-radius:50%; background:#eef3f2; display:grid; place-items:center; font-weight:800; font-size:13px; }
+  .seg-card-top .seg-cli{ flex:1; min-width:0; }
+  .seg-cli b{ display:block; }
+  .seg-cli span{ color:var(--muted); font-size:13px; }
+  .seg-eta{ font-size:12px; font-weight:700; color:var(--marca-principal-oscuro); margin-top:2px; }
+  .seg-linea{ list-style:none; margin:10px 0 0 13px; padding:0 0 0 18px; border-left:2px solid #dbe5e3; display:flex; flex-direction:column; gap:6px; }
+  .seg-linea li{ position:relative; font-size:13px; }
+  .seg-linea li::before{ content:''; position:absolute; left:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:#9fb3b0; border:2px solid #fff; }
+  .seg-linea li.entregado::before{ background:#14A38E; } .seg-linea li.no-entregado::before{ background:#E5484D; } .seg-linea li.en-ruta::before{ background:#3b82f6; }
+  .seg-linea time{ font-weight:800; margin-right:6px; }
+  .seg-linea .seg-por{ color:var(--muted); }
+  .seg-prueba{ display:flex; gap:10px; align-items:center; margin-top:8px; font-size:13px; flex-wrap:wrap; }
+  /* Compartir ubicación (Entregas) */
+  .gps-card{ display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; padding:12px 16px; margin-bottom:14px; }
+  .gps-card p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  .gps-card.activo{ border-color:var(--marca-principal-claro); background:var(--ok-bg); }
+  .config-titulo2{ margin:22px 0 4px; font-size:18px; }
   .movil-sheet{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; }
   .movil-sheet-fondo{ position:absolute; inset:0; background:rgba(18,41,45,0.45); }
   .movil-sheet-panel{
@@ -1124,7 +1157,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <div class="side-grupo">
         <div class="side-titulo">Operación</div>
         <button class="side-item" type="button" data-view="despachos" id="navDespachos" data-solo-admin title="Ruta del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta del día</span></button>
-        <button class="side-item" type="button" data-view="chofer" id="navChofer" title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
+        <button class="side-item" type="button" data-view="chofer" id="navChofer" data-no-agencia title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
+        <button class="side-item" type="button" data-view="seguimiento" data-seguimiento title="Seguimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
       </div>
       <div class="side-grupo" data-historial>
         <div class="side-titulo">Reportes</div>
@@ -1139,7 +1173,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       </div>
       <div class="side-grupo" data-solo-admin>
         <div class="side-titulo">Ajustes</div>
-        <button class="side-item" type="button" data-view="config" data-solo-admin title="Transportistas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Transportistas</span></button>
+        <button class="side-item" type="button" data-view="config" data-solo-admin title="Usuarios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Usuarios</span></button>
       </div>
     </nav>
     <div class="sidebar-spacer"></div>
@@ -1159,7 +1193,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <!-- Menú inferior: solo en el teléfono (el computador usa el menú lateral) -->
   <nav class="movil-nav" aria-label="Menú principal">
     <button class="movil-tab" type="button" data-tab="despachos" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta</span></button>
-    <button class="movil-tab" type="button" data-tab="chofer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
+    <button class="movil-tab" type="button" data-tab="seguimiento" data-solo-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
+    <button class="movil-tab" type="button" data-tab="chofer" data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
     <button class="movil-tab" type="button" data-tab="historial" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Reportes</span></button>
     <button class="movil-tab" type="button" data-tab="liquidaciones" data-dinero><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M15.5 15h2.5"/></svg><span>Pagos</span></button>
     <button class="movil-tab" type="button" data-tab="mas" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor"/></svg><span>Más</span></button>
@@ -1172,10 +1207,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <span class="movil-avatar grande" id="movilMasInicial" aria-hidden="true">?</span>
         <div><div class="movil-sheet-titulo" id="movilMasTitulo">Mi cuenta</div><div class="movil-sheet-email" id="movilMasEmail"></div></div>
       </div>
+      <button class="movil-sheet-item" type="button" data-ir="seguimiento" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
       <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
-      <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Transportistas</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Usuarios</span></button>
       <button class="movil-sheet-item" type="button" id="movilInstalar" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.5 11.5L12 14l2.5-2.5"/></svg><span>Instalar Ruteka en este teléfono</span></button>
       <p class="movil-version" id="movilVersion"></p>
       <button class="movil-sheet-item salir" type="button" id="movilSalir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h9"/></svg><span>Cerrar sesión</span></button>
@@ -1321,7 +1357,31 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <h1>Entregas</h1>
       <p>Registrá quién recibió cada despacho, con foto y firma como comprobante.</p>
     </div>
+    <section class="card gps-card" id="gpsCard">
+      <div><b>📍 Ubicación para la agencia</b><p id="gpsEstado">No se está compartiendo.</p></div>
+      <button type="button" id="btnGps">Compartir mi ubicación</button>
+    </section>
     <div id="choferList"></div>
+  </div>
+
+  <div id="viewSeguimiento" hidden>
+    <div class="content-header">
+      <h1>Seguimiento</h1>
+      <p>Cada envío de la ruta en vivo: estado, hora de cada paso, quién recibió y la ubicación del camión.</p>
+    </div>
+    <section class="card seg-resumen">
+      <div class="seg-top">
+        <div><span class="stat-label">Transportista</span><b id="segTransportista">—</b></div>
+        <span class="seg-gps" id="segGps">Ubicación del camión: no se está compartiendo</span>
+      </div>
+      <div class="seg-barra" aria-hidden="true"><span id="segBarra"></span></div>
+      <div class="seg-chips" id="segChips"></div>
+    </section>
+    <section class="card chart-card">
+      <div class="seg-mapa" id="segMapa"></div>
+      <p class="chart-note" id="segMapaNota"></p>
+    </section>
+    <div class="seg-lista" id="segLista"></div>
   </div>
 
   <div id="viewReportes" hidden>
@@ -1460,7 +1520,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   <div id="viewConfig" hidden>
     <div class="content-header">
-      <h1>Transportistas</h1>
+      <h1>Usuarios</h1>
       <p>Los correos anotados aquí entran en vista transportista y ven Entregas, sin montos. Marcá «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno, y «Ve el historial» a quien puede revisar las entregas pasadas.</p>
     </div>
     <section class="card config-card">
@@ -1473,6 +1533,19 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       </form>
       <ul class="config-lista" id="configLista"></ul>
       <p class="config-msg" id="configMsg" role="status"></p>
+    </section>
+    <h2 class="config-titulo2">Agencia</h2>
+    <p class="chart-note">Los correos de la agencia entran en <b>vista agencia</b>: ven en vivo el Seguimiento de las rutas (estado de cada envío, horas, quién recibió, foto, firma y la ubicación del camión) y el Historial de entregas. No ven montos ni pueden editar.</p>
+    <section class="card config-card">
+      <form class="config-agregar" id="agenciaForm">
+        <label for="agenciaEmail">Correo de la agencia</label>
+        <div class="config-fila">
+          <input type="email" id="agenciaEmail" placeholder="correo@agencia.cl" autocomplete="off" required>
+          <button class="primary" type="submit">Agregar</button>
+        </div>
+      </form>
+      <ul class="config-lista" id="agenciaLista"></ul>
+      <p class="config-msg" id="agenciaMsg" role="status"></p>
     </section>
     <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas, aunque no esté en esta lista; el historial y la liquidación los ven solo los que tengan marcada su casilla.</p>
   </div>
@@ -1633,6 +1706,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   const filasNuevas = new Set();
   function defaultRow(){
     return { id: uid(), cliente:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false };
+  }
+  // Trazabilidad: cada cambio de estado queda anotado con fecha, hora y quién lo hizo.
+  function registrarEvento(row, tipo){
+    row.eventos = (row.eventos || []).concat([{ tipo, at: new Date().toISOString(), por: currentEmail() }]).slice(-30);
   }
   function filaVacia(r){
     if(r.estado && r.estado !== 'pendiente') return false;
@@ -1895,6 +1972,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     geocodeAllPending();
     if(currentView === 'reportes') renderReportes();
     if(currentView === 'chofer') renderChofer();
+    if(currentView === 'seguimiento') renderSeguimiento();
     if(currentView === 'liquidaciones') renderLiquidaciones();
     pintarBarraHoja();
     aplicarRol(); // el correo del transportista puede venir con la ruta
@@ -2282,9 +2360,17 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function listaConLiquidacion(){ return listaPermiso('conLiquidacion'); }
   let verDinero = true;
   let verHistorial = true;
+  // Agencia: correos que ven en vivo el Seguimiento y el Historial de entregas, sin montos ni edición.
+  const AGENCIA = { config: [], global: [] };
+  function listaAgencia(){
+    return [...new Set(AGENCIA.config.concat(AGENCIA.global).map(e => String(e).trim().toLowerCase()).filter(Boolean))].sort();
+  }
+  let modoAgencia = false;
   function vistasPermitidas(){
+    if(modoAgencia) return ['seguimiento', 'entregashist'];
     return ['chofer'].concat(verDinero ? ['liquidaciones'] : [], verHistorial ? ['entregashist'] : []);
   }
+  function vistaInicial(){ return modoAgencia ? 'seguimiento' : 'chofer'; }
 
   // Transportistas: config/app (lista general) + la lista guardada dentro de la ruta del día
   // (state.transportistas, que cada día nuevo hereda) + el "Correo del transportista" de la ruta.
@@ -2320,15 +2406,19 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const antes = modoTransportista;
     // Regla principal: quien no es administrador es transportista. Si no se pudo
     // calcular (caso raro), se usa la lista de transportistas como antes.
-    modoTransportista = esAdminSesion === null ? esTransportista() : !esAdminSesion;
+    modoAgencia = esAdminSesion !== true && listaAgencia().includes(currentEmail());
+    // La agencia tampoco es administradora: comparte las restricciones del transportista.
+    modoTransportista = modoAgencia || (esAdminSesion === null ? esTransportista() : !esAdminSesion);
     const dineroAntes = verDinero;
-    verDinero = !modoTransportista || listaConLiquidacion().includes(currentEmail());
-    verHistorial = !modoTransportista || listaPermiso('conHistorial').includes(currentEmail());
+    verDinero = !modoTransportista || (!modoAgencia && listaConLiquidacion().includes(currentEmail()));
+    verHistorial = !modoTransportista || modoAgencia || listaPermiso('conHistorial').includes(currentEmail());
     document.body.classList.toggle('modo-transportista', modoTransportista);
+    document.body.classList.toggle('modo-agencia', modoAgencia);
+    $('rolChip').textContent = modoAgencia ? 'Vista agencia' : 'Vista transportista';
     document.body.classList.toggle('sin-dinero', !verDinero);
     document.body.classList.toggle('sin-historial', !verHistorial);
     $('rolChip').hidden = !modoTransportista;
-    if(modoTransportista && !vistasPermitidas().includes(currentView)) switchView('chofer');
+    if(modoTransportista && !vistasPermitidas().includes(currentView)) switchView(vistaInicial());
     if(antes !== modoTransportista && currentView === 'liquidaciones') renderLiquidaciones();
     if(dineroAntes !== verDinero && currentView === 'chofer') renderChofer();
   }
@@ -2339,6 +2429,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function dejarDeEscucharConfig(){ unsubConfig.forEach(f => { try{ f(); }catch(e){} }); unsubConfig = []; }
   const sinSesion = () => !auth || !auth.currentUser;
   function cerrarSesion(){
+    detenerGps(true);
     dejarDeEscucharConfig();
     if(unsub){ unsub(); unsub = null; }
     if(auth) auth.signOut();
@@ -2351,6 +2442,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const d = snap.exists ? snap.data() : {};
       transportistasGlobal = (d.transportistas || []).map(e => String(e).toLowerCase());
       Object.keys(PERMISOS).forEach(k => { PERMISOS[k].global = (d[k] || []).map(e => String(e).toLowerCase()); });
+      AGENCIA.global = (d.agencias || []).map(e => String(e).toLowerCase());
       aplicarRol();
       if(currentView === 'config') pintarConfig($('configMsg').textContent, $('configMsg').classList.contains('err'));
     }, err => console.warn('No se pudo leer la lista de transportistas (principal)', err)));
@@ -2358,6 +2450,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const d = snap.exists ? snap.data() : {};
       transportistasConfig = (d.transportistas || []).map(e => String(e).toLowerCase());
       Object.keys(PERMISOS).forEach(k => { PERMISOS[k].config = (d[k] || []).map(e => String(e).toLowerCase()); });
+      AGENCIA.config = (d.agencias || []).map(e => String(e).toLowerCase());
       aplicarRol();
       if(currentView === 'config') pintarConfig($('configMsg').textContent, $('configMsg').classList.contains('err'));
     }, err => { if(sinSesion()) return; console.warn('No se pudo leer config/app', err); marcarPermiso('config', err); }));
@@ -2400,10 +2493,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   // Marca o desmarca un permiso extra (PERMISOS) en la lista general (principal y config/app).
-  async function marcarPermisoExtra(campo, email, ver){
+  function marcarPermisoExtra(campo, email, ver){ return cambiarListaGeneral(campo, PERMISOS[campo], email, ver); }
+  // Agrega o quita un correo de una lista general (campo en principal y config/app); «pm» guarda la copia local.
+  async function cambiarListaGeneral(campo, pm, email, ver){
     email = String(email || '').trim().toLowerCase();
     if(!email || !db) return false;
-    const pm = PERMISOS[campo];
     const cambiar = arr => { const l = new Set((arr || []).map(e => String(e).toLowerCase())); if(ver) l.add(email); else l.delete(email); return [...l].sort(); };
     let ok = false;
     try{
@@ -2413,7 +2507,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       await g.set({ [campo]: lista }, { merge: true });
       pm.global = lista;
       ok = true;
-    }catch(err){ console.warn('No se pudo guardar «' + pm.texto + '» (principal)', err); }
+    }catch(err){ console.warn('No se pudo guardar ' + campo + ' (principal)', err); }
     try{
       const ref = db.collection('config').doc('app');
       const snap = await ref.get();
@@ -2421,7 +2515,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       await ref.set({ [campo]: lista }, { merge: true });
       pm.config = lista;
       ok = true;
-    }catch(err){ console.warn('No se pudo guardar «' + pm.texto + '» en config/app', err); marcarPermiso('config', err); }
+    }catch(err){ console.warn('No se pudo guardar ' + campo + ' en config/app', err); marcarPermiso('config', err); }
     return ok;
   }
 
@@ -2464,7 +2558,38 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
     $('configMsg').textContent = msg || '';
     $('configMsg').classList.toggle('err', !!error);
+    pintarAgencia();
   }
+  function pintarAgencia(msg, error){
+    const ul = $('agenciaLista');
+    ul.innerHTML = '';
+    const lista = listaAgencia();
+    if(!lista.length){
+      const li = document.createElement('li'); li.className = 'vacio'; li.textContent = 'Todavía no hay correos de la agencia.'; ul.appendChild(li);
+    }
+    lista.forEach(email => {
+      const li = document.createElement('li');
+      const sp = document.createElement('span'); sp.textContent = email;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'danger'; b.textContent = 'Quitar';
+      b.setAttribute('aria-label', 'Quitar ' + email);
+      b.addEventListener('click', async () => {
+        const ok = await cambiarListaGeneral('agencias', AGENCIA, email, false);
+        pintarAgencia(ok ? email + ' ya no tiene vista agencia.' : 'Firebase no permitió guardar el cambio (revisá las reglas).', !ok);
+      });
+      li.append(sp, b);
+      ul.appendChild(li);
+    });
+    if(msg !== undefined){ $('agenciaMsg').textContent = msg || ''; $('agenciaMsg').classList.toggle('err', !!error); }
+  }
+  $('agenciaForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = $('agenciaEmail').value.trim().toLowerCase();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ pintarAgencia('Escribí un correo válido.', true); return; }
+    if(email === currentEmail()){ pintarAgencia('Ese es tu propio correo: si lo agregás, dejarías de ver el menú de administrador.', true); return; }
+    const ok = await cambiarListaGeneral('agencias', AGENCIA, email, true);
+    $('agenciaEmail').value = '';
+    pintarAgencia(ok ? email + ' quedó con vista agencia (Seguimiento e Historial, sin montos). Debe tener su usuario en Firebase (Authentication → Users).' : 'Firebase no permitió guardar el cambio (revisá las reglas).', !ok);
+  });
   $('configForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('configEmail').value.trim().toLowerCase();
@@ -2771,11 +2896,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('btnInstalar').addEventListener('click', instalarApp);
 
   /* ---------- Teléfono: menú inferior y panel "Más" ---------- */
-  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
+  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', seguimiento: 'seguimiento', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
   function marcarTabMovil(view){
     document.querySelectorAll('.movil-tab').forEach(b => {
       // El transportista no tiene la pestaña Reportes: su historial queda bajo «Más».
-      const tab = modoTransportista && view === 'entregashist' ? 'mas' : TAB_DE_VISTA[view];
+      const tab = (modoTransportista && !modoAgencia && view === 'entregashist') || (!modoAgencia && view === 'seguimiento') || (modoAgencia && view === 'entregashist') ? 'mas' : TAB_DE_VISTA[view];
       const activa = b.dataset.tab === tab;
       b.classList.toggle('activa', activa);
       if(activa) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -3137,10 +3262,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   let expandedResueltoIds = new Set();
 
   function switchView(view){
-    if(modoTransportista && !vistasPermitidas().includes(view)) view = 'chofer';
+    if(modoTransportista && !vistasPermitidas().includes(view)) view = vistaInicial();
     currentView = view;
     $('viewDespachos').hidden = view !== 'despachos';
     $('viewChofer').hidden = view !== 'chofer';
+    $('viewSeguimiento').hidden = view !== 'seguimiento';
     $('viewReportes').hidden = view !== 'reportes';
     $('viewLiquidaciones').hidden = view !== 'liquidaciones';
     $('viewHistorial').hidden = view !== 'historial';
@@ -3155,6 +3281,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
     if(view === 'reportes') renderReportes();
     if(view === 'chofer') renderChofer();
+    if(view === 'seguimiento') renderSeguimiento();
     if(view === 'liquidaciones') renderLiquidaciones();
     if(view === 'historial' || view === 'liqperiodo' || view === 'entregashist') cargarPeriodo();
     marcarTabMovil(view);
@@ -3581,6 +3708,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       btnEnRuta.textContent = '🚚 Marcar en ruta';
       btnEnRuta.addEventListener('click', () => {
         row.estado = 'en-ruta';
+        registrarEvento(row, 'en-ruta');
         renderRows();
         commit();
       });
@@ -3719,6 +3847,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
         row.entrega = entrega;
         row.estado = outcome;
+        registrarEvento(row, outcome);
         renderRows();
         commit();
       }catch(err){
@@ -3782,6 +3911,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
     select.addEventListener('change', () => {
       row.estado = select.value;
+      registrarEvento(row, select.value);
       select.className = 'estado ' + (ESTADOS.find(e => e.value === select.value) || ESTADOS[0]).cls;
       updateKpis();
       updateMap();
@@ -4603,7 +4733,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(!db) return;
     docRef = db.collection('hojasDeRuta').doc(hojaId);
     const id = hojaId;
-    unsub = docRef.onSnapshot(snap => {
+    gpsActual = null;
+    const unsubGps = db.collection('hojasDeRuta').doc(GPS_PREFIJO + hojaId).onSnapshot(sn => {
+      if(id !== hojaId) return;
+      gpsActual = sn.exists ? sn.data() : null;
+      if(currentView === 'seguimiento') renderSeguimiento();
+    }, () => {});
+    const unsubHoja = docRef.onSnapshot(snap => {
       if(id !== hojaId) return;
       if(snap.exists && snap.data().json){
         if(snap.metadata && snap.metadata.hasPendingWrites) return; // eco de lo que se está guardando aquí
@@ -4634,7 +4770,186 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         ? 'Firestore no permite leer esta ruta (revisá las reglas de seguridad)'
         : 'Sin conexión con Firestore — trabajando en modo local');
     });
+    unsub = () => { unsubHoja(); unsubGps(); };
   }
+
+  /* ============================================================
+     UBICACIÓN DEL CAMIÓN (GPS) Y SEGUIMIENTO PARA LA AGENCIA
+     La posición va en hojasDeRuta/gps_AAAA-MM-DD (aparte de la ruta, para no
+     reescribir los despachos cada 30 s). Solo se envía con Ruteka abierta.
+     ============================================================ */
+  var GPS_PREFIJO = 'gps_';
+  var gpsActual = null;
+  let gpsWatch = null, gpsUltimoEnvio = 0, gpsWakeLock = null, gpsError = '';
+  const GPS_CADA_MS = 30000;
+  function gpsRecordado(){ try{ return localStorage.getItem('ruteka_gps') === '1'; }catch(e){ return false; } }
+  function hace(ms){
+    const min = Math.round((Date.now() - ms) / 60000);
+    return min < 1 ? 'hace menos de 1 min' : min < 60 ? 'hace ' + min + ' min' : 'hace ' + Math.floor(min / 60) + ' h ' + (min % 60) + ' min';
+  }
+  async function pedirWakeLock(){
+    try{ if(gpsWatch !== null && 'wakeLock' in navigator && document.visibilityState === 'visible') gpsWakeLock = await navigator.wakeLock.request('screen'); }catch(e){}
+  }
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') pedirWakeLock(); });
+  function enviarPosicion(pos){
+    const ahora = Date.now();
+    if(gpsUltimoEnvio && ahora - gpsUltimoEnvio < GPS_CADA_MS) return;
+    gpsUltimoEnvio = ahora;
+    gpsError = '';
+    if(!db) return;
+    db.collection('hojasDeRuta').doc(GPS_PREFIJO + hojaId).set({
+      lat: pos.coords.latitude, lng: pos.coords.longitude, precision: Math.round(pos.coords.accuracy || 0),
+      atMs: ahora, at: firebase.firestore.FieldValue.serverTimestamp(), por: currentEmail(), fecha: hojaId, activo: true
+    }, { merge: true }).catch(err => console.warn('No se pudo enviar la ubicación', err));
+    pintarGps();
+  }
+  function iniciarGps(){
+    if(gpsWatch !== null) return;
+    if(!('geolocation' in navigator)){ gpsError = 'Este teléfono no permite compartir ubicación.'; pintarGps(); return; }
+    try{ localStorage.setItem('ruteka_gps', '1'); }catch(e){}
+    gpsUltimoEnvio = 0;
+    gpsWatch = navigator.geolocation.watchPosition(enviarPosicion, err => {
+      gpsError = err && err.code === 1 ? 'Sin permiso de ubicación: actívalo en el navegador para compartirla.' : 'No se pudo obtener la ubicación (reintentando…).';
+      if(err && err.code === 1) detenerGps(true);
+      pintarGps();
+    }, { enableHighAccuracy: true, maximumAge: 15000, timeout: 30000 });
+    pedirWakeLock();
+    pintarGps();
+  }
+  function detenerGps(silencioso){
+    if(gpsWatch !== null){
+      try{ navigator.geolocation.clearWatch(gpsWatch); }catch(e){}
+      gpsWatch = null;
+      if(db && gpsUltimoEnvio) db.collection('hojasDeRuta').doc(GPS_PREFIJO + hojaId).set({ activo: false, finAtMs: Date.now() }, { merge: true }).catch(() => {});
+    }
+    if(!silencioso){ try{ localStorage.removeItem('ruteka_gps'); }catch(e){} }
+    try{ if(gpsWakeLock) gpsWakeLock.release(); }catch(e){}
+    gpsWakeLock = null;
+    pintarGps();
+  }
+  function pintarGps(){
+    const activo = gpsWatch !== null;
+    $('gpsCard').classList.toggle('activo', activo);
+    $('btnGps').textContent = activo ? 'Dejar de compartir' : 'Compartir mi ubicación';
+    $('gpsEstado').textContent = gpsError || (activo
+      ? (gpsUltimoEnvio ? 'Compartiendo · último envío ' + new Date(gpsUltimoEnvio).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) + '. Mantené Ruteka abierta en pantalla.' : 'Buscando tu ubicación…')
+      : 'No se está compartiendo. Activalo al salir a ruta para que la agencia vea dónde va el camión.');
+  }
+  $('btnGps').addEventListener('click', () => { if(gpsWatch !== null) detenerGps(); else iniciarGps(); });
+  pintarGps();
+
+  let segMap = null, segMarcadores = [], segEncuadre = '';
+  const NOMBRE_EVENTO = { 'en-ruta': 'Salió a ruta', 'entregado': 'Entregado', 'no-entregado': 'No entregado', 'pendiente': 'Volvió a pendiente' };
+  function horaCorta(iso){
+    const d = new Date(iso);
+    if(isNaN(d)) return '';
+    const h = d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    return fechaLocal(d) === hojaId ? h : d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' }) + ' ' + h;
+  }
+  function eventosDe(r){
+    const ev = (r.eventos || []).slice();
+    const e = r.entrega || {};
+    // Entregas registradas antes de existir el registro de eventos: se arma con los datos de la entrega.
+    if((r.estado === 'entregado' || r.estado === 'no-entregado') && !ev.some(x => x.tipo === r.estado)){
+      const at = e.registradoAt || (e.horaEntrega ? hojaId + 'T' + e.horaEntrega + ':00' : '');
+      ev.push({ tipo: r.estado, at, por: e.registradoPor || '' });
+    }
+    return ev.sort((a, b) => String(a.at).localeCompare(String(b.at)));
+  }
+  function iniciarMapaSeguimiento(){
+    if(segMap || !window.__googleMapsReady || typeof google === 'undefined' || !google.maps) return;
+    segMap = new google.maps.Map($('segMapa'), { center: { lat: -33.4489, lng: -70.6693 }, zoom: 11, mapTypeControl: false, streetViewControl: false, fullscreenControl: true });
+  }
+  function pintarMapaSeguimiento(rows){
+    iniciarMapaSeguimiento();
+    if(!segMap){ $('segMapaNota').textContent = 'El mapa no está disponible en este momento.'; return; }
+    segMarcadores.forEach(m => m.setMap(null));
+    segMarcadores = [];
+    const bounds = new google.maps.LatLngBounds();
+    rows.forEach(r => {
+      if(r.lat == null || r.lng == null) return;
+      const n = state.rows.indexOf(r) + 1;
+      const mk = new google.maps.Marker({
+        position: { lat: r.lat, lng: r.lng }, map: segMap,
+        label: { text: String(n), color: '#fff', fontSize: '11px', fontWeight: '700' },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 11, fillColor: ESTADO_COLORS[r.estado] || ESTADO_COLORS.pendiente, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+        title: n + '. ' + (r.cliente || '')
+      });
+      segMarcadores.push(mk); bounds.extend(mk.getPosition());
+    });
+    const g = gpsActual;
+    if(g && g.lat != null){
+      const mk = new google.maps.Marker({ position: { lat: g.lat, lng: g.lng }, map: segMap, label: { text: '🚚', fontSize: '22px' }, zIndex: 999, title: 'Camión · ' + (g.atMs ? hace(g.atMs) : '') });
+      segMarcadores.push(mk); bounds.extend(mk.getPosition());
+    }
+    const clave = hojaId + '|' + segMarcadores.length;
+    if(segMarcadores.length && clave !== segEncuadre){
+      segEncuadre = clave;
+      if(segMarcadores.length === 1){ segMap.setCenter(bounds.getCenter()); segMap.setZoom(14); } else segMap.fitBounds(bounds, 40);
+    }
+    const sinUbicar = rows.filter(r => r.lat == null || r.lng == null).length;
+    $('segMapaNota').textContent = sinUbicar ? sinUbicar + ' despacho(s) todavía sin ubicar en el mapa.' : '';
+  }
+  function renderSeguimiento(){
+    if($('viewSeguimiento').hidden) return;
+    const rows = state.rows.filter(r => !filaVacia(r));
+    $('segTransportista').textContent = (state.transportista || '').replace(/^—.*—$/, '').trim() || '—';
+    const c = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
+    rows.forEach(r => { c[r.estado] = (c[r.estado] || 0) + 1; });
+    const cerrados = c.entregado + c['no-entregado'];
+    $('segBarra').style.width = (rows.length ? Math.round(cerrados / rows.length * 100) : 0) + '%';
+    $('segChips').innerHTML = '';
+    [['pendiente', 'Pendiente'], ['en-ruta', 'En ruta'], ['entregado', 'Entregado'], ['no-entregado', 'No entregado']].forEach(([k, t]) => {
+      const sp = document.createElement('span'); sp.className = 'estado-pill ' + ((ESTADOS.find(e => e.value === k) || {}).cls || ''); sp.textContent = c[k] + ' ' + t; $('segChips').appendChild(sp);
+    });
+    const g = gpsActual;
+    const gpsVivo = g && g.activo && g.atMs && Date.now() - g.atMs < 10 * 60000;
+    $('segGps').classList.toggle('vivo', !!gpsVivo);
+    $('segGps').textContent = !g || !g.atMs ? 'Ubicación del camión: no se está compartiendo'
+      : (gpsVivo ? '🚚 En vivo · ' : '🚚 Última ubicación conocida · ') + hace(g.atMs) + (g.por ? ' · ' + g.por : '');
+    pintarMapaSeguimiento(rows);
+    const lista = $('segLista');
+    lista.innerHTML = '';
+    if(!rows.length){ lista.innerHTML = '<p class="chart-empty">No hay despachos cargados en esta ruta.</p>'; return; }
+    rows.forEach(r => {
+      const n = state.rows.indexOf(r) + 1;
+      const card = document.createElement('section'); card.className = 'card seg-card';
+      const top = document.createElement('div'); top.className = 'seg-card-top';
+      const num = document.createElement('span'); num.className = 'seg-num'; num.textContent = n;
+      const cli = document.createElement('div'); cli.className = 'seg-cli';
+      const b = document.createElement('b'); b.textContent = r.cliente || '(sin cliente)';
+      const dir = document.createElement('span'); dir.textContent = [r.direccion, r.comuna].filter(Boolean).join(', ');
+      cli.append(b, dir);
+      if(r.eta && (r.estado === 'pendiente' || r.estado === 'en-ruta')){ const eta = document.createElement('div'); eta.className = 'seg-eta'; eta.textContent = '🕒 Llegada estimada ' + r.eta; cli.appendChild(eta); }
+      const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
+      const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label;
+      top.append(num, cli, pill);
+      card.appendChild(top);
+      const ev = eventosDe(r);
+      if(ev.length){
+        const ul = document.createElement('ul'); ul.className = 'seg-linea';
+        ev.forEach(x => {
+          const li = document.createElement('li'); li.className = x.tipo;
+          const t = document.createElement('time'); t.textContent = horaCorta(x.at) || '—';
+          li.append(t, document.createTextNode(NOMBRE_EVENTO[x.tipo] || x.tipo));
+          if(x.por){ const por = document.createElement('span'); por.className = 'seg-por'; por.textContent = ' · ' + x.por; li.appendChild(por); }
+          ul.appendChild(li);
+        });
+        card.appendChild(ul);
+      }
+      const e = r.entrega || {};
+      if(r.estado === 'entregado' || r.estado === 'no-entregado'){
+        const pr = document.createElement('div'); pr.className = 'seg-prueba';
+        const txt = document.createElement('span');
+        txt.textContent = r.estado === 'entregado' ? 'Recibió: ' + (e.recibidoPor || '—') + (e.horaEntrega ? ' · ' + e.horaEntrega : '') : 'Motivo: ' + (e.motivo || '—');
+        pr.appendChild(txt);
+        [miniaturaEh(e.fotoUrl, 'Foto de entrega'), miniaturaEh(e.firmaUrl, 'Firma', 'eh-firma')].forEach(x => { if(x instanceof Node) pr.appendChild(x); });
+        card.appendChild(pr);
+      }
+      lista.appendChild(card);
+    });
+  }
+  setInterval(() => { if(currentView === 'seguimiento') renderSeguimiento(); }, 60000); // «hace X min» al día
 
   function abrirHoja(id){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(id || '') || id === hojaId){ pintarBarraHoja(); return; }
@@ -4832,6 +5147,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         escucharConfig();
         aplicarRol();
         procesarCola();
+        if(gpsRecordado() && !modoAgencia) iniciarGps();
       })();
     });
   }

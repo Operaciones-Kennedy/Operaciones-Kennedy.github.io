@@ -12,11 +12,16 @@ Se publica sola con GitHub Pages en **https://operaciones-kennedy.github.io**. C
 | **Despachos** | Lista del día, importar/exportar Excel (con las fotos de respaldo y la hora de entrega), mapa, **🧭 Optimizar ruta** con horas estimadas y **💬 WhatsApp** al cliente. |
 | **Entregas** | Lo que usa el transportista: cómo llegar (Google Maps/Waze), llamar, avisar por WhatsApp, y registrar la entrega con foto y firma. Funciona sin señal: la foto se sube sola al volver la conexión. |
 | **Reportes → KPIs del día** | Estados, comunas y tarifas de la ruta abierta. |
+| **Seguimiento** | Para la agencia (y los administradores): cada envío de la ruta en vivo, con su estado, la hora de cada paso (salió a ruta, entregado o no entregado y quién lo registró), quién recibió, foto, firma, hora estimada de llegada y la ubicación del camión en el mapa. |
 | **Reportes → Historial de entregas** | Cada entrega del período con hora, quién recibió (o el motivo si no se entregó), quién la registró, foto y firma; filtro, buscador y exportar a Excel. |
 | **Reportes → Historial y reportes del período** | Cumplimiento, gasto en fletes, gráficos por día/mes, comuna y transportista, y buscador de clientes con su foto de entrega. |
 | **Gestión de flotas → Liquidación del día / del período** | Pagos, facturas, visto bueno del transportista (Conforme / Observar) y comprobante en PDF. |
 
 **Roles.** Solo los correos de `ADMINISTRADORES_SHA256` (al inicio del `<script>` de `index.html`, guardados como SHA-256 del correo en minúsculas) ven todo. Cualquier otro usuario entra en *vista transportista*: solo Entregas, sin montos. En la página Transportistas, cada correo tiene dos casillas (guardadas en `config/app` y `hojasDeRuta/principal`): «Ve la liquidación» (`conLiquidacion`: liquidación del día y visto bueno, sin marcar pagos ni facturas) y «Ve el historial» (`conHistorial`: Historial de entregas, sin montos). Es una restricción de pantalla: las tarifas viajan en el mismo documento de la ruta. Para sumar un administrador: `printf '%s' 'correo@dominio.cl' | sha256sum` y agregar el resultado a la lista. Además, agregar el correo en `esAdmin()` de las reglas de Firestore en la consola de Firebase (el archivo `firebase/firestore.rules` no guarda correos porque el repositorio es público).
+
+**Agencia.** En **Ajustes → Usuarios → Agencia** se anotan los correos de la agencia (campo `agencias` de `config/app` y `hojasDeRuta/principal`). Entran en *vista agencia*: Seguimiento e Historial de entregas, sin montos ni edición.
+
+**Ubicación del camión.** En Entregas, el transportista toca «Compartir mi ubicación». Mientras Ruteka está abierta en pantalla, la posición se envía cada 30 segundos a `hojasDeRuta/gps_AAAA-MM-DD`. Una página web no puede enviar la ubicación con el teléfono bloqueado o con otra app abierta: en ese caso la agencia ve «última ubicación conocida · hace X min».
 
 **App instalable.** En el teléfono, abrir la página y usar «Agregar a la pantalla de inicio» (o el botón 📲 del menú en Android/Chrome).
 
