@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-01 · 6";
+const VERSION_APP = "2026-10-01 · 7";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -730,7 +730,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   body.sin-historial [data-historial]{ display:none !important; }
   body.modo-agencia [data-no-agencia]{ display:none !important; }
   body:not(.modo-agencia) [data-solo-agencia]{ display:none !important; }
-  body.modo-transportista:not(.modo-agencia) [data-seguimiento]{ display:none !important; }
+  body.sin-seguimiento [data-seguimiento]{ display:none !important; }
+  body.sin-solicitudes [data-solicitudes]{ display:none !important; }
   /* Seguimiento (agencia) */
   .seg-resumen{ display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:16px 18px; }
   .seg-top{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; align-items:center; }
@@ -875,6 +876,48 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .sol-aprobar-head .side-badge{ margin-left:0; }
   .movil-tab{ position:relative; }
   .movil-tab .side-badge{ position:absolute; top:2px; left:calc(50% + 6px); margin:0; }
+  /* Chat en línea */
+  .chat-fab{ position:fixed; right:24px; bottom:24px; z-index:60; width:58px; height:58px; padding:0; border-radius:50%; border:0; display:grid; place-items:center; color:#fff; background:linear-gradient(135deg, var(--marca-principal-claro), var(--marca-principal-oscuro)); box-shadow:0 10px 26px rgba(11,122,107,.38); cursor:pointer; transition:transform .15s ease; }
+  .chat-fab:hover{ transform:translateY(-2px); background:linear-gradient(135deg, var(--marca-principal-claro), var(--marca-principal-oscuro)); }
+  .chat-fab svg{ width:28px; height:28px; }
+  .chat-fab .side-badge{ position:absolute; top:-2px; right:-2px; margin:0; border:2px solid #fff; }
+  .chat-panel{ position:fixed; right:24px; bottom:24px; z-index:75; width:380px; height:min(580px, calc(100vh - 48px)); display:flex; flex-direction:column; background:#fff; border:1px solid var(--border); border-radius:20px; box-shadow:0 24px 60px rgba(18,41,45,.25); overflow:hidden; }
+  .chat-panel[hidden], .chat-fab[hidden]{ display:none; }
+  .chat-head{ display:flex; align-items:center; gap:10px; padding:14px 14px 14px 18px; color:#fff; background:linear-gradient(135deg, var(--marca-tinta), var(--marca-principal)); }
+  .chat-head .icon-btn{ color:#fff; background:rgba(255,255,255,.14); border-color:transparent; }
+  .chat-head-txt{ flex:1; min-width:0; }
+  .chat-head-txt b{ display:block; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .chat-head-txt small{ display:block; font-size:12px; opacity:.85; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .chat-convs{ flex:1; overflow:auto; display:flex; flex-direction:column; }
+  .chat-nueva{ padding:12px 14px; border-bottom:1px solid var(--border); }
+  .chat-nueva select{ width:100%; font:inherit; font-size:14px; padding:9px 10px; border:1px solid var(--border); border-radius:10px; background:#fff; }
+  .chat-convs ul{ list-style:none; margin:0; padding:6px; }
+  .chat-conv{ width:100%; display:flex; gap:10px; align-items:center; padding:10px; border:0; border-radius:12px; background:none; text-align:left; font:inherit; cursor:pointer; }
+  .chat-conv:hover{ background:#f3f7f6; }
+  .chat-conv .sol-avatar{ width:40px; height:40px; font-size:14px; }
+  .chat-conv-txt{ flex:1; min-width:0; }
+  .chat-conv-txt b{ display:block; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .chat-conv-txt span{ display:block; font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .chat-conv-der{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-size:11px; color:var(--muted); }
+  .chat-conv-der .side-badge{ margin:0; }
+  .chat-conv.sin-leer .chat-conv-txt b, .chat-conv.sin-leer .chat-conv-txt span{ color:var(--text); font-weight:800; }
+  .chat-vacio{ padding:24px 18px; text-align:center; color:var(--muted); font-size:14px; }
+  .chat-hilo{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .chat-msgs{ flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:6px; background:linear-gradient(180deg, #f5f9f8, #eef4f3); }
+  .chat-dia{ align-self:center; margin:8px 0 4px; padding:3px 10px; border-radius:999px; background:#fff; font-size:11px; font-weight:700; color:var(--muted); text-transform:capitalize; box-shadow:0 1px 2px rgba(18,41,45,.08); }
+  .chat-msg{ max-width:82%; align-self:flex-start; padding:8px 12px 6px; border-radius:16px 16px 16px 4px; background:#fff; color:var(--text); font-size:14px; line-height:1.35; box-shadow:0 1px 2px rgba(18,41,45,.08); white-space:pre-wrap; overflow-wrap:anywhere; }
+  .chat-msg.mio{ align-self:flex-end; border-radius:16px 16px 4px 16px; background:var(--marca-principal); color:#fff; }
+  .chat-msg small{ display:block; margin-bottom:2px; font-size:11px; font-weight:800; color:var(--marca-principal-oscuro); }
+  .chat-msg.mio small{ color:rgba(255,255,255,.85); }
+  .chat-msg time{ display:block; margin-top:2px; font-size:10px; text-align:right; opacity:.7; }
+  .chat-form{ display:flex; gap:8px; align-items:flex-end; padding:10px; border-top:1px solid var(--border); background:#fff; }
+  .chat-form textarea{ flex:1; min-width:0; resize:none; max-height:120px; font:inherit; font-size:14px; padding:10px 12px; border:1px solid var(--border); border-radius:14px; }
+  .chat-form textarea:focus{ outline:none; border-color:var(--marca-principal-claro); box-shadow:0 0 0 3px rgba(20,163,142,.18); }
+  .chat-form button{ flex:none; width:44px; height:44px; padding:0; border-radius:50%; font-size:18px; }
+  @media (max-width: 820px){
+    .chat-fab{ right:16px; bottom:calc(84px + env(safe-area-inset-bottom, 0px)); width:54px; height:54px; }
+    .chat-panel{ inset:0; width:auto; height:auto; border-radius:0; border:0; }
+  }
   .side-badge{ margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--marca-acento); color:#fff; font-size:11px; font-weight:800; display:inline-grid; place-items:center; }
   .seg-paso b{ font-size:12px; color:var(--text); line-height:1.2; margin-top:2px; }
   .seg-paso:not(.hecho) b{ color:var(--muted); font-weight:600; }
@@ -922,14 +965,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .config-fila input{ flex:1; min-width:0; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font:inherit; font-size:14.5px; }
   .config-fila input:focus{ outline:none; border-color:var(--accent); }
   .config-lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
-  .config-lista li{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; font-weight:600; }
-  .config-lista li span{ flex:1; min-width:0; overflow-wrap:anywhere; }
-  @media (max-width: 520px){
-    .config-lista li{ flex-wrap:wrap; row-gap:8px; }
-    .config-lista li span{ flex:1 1 100%; }
-    .config-lista li .config-permisos{ flex:1; }
-  }
-  .config-permisos{ display:flex; flex-wrap:wrap; gap:6px 14px; }
+  .config-lista li{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; font-weight:600; }
+  .config-lista li span{ flex:1 1 200px; min-width:0; overflow-wrap:anywhere; }
+  .config-lista li .config-permisos{ order:3; flex:1 1 100%; padding-top:8px; border-top:1px dashed var(--border); }
+  .config-permisos{ display:flex; flex-wrap:wrap; gap:6px 16px; }
   .config-liq{ display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--muted); white-space:nowrap; cursor:pointer; }
   .config-liq input{ width:18px; height:18px; accent-color:var(--marca-principal); }
   .config-lista .vacio{ color:var(--muted); font-weight:500; border-style:dashed; }
@@ -1296,7 +1335,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <button class="side-item" type="button" data-view="despachos" id="navDespachos" data-solo-admin title="Ruta del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta del día</span></button>
         <button class="side-item" type="button" data-view="chofer" id="navChofer" data-no-agencia title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
         <button class="side-item" type="button" data-view="seguimiento" data-seguimiento title="Seguimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
-        <button class="side-item" type="button" data-view="solicitudes" data-seguimiento title="Solicitudes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span><b class="side-badge" id="solBadge" hidden></b></button>
+        <button class="side-item" type="button" data-view="solicitudes" data-solicitudes title="Solicitudes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span><b class="side-badge" id="solBadge" hidden></b></button>
       </div>
       <div class="side-grupo" data-historial>
         <div class="side-titulo">Reportes</div>
@@ -1347,7 +1386,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div><div class="movil-sheet-titulo" id="movilMasTitulo">Mi cuenta</div><div class="movil-sheet-email" id="movilMasEmail"></div></div>
       </div>
       <button class="movil-sheet-item" type="button" data-ir="seguimiento" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
-      <button class="movil-sheet-item" type="button" data-ir="solicitudes" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="solicitudes" data-solicitudes data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span></button>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
       <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
@@ -1357,6 +1396,23 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <button class="movil-sheet-item salir" type="button" id="movilSalir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h9"/></svg><span>Cerrar sesión</span></button>
     </div>
   </div>
+
+  <button type="button" class="chat-fab" id="chatFab" aria-label="Abrir el chat" title="Chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5a7.5 7.5 0 0 1-11.2 6.5L4 20l1.1-4.3A7.5 7.5 0 1 1 20 12.5z"/><path d="M9 11h6"/><path d="M9 14.5h4"/></svg><b class="side-badge" id="chatBadge" hidden></b></button>
+  <section class="chat-panel" id="chatPanel" role="dialog" aria-labelledby="chatTitulo" hidden>
+    <header class="chat-head">
+      <button type="button" class="icon-btn" id="chatVolver" aria-label="Volver a las conversaciones" hidden>←</button>
+      <div class="chat-head-txt"><b id="chatTitulo">Chat</b><small id="chatSub"></small></div>
+      <button type="button" class="icon-btn" id="chatCerrar" aria-label="Cerrar el chat">✕</button>
+    </header>
+    <div class="chat-convs" id="chatConvs" hidden>
+      <div class="chat-nueva"><select id="chatNueva" aria-label="Escribir a un usuario"><option value="">✏️ Escribir a…</option></select></div>
+      <ul id="chatConvLista"></ul>
+    </div>
+    <div class="chat-hilo" id="chatHilo" hidden>
+      <div class="chat-msgs" id="chatMsgs" aria-live="polite"></div>
+      <form class="chat-form" id="chatForm"><textarea id="chatTexto" rows="1" placeholder="Escribe un mensaje…" aria-label="Mensaje"></textarea><button type="submit" class="primary" id="chatEnviar" aria-label="Enviar">➤</button></form>
+    </div>
+  </section>
 
   <main class="content">
   <header class="movil-top">
@@ -1741,7 +1797,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <div id="viewConfig" hidden>
     <div class="content-header">
       <h1>Usuarios</h1>
-      <p>Los correos anotados aquí entran en vista transportista y ven Entregas, sin montos. Marca «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno, y «Ve el historial» a quien puede revisar las entregas pasadas.</p>
+      <p>Los correos anotados aquí entran en vista transportista y ven Entregas, sin montos. Marca «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno, «Ve el historial» a quien puede revisar las entregas pasadas, «Ve el seguimiento» a quien sigue las rutas en vivo y «Ve las solicitudes» a quien puede pedir rutas (como la agencia).</p>
     </div>
     <section class="card config-card">
       <form class="config-agregar" id="configForm">
@@ -1767,7 +1823,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <ul class="config-lista" id="agenciaLista"></ul>
       <p class="config-msg" id="agenciaMsg" role="status"></p>
     </section>
-    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas, aunque no esté en esta lista; el historial y la liquidación los ven solo los que tengan marcada su casilla.</p>
+    <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas, aunque no esté en esta lista; la liquidación, el historial, el seguimiento y las solicitudes los ven solo los que tengan marcada su casilla.</p>
   </div>
 
   <div id="viewLiqPeriodo" hidden>
@@ -2588,11 +2644,16 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   // Cada lista se guarda en config/app y en hojasDeRuta/principal (se usa la unión).
   //  - conLiquidacion: ve la liquidación del día (montos y visto bueno).
   //  - conHistorial: ve el Historial de entregas.
+  //  - conSeguimiento: ve el Seguimiento en vivo (sin montos).
+  //  - conSolicitudes: pide rutas en Solicitudes, como la agencia.
   // Sin marcar, el transportista solo ve Entregas, sin nada de dinero.
   const PERMISOS = {
     conLiquidacion: { texto: 'Ve la liquidación', config: [], global: [] },
-    conHistorial: { texto: 'Ve el historial', config: [], global: [] }
+    conHistorial: { texto: 'Ve el historial', config: [], global: [] },
+    conSeguimiento: { texto: 'Ve el seguimiento', config: [], global: [] },
+    conSolicitudes: { texto: 'Ve las solicitudes', config: [], global: [] }
   };
+  const QUE_PERMISO = { conLiquidacion: 'la liquidación del día', conHistorial: 'el Historial de entregas', conSeguimiento: 'el Seguimiento', conSolicitudes: 'las Solicitudes' };
   function listaPermiso(campo){
     const pm = PERMISOS[campo];
     return [...new Set(pm.config.concat(pm.global).map(e => String(e).trim().toLowerCase()).filter(Boolean))];
@@ -2600,6 +2661,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function listaConLiquidacion(){ return listaPermiso('conLiquidacion'); }
   let verDinero = true;
   let verHistorial = true;
+  let verSeguimiento = true;
+  let verSolicitudes = true;
   // Agencia: correos que ven en vivo el Seguimiento y el Historial de entregas, sin montos ni edición.
   const AGENCIA = { config: [], global: [] };
   function listaAgencia(){
@@ -2608,7 +2671,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   let modoAgencia = false;
   function vistasPermitidas(){
     if(modoAgencia) return ['seguimiento', 'solicitudes', 'entregashist'];
-    return ['chofer'].concat(verDinero ? ['liquidaciones'] : [], verHistorial ? ['entregashist'] : []);
+    return ['chofer'].concat(verDinero ? ['liquidaciones'] : [], verHistorial ? ['entregashist'] : [], verSeguimiento ? ['seguimiento'] : [], verSolicitudes ? ['solicitudes'] : []);
   }
   function vistaInicial(){ return modoAgencia ? 'seguimiento' : 'chofer'; }
 
@@ -2652,6 +2715,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const dineroAntes = verDinero;
     verDinero = !modoTransportista || (!modoAgencia && listaConLiquidacion().includes(currentEmail()));
     verHistorial = !modoTransportista || modoAgencia || listaPermiso('conHistorial').includes(currentEmail());
+    verSeguimiento = !modoTransportista || modoAgencia || listaPermiso('conSeguimiento').includes(currentEmail());
+    verSolicitudes = !modoTransportista || modoAgencia || listaPermiso('conSolicitudes').includes(currentEmail());
+    document.body.classList.toggle('sin-seguimiento', !verSeguimiento);
+    document.body.classList.toggle('sin-solicitudes', !verSolicitudes);
     document.body.classList.toggle('modo-transportista', modoTransportista);
     document.body.classList.toggle('modo-agencia', modoAgencia);
     $('rolChip').textContent = modoAgencia ? 'Vista agencia' : 'Vista transportista';
@@ -2662,6 +2729,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(antes !== modoTransportista && currentView === 'liquidaciones') renderLiquidaciones();
     if(dineroAntes !== verDinero && currentView === 'chofer') renderChofer();
     pintarTodoSolicitudes();
+    chatAjustarRol();
   }
 
   // Se cortan al cerrar sesión: si no, Firebase los rechaza (ya no hay usuario)
@@ -2671,6 +2739,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   const sinSesion = () => !auth || !auth.currentUser;
   function cerrarSesion(){
     detenerGps(true);
+    chatDetener();
     dejarDeEscucharConfig();
     if(unsub){ unsub(); unsub = null; }
     if(auth) auth.signOut();
@@ -2780,7 +2849,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         chk.setAttribute('aria-label', email + ' ' + pm.texto.toLowerCase());
         chk.addEventListener('change', async () => {
           const ok = await marcarPermisoExtra(campo, email, chk.checked);
-          const que = campo === 'conLiquidacion' ? 'la liquidación del día' : 'el Historial de entregas';
+          const que = QUE_PERMISO[campo];
           pintarConfig(ok ? email + (chk.checked ? ' ahora ve ' : ' ya no ve ') + que + '. Pídele que cierre y vuelva a abrir Ruteka.' : 'Firebase no permitió guardar el cambio (revisa las reglas).', !ok);
         });
         lab.append(chk, document.createTextNode(pm.texto));
@@ -5147,7 +5216,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function pintarBadgeSolicitudes(){
     const todas = todasLasSolicitudes();
     const nOp = modoTransportista ? 0 : todas.filter(s => s.estado === 'pendiente').length;
-    const nAg = modoAgencia ? todas.filter(s => s.estado === 'propuesta').length : 0;
+    const nAg = modoTransportista && verSolicitudes ? todas.filter(s => s.estado === 'propuesta').length : 0;
     const n = nOp || nAg;
     $('solBadge').hidden = !n;
     $('solBadge').textContent = n;
@@ -5199,7 +5268,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return ok;
   }
   function pasoSol(accion, extra){
-    return Object.assign({ accion, at: new Date().toISOString(), por: currentEmail() }, modoAgencia ? { nombre: solicitanteGuardado().nombre || '' } : {}, extra);
+    return Object.assign({ accion, at: new Date().toISOString(), por: currentEmail() }, modoTransportista ? { nombre: solicitanteGuardado().nombre || '' } : {}, extra);
   }
   const proponerFecha = (sol, fecha, comentario) => moverSolicitud(sol, ['pendiente'], s => {
     s.historial.push(pasoSol('propuesta', { fecha, comentario }));
@@ -5398,8 +5467,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     box.hidden = !a;
     if(!a) return;
     box.appendChild(nuevo('span', '', '✅ ' + (a.n === 1 ? '1 despacho pasó' : a.n + ' despachos pasaron') + ' a la ruta del ' + fechaLarga(a.fecha) + '.'));
-    const agencia = modoAgencia;
-    box.appendChild(boton(agencia ? '📍 Ver seguimiento' : '🚚 Ver en Entregas', 'ir-ruta', '', () => { solUltimoAviso = null; irARuta(a.fecha, agencia ? 'seguimiento' : 'chofer'); }));
+    const aSeguimiento = modoTransportista && verSeguimiento;
+    if(!modoTransportista || verSeguimiento) box.appendChild(boton(aSeguimiento ? '📍 Ver seguimiento' : '🚚 Ver en Entregas', 'ir-ruta', '', () => { solUltimoAviso = null; irARuta(a.fecha, aSeguimiento ? 'seguimiento' : 'chofer'); }));
     const x = boton('✕', 'cerrar-ok', 'icon-btn', () => { solUltimoAviso = null; pintarTodoSolicitudes(); });
     x.title = 'Cerrar aviso';
     box.appendChild(x);
@@ -5532,7 +5601,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const espera = t => pie.appendChild(nuevo('span', 'sol-espera', t));
     if(sol.estado === 'programada'){
       espera('✅ Programada en la ruta del ' + fechaDM(sol.rutaFecha) + ' por ' + (sol.resueltoPor || '—') + ' · ' + fechaCorta(sol.resueltoAt));
-      pie.appendChild(boton('📍 Ver seguimiento', 'seguimiento', '', () => irARuta(sol.rutaFecha, 'seguimiento')));
+      if(verSeguimiento) pie.appendChild(boton('📍 Ver seguimiento', 'seguimiento', '', () => irARuta(sol.rutaFecha, 'seguimiento')));
     } else if(sol.estado === 'rechazada'){
       espera('✕ Rechazada por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : ''));
     } else if(sol.estado === 'cancelada'){
@@ -5600,6 +5669,245 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     cont.innerHTML = '';
     pend.forEach(s => cont.appendChild(tarjetaSolicitud(s, { compacta: true })));
   }
+
+  /* ============================================================
+     CHAT EN LÍNEA (operación ⇄ cada usuario)
+     Una conversación por usuario en hojasDeRuta/chat_<correo> y un índice
+     (hojasDeRuta/chat_indice) con el último mensaje y los no leídos, para
+     que la operación vea todas las conversaciones. Se actualiza en vivo.
+     ============================================================ */
+  var CHAT_PREFIJO = 'chat_', CHAT_INDICE = 'chat_indice', CHAT_MAX = 500;
+  var chatIndice = {};       // operación: { correo: { nombre, ultimo, at, op, sinLeerOp, sinLeerUsuario } }
+  var chatPropia = null;     // usuario: su conversación { mensajes, sinLeerOp, sinLeerUsuario }
+  var chatConv = null;       // conversación que se está viendo
+  var chatAbierto = null;    // correo de la conversación abierta (null = lista, solo la operación)
+  var chatUnsubIndice = null, chatUnsubPropia = null, chatUnsubConv = null;
+  function chatEsOp(){ return !modoTransportista; }
+  function chatRef(id){ return db.collection('hojasDeRuta').doc(id); }
+  function leerConv(sn){
+    const c = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : {};
+    return { mensajes: c.mensajes || [], sinLeerOp: c.sinLeerOp || 0, sinLeerUsuario: c.sinLeerUsuario || 0 };
+  }
+  function leerIndice(sn){ return sn.exists && sn.data().json ? (JSON.parse(sn.data().json).conv || {}) : {}; }
+  // Se llama desde aplicarRol: la operación escucha el índice; los demás, solo su conversación.
+  function chatAjustarRol(){
+    if(!db || sinSesion()) return;
+    if(chatEsOp()){
+      if(chatUnsubPropia){ chatUnsubPropia(); chatUnsubPropia = null; chatPropia = null; }
+      if(!chatUnsubIndice) chatUnsubIndice = chatRef(CHAT_INDICE).onSnapshot(sn => { chatIndice = leerIndice(sn); pintarChat(); }, () => {});
+    } else {
+      if(chatUnsubIndice){ chatUnsubIndice(); chatUnsubIndice = null; chatIndice = {}; }
+      const yo = currentEmail();
+      if(!chatUnsubPropia && yo) chatUnsubPropia = chatRef(CHAT_PREFIJO + yo).onSnapshot(sn => {
+        chatPropia = leerConv(sn);
+        if(chatAbierto === yo) chatConv = chatPropia;
+        pintarChat();
+        chatMarcarLeido();
+      }, () => {});
+      if(chatAbierto !== yo){ chatAbierto = yo; chatConv = chatPropia; }
+    }
+    pintarChat();
+  }
+  function chatDetener(){
+    [chatUnsubIndice, chatUnsubPropia, chatUnsubConv].forEach(f => { if(f) try{ f(); }catch(e){} });
+    chatUnsubIndice = chatUnsubPropia = chatUnsubConv = null;
+    chatIndice = {}; chatPropia = null; chatConv = null; chatAbierto = null;
+    $('chatPanel').hidden = true;
+    pintarChat();
+  }
+  // Envía un mensaje y actualiza el índice en la misma transacción.
+  async function chatEnviar(email, texto){
+    const op = chatEsOp();
+    const ahora = new Date().toISOString();
+    const msg = { id: 'm' + uid(), de: currentEmail(), op, texto, at: ahora };
+    const nombre = op ? '' : (solicitanteGuardado().nombre || '');
+    if(nombre) msg.nombre = nombre;
+    const refC = chatRef(CHAT_PREFIJO + email), refI = chatRef(CHAT_INDICE);
+    await db.runTransaction(async tx => {
+      const c = leerConv(await tx.get(refC));
+      const ind = leerIndice(await tx.get(refI));
+      c.mensajes.push(msg);
+      if(c.mensajes.length > CHAT_MAX) c.mensajes = c.mensajes.slice(-CHAT_MAX);
+      if(op){ c.sinLeerUsuario++; c.sinLeerOp = 0; } else { c.sinLeerOp++; c.sinLeerUsuario = 0; }
+      const e = ind[email] = Object.assign(ind[email] || {}, { ultimo: texto.slice(0, 120), at: ahora, op, sinLeerOp: c.sinLeerOp, sinLeerUsuario: c.sinLeerUsuario });
+      if(nombre) e.nombre = nombre;
+      const quien = currentEmail();
+      tx.set(refC, { json: JSON.stringify(c), email, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: quien }, { merge: true });
+      tx.set(refI, { json: JSON.stringify({ conv: ind }), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: quien }, { merge: true });
+    });
+  }
+  // Al ver la conversación, se marcan como leídos los mensajes del otro lado.
+  let chatMarcando = false;
+  async function chatMarcarLeido(){
+    const email = chatAbierto;
+    if(!email || $('chatPanel').hidden || !chatConv || chatMarcando || document.visibilityState === 'hidden') return;
+    const campo = chatEsOp() ? 'sinLeerOp' : 'sinLeerUsuario';
+    if(!chatConv[campo]) return;
+    chatMarcando = true;
+    try{
+      const refC = chatRef(CHAT_PREFIJO + email), refI = chatRef(CHAT_INDICE);
+      await db.runTransaction(async tx => {
+        const c = leerConv(await tx.get(refC));
+        const ind = leerIndice(await tx.get(refI));
+        if(!c[campo]) return;
+        c[campo] = 0;
+        if(ind[email]) ind[email][campo] = 0;
+        tx.set(refC, { json: JSON.stringify(c) }, { merge: true });
+        tx.set(refI, { json: JSON.stringify({ conv: ind }) }, { merge: true });
+      });
+    }catch(err){ console.warn('No se pudo marcar el chat como leído', err); }
+    finally{ chatMarcando = false; }
+  }
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') chatMarcarLeido(); });
+
+  function chatNoLeidos(){
+    if(chatEsOp()) return Object.values(chatIndice).reduce((s, c) => s + (c.sinLeerOp || 0), 0);
+    return chatPropia ? chatPropia.sinLeerUsuario : 0;
+  }
+  const TITULO_BASE = document.title;
+  function pintarChat(){
+    const n = chatNoLeidos();
+    $('chatBadge').hidden = !n;
+    $('chatBadge').textContent = n > 99 ? '99+' : n;
+    $('chatFab').setAttribute('aria-label', n ? 'Abrir el chat (' + n + ' sin leer)' : 'Abrir el chat');
+    document.title = (n ? '(' + n + ') ' : '') + TITULO_BASE;
+    const abierto = !$('chatPanel').hidden;
+    $('chatFab').hidden = abierto;
+    if(!abierto) return;
+    const op = chatEsOp();
+    const enLista = op && !chatAbierto;
+    $('chatConvs').hidden = !enLista;
+    $('chatHilo').hidden = enLista;
+    $('chatVolver').hidden = !op || enLista;
+    if(enLista){
+      $('chatTitulo').textContent = 'Chat';
+      $('chatSub').textContent = 'Conversaciones con transportistas y agencia';
+      pintarConversaciones();
+    } else {
+      const e = op ? (chatIndice[chatAbierto] || {}) : null;
+      $('chatTitulo').textContent = op ? (e.nombre || chatAbierto) : 'Operación';
+      $('chatSub').textContent = op ? (e.nombre ? chatAbierto : 'En línea por Ruteka') : 'Te responden aquí mismo';
+      pintarMensajes();
+    }
+  }
+  function pintarConversaciones(){
+    const ul = $('chatConvLista');
+    ul.innerHTML = '';
+    const lista = Object.entries(chatIndice).sort((a, b) => String(b[1].at).localeCompare(String(a[1].at)));
+    if(!lista.length) ul.appendChild(nuevo('li', 'chat-vacio', 'Todavía no hay conversaciones. Cuando alguien te escriba aparecerá aquí, o usa «Escribir a…».'));
+    lista.forEach(([email, c]) => {
+      const li = nuevo('li');
+      const b = nuevo('button', 'chat-conv' + (c.sinLeerOp ? ' sin-leer' : ''));
+      b.type = 'button'; b.dataset.email = email;
+      const titulo = c.nombre || email;
+      const av = nuevo('span', 'sol-avatar', iniciales(titulo)); av.style.background = colorDe(email); av.setAttribute('aria-hidden', 'true');
+      const tx = nuevo('div', 'chat-conv-txt');
+      tx.append(nuevo('b', '', titulo), nuevo('span', '', (c.op ? 'Tú: ' : '') + (c.ultimo || '')));
+      const der = nuevo('div', 'chat-conv-der', horaChat(c.at));
+      if(c.sinLeerOp) der.appendChild(nuevo('b', 'side-badge', String(c.sinLeerOp)));
+      b.append(av, tx, der);
+      b.addEventListener('click', () => chatAbrirConversacion(email));
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    // «Escribir a…»: transportistas y agencia que todavía no tienen conversación.
+    const sel = $('chatNueva');
+    const yaHay = new Set(Object.keys(chatIndice));
+    const otros = [...new Set(listaTransportistas().concat(listaAgencia()))].filter(e => !yaHay.has(e) && e !== currentEmail()).sort();
+    sel.innerHTML = '';
+    sel.appendChild(new Option(otros.length ? '✏️ Escribir a…' : '✏️ Todos tienen conversación', ''));
+    otros.forEach(e => sel.appendChild(new Option(e, e)));
+    sel.disabled = !otros.length;
+  }
+  function horaChat(iso){
+    const d = new Date(iso);
+    if(isNaN(d)) return '';
+    return fechaLocal(d) === fechaLocal() ? d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' });
+  }
+  function pintarMensajes(){
+    const cont = $('chatMsgs');
+    const abajo = cont.scrollHeight - cont.scrollTop - cont.clientHeight < 60;
+    cont.innerHTML = '';
+    const msgs = (chatConv && chatConv.mensajes) || [];
+    const op = chatEsOp();
+    if(!msgs.length) cont.appendChild(nuevo('p', 'chat-vacio', op ? 'Escribe el primer mensaje.' : '¿Necesitas algo? Escríbele a la operación y te responden aquí mismo.'));
+    let dia = '';
+    msgs.forEach(m => {
+      const d = new Date(m.at);
+      const f = fechaLocal(d);
+      if(f !== dia){
+        dia = f;
+        cont.appendChild(nuevo('div', 'chat-dia', f === fechaLocal() ? 'Hoy' : f === sumarDias(fechaLocal(), -1) ? 'Ayer' : fechaLarga(f)));
+      }
+      const mio = op ? !!m.op : !m.op;
+      const div = nuevo('div', 'chat-msg' + (mio ? ' mio' : ''));
+      // Quién escribe, cuando no es obvio: el usuario ve «Operación»; la operación ve a qué compañero le respondió.
+      if(!mio && !op) div.appendChild(nuevo('small', '', 'Operación'));
+      if(mio && op && m.de !== currentEmail()) div.appendChild(nuevo('small', '', m.de));
+      div.appendChild(document.createTextNode(m.texto));
+      div.appendChild(nuevo('time', '', d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })));
+      cont.appendChild(div);
+    });
+    if(abajo || chatPegarAbajo){ cont.scrollTop = cont.scrollHeight; chatPegarAbajo = false; }
+  }
+  let chatPegarAbajo = false;
+  function chatAbrirConversacion(email){
+    if(chatUnsubConv){ chatUnsubConv(); chatUnsubConv = null; }
+    chatAbierto = email;
+    chatConv = { mensajes: [], sinLeerOp: 0, sinLeerUsuario: 0 };
+    chatPegarAbajo = true;
+    chatUnsubConv = chatRef(CHAT_PREFIJO + email).onSnapshot(sn => {
+      if(chatAbierto !== email) return;
+      chatConv = leerConv(sn);
+      pintarChat();
+      chatMarcarLeido();
+    }, () => {});
+    pintarChat();
+    $('chatTexto').focus();
+  }
+  function chatAbrir(){
+    $('chatPanel').hidden = false;
+    chatPegarAbajo = true;
+    if(!chatEsOp()){ chatAbierto = currentEmail(); chatConv = chatPropia; }
+    pintarChat();
+    chatMarcarLeido();
+    if(!chatEsOp() || chatAbierto) $('chatTexto').focus();
+  }
+  function chatCerrar(){
+    $('chatPanel').hidden = true;
+    pintarChat();
+    $('chatFab').focus();
+  }
+  $('chatFab').addEventListener('click', chatAbrir);
+  $('chatCerrar').addEventListener('click', chatCerrar);
+  $('chatPanel').addEventListener('keydown', e => { if(e.key === 'Escape') chatCerrar(); });
+  $('chatVolver').addEventListener('click', () => {
+    if(chatUnsubConv){ chatUnsubConv(); chatUnsubConv = null; }
+    chatAbierto = null; chatConv = null;
+    pintarChat();
+  });
+  $('chatNueva').addEventListener('change', () => { const e = $('chatNueva').value; if(e) chatAbrirConversacion(e); });
+  $('chatTexto').addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); $('chatForm').requestSubmit(); }
+  });
+  $('chatTexto').addEventListener('input', () => { const t = $('chatTexto'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 120) + 'px'; });
+  $('chatForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const texto = $('chatTexto').value.trim();
+    const email = chatAbierto;
+    if(!texto || !email || !db) return;
+    $('chatEnviar').disabled = true;
+    try{
+      await chatEnviar(email, texto);
+      $('chatTexto').value = '';
+      $('chatTexto').style.height = '';
+      chatPegarAbajo = true;
+      pintarChat();
+    }catch(err){
+      console.error(err);
+      showDialog('No se pudo enviar el mensaje: ' + err.message);
+    }finally{ $('chatEnviar').disabled = false; $('chatTexto').focus(); }
+  });
 
   /* ============================================================
      UBICACIÓN DEL CAMIÓN (GPS) Y SEGUIMIENTO PARA LA AGENCIA
