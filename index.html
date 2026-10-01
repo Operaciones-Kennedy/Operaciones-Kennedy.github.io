@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-01 · 2";
+const VERSION_APP = "2026-10-01 · 3";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -751,6 +751,23 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .seg-cli b{ display:block; }
   .seg-cli span{ color:var(--muted); font-size:13px; }
   .seg-eta{ font-size:12px; font-weight:700; color:var(--marca-principal-oscuro); margin-top:2px; }
+  .seg-pasos{ list-style:none; margin:14px 0 4px; padding:0; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); }
+  .seg-paso{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; font-size:11px; color:var(--muted); }
+  .seg-paso::before{ content:''; position:absolute; top:15px; right:50%; width:100%; height:4px; background:#dbe5e3; }
+  .seg-paso:first-child::before{ display:none; }
+  .seg-paso.hecho::before{ background:var(--marca-principal-claro); }
+  .seg-paso.fallo::before{ background:#E5484D; }
+  .seg-punto{ position:relative; z-index:1; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:#e3ecea; border:3px solid #fff; color:#fff; font-weight:800; font-size:14px; box-shadow:0 0 0 1px #dbe5e3; }
+  .seg-paso.hecho .seg-punto{ background:var(--marca-principal-claro); box-shadow:none; }
+  .seg-paso.fallo .seg-punto{ background:#E5484D; }
+  .seg-paso.actual:not(.fallo) .seg-punto{ background:#fff; box-shadow:0 0 0 3px var(--marca-principal-claro); }
+  .seg-paso.actual.hecho:last-child:not(.fallo) .seg-punto{ background:var(--marca-principal); color:#fff; }
+  .seg-camion{ display:inline-block; font-size:19px; transform:scaleX(-1); animation:segCamion 1.4s ease-in-out infinite; }
+  @keyframes segCamion{ 0%, 100%{ transform:scaleX(-1) translateX(0); } 50%{ transform:scaleX(-1) translateX(-3px); } }
+  @media (prefers-reduced-motion: reduce){ .seg-camion{ animation:none; } }
+  .seg-paso b{ font-size:12px; color:var(--text); line-height:1.2; margin-top:2px; }
+  .seg-paso:not(.hecho) b{ color:var(--muted); font-weight:600; }
+  .seg-paso small{ font-size:11px; font-weight:700; color:var(--marca-principal-oscuro); }
   .seg-linea{ list-style:none; margin:10px 0 0 13px; padding:0 0 0 18px; border-left:2px solid #dbe5e3; display:flex; flex-direction:column; gap:6px; }
   .seg-linea li{ position:relative; font-size:13px; }
   .seg-linea li::before{ content:''; position:absolute; left:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:#9fb3b0; border:2px solid #fff; }
@@ -1731,7 +1748,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   // No se guardan en línea hasta que tengan algún dato.
   const filasNuevas = new Set();
   function defaultRow(){
-    return { id: uid(), cliente:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false };
+    return { id: uid(), cliente:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false, creadoAt: new Date().toISOString() };
   }
   // Trazabilidad: cada cambio de estado queda anotado con fecha, hora y quién lo hizo.
   function registrarEvento(row, tipo){
@@ -1739,7 +1756,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
   function filaVacia(r){
     if(r.estado && r.estado !== 'pendiente') return false;
-    return Object.keys(r).every(k => k === 'id' || k === 'estado' || k === 'pagado' || r[k] == null || r[k] === '' || r[k] === false || (Array.isArray(r[k]) && !r[k].length));
+    return Object.keys(r).every(k => k === 'id' || k === 'estado' || k === 'pagado' || k === 'creadoAt' || r[k] == null || r[k] === '' || r[k] === false || (Array.isArray(r[k]) && !r[k].length));
   }
   function sinVacias(st){
     const c = JSON.parse(JSON.stringify(st));
@@ -3024,7 +3041,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     [...porDia.keys()].sort().forEach(fecha => {
       const st = porDia.get(fecha);
       st.rows.filter(r => r.cliente || r.direccion || Number(r.tarifa)).forEach(r => {
-        rows.push(Object.assign({}, r, { _fecha: fecha, _transportista: (st.transportista || '').replace(/^—.*—$/, '').trim(), _transportistaEmail: st.transportistaEmail || '' }));
+        rows.push(Object.assign({}, r, { _fecha: fecha, _transportista: (st.transportista || '').replace(/^—.*—$/, '').trim(), _transportistaEmail: st.transportistaEmail || '', _salida: st.horaSalida || '' }));
       });
     });
     periodo.rows = rows;
@@ -4129,7 +4146,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     dup.textContent = '⧉';
     dup.addEventListener('click', () => {
       const idx = state.rows.findIndex(r => r.id === row.id);
-      const copy = Object.assign({}, row, { id: uid() });
+      const copy = Object.assign({}, row, { id: uid(), creadoAt: new Date().toISOString() });
       state.rows.splice(idx + 1, 0, copy);
       commit();
       renderRows();
@@ -5017,6 +5034,39 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const sinUbicar = rows.filter(r => r.lat == null || r.lng == null).length;
     $('segMapaNota').textContent = sinUbicar ? sinUbicar + ' despacho(s) todavía sin ubicar en el mapa.' : '';
   }
+  // Pasos del envío: pedido creado → programado → en ruta → entregado, con el camión en el paso actual.
+  function pasosEnvio(r, ev){
+    const fecha = fechaDe(r);
+    const ultimo = tipo => ev.filter(x => x.tipo === tipo).slice(-1)[0];
+    const enRutaEv = ultimo('en-ruta');
+    const cierre = r.estado === 'entregado' || r.estado === 'no-entregado' ? ultimo(r.estado) : null;
+    const salida = r._fecha ? r._salida : state.horaSalida;
+    const pasos = [
+      { t: 'Pedido creado', d: r.creadoAt ? horaCorta(r.creadoAt, fecha) : '', hecho: true },
+      { t: 'Programado', d: fecha.split('-').reverse().slice(0, 2).join('/') + (salida ? ' · ' + salida : ''), hecho: true },
+      { t: 'En ruta', d: enRutaEv ? horaCorta(enRutaEv.at, fecha) : '', hecho: r.estado !== 'pendiente' },
+      { t: r.estado === 'no-entregado' ? 'No entregado' : 'Entregado', d: cierre ? horaCorta(cierre.at, fecha) : '', hecho: !!cierre || r.estado === 'entregado' || r.estado === 'no-entregado', fallo: r.estado === 'no-entregado' }
+    ];
+    const actual = pasos.map(x => x.hecho).lastIndexOf(true);
+    const ol = document.createElement('ol');
+    ol.className = 'seg-pasos';
+    ol.setAttribute('aria-label', 'Estado del envío: ' + pasos[actual].t);
+    pasos.forEach((x, i) => {
+      const li = document.createElement('li');
+      li.className = 'seg-paso' + (x.hecho ? ' hecho' : '') + (i === actual ? ' actual' : '') + (x.fallo ? ' fallo' : '');
+      if(i === actual) li.setAttribute('aria-current', 'step');
+      const punto = document.createElement('span');
+      punto.className = 'seg-punto';
+      punto.setAttribute('aria-hidden', 'true');
+      if(i === actual && i < 3) punto.innerHTML = '<span class="seg-camion">🚚</span>';
+      else punto.textContent = x.fallo ? '✕' : (x.hecho ? '✓' : '');
+      const b = document.createElement('b'); b.textContent = x.t;
+      li.append(punto, b);
+      if(x.d){ const d = document.createElement('small'); d.textContent = x.d; li.appendChild(d); }
+      ol.appendChild(li);
+    });
+    return ol;
+  }
   // Tarjeta de un envío con su trazabilidad (Seguimiento y Entregas por rango). Sin montos salvo «dinero».
   function tarjetaEnvio(r, n, opciones){
     const fecha = fechaDe(r);
@@ -5033,6 +5083,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     top.append(num, cli, pill);
     card.appendChild(top);
     const ev = eventosDe(r);
+    card.appendChild(pasosEnvio(r, ev));
     if(ev.length){
       const ul = document.createElement('ul'); ul.className = 'seg-linea';
       ev.forEach(x => {
