@@ -87,7 +87,7 @@ console.log('La operación programa una y rechaza otra');
   const idxB = await p.$$eval(cards, cs => cs.findIndex(c => c.textContent.includes('Sin stock')));
   await p.click(`${cards}:nth-child(${idxB + 1}) [data-acc="rechazar"]`); await p.waitForTimeout(150);
   await p.click(`${cards}:nth-child(${idxB + 1}) [data-acc="confirmar"]`); await p.waitForTimeout(150);
-  check('para rechazar pide el motivo', (await solDoc(p)).lista.find(x => x.id === 'solB').estado === 'pendiente' && (await p.textContent(`${cards}:nth-child(${idxB + 1}) .sol-panel`)).includes('Escribí el motivo'));
+  check('para rechazar pide el motivo', (await solDoc(p)).lista.find(x => x.id === 'solB').estado === 'pendiente' && (await p.textContent(`${cards}:nth-child(${idxB + 1}) .sol-panel`)).includes('Escribe el motivo'));
   await p.fill(`${cards}:nth-child(${idxB + 1}) [data-k="texto"]`, 'No hay camión ese día');
   await p.click(`${cards}:nth-child(${idxB + 1}) [data-acc="confirmar"]`); await p.waitForTimeout(500);
   d = await solDoc(p);
