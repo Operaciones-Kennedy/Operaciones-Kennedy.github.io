@@ -29,6 +29,12 @@ console.log('El administrador agrega un correo de agencia');
   await p.fill('#agenciaEmail', 'jefe@prueba.cl'); await p.click('#agenciaForm button[type=submit]'); await p.waitForTimeout(200);
   check('no deja agregarse a uno mismo', (await p.textContent('#agenciaMsg')).includes('tu propio correo'));
   check('el administrador también ve Seguimiento', await p.isVisible('.side-item[data-view="seguimiento"]'));
+  await p.click('.side-item[data-view="despachos"]'); await p.waitForTimeout(150);
+  await p.click('#btnAddRow'); await p.waitForTimeout(100);
+  await p.click('#tbody tr:last-child td:nth-child(2)'); await p.keyboard.type('Nuevo cliente');
+  await p.click('#hojaInfo'); await p.waitForTimeout(900);
+  const nuevo = (await rowsOf(p, 'hojasDeRuta', DIA)).rows.find(r => r.cliente === 'Nuevo cliente');
+  check('un despacho nuevo guarda cuándo se creó', nuevo && /^\d{4}-\d{2}-\d{2}T/.test(nuevo.creadoAt || ''), JSON.stringify(nuevo));
   sinErrores(p);
   await p.context().close();
 }
@@ -46,6 +52,10 @@ for (const w of [1280, 390]) {
   check('trazabilidad: hora y quién registró la entrega', txt.includes('11:30') && txt.includes('trs.barrientos80@gmail.com') && txt.includes('Recibió: Ignacio Suárez'));
   check('ubicación del camión en vivo', (await p.textContent('#segGps')).includes('En vivo') && (await p.textContent('#segGps')).includes('hace 2 min'), await p.textContent('#segGps'));
   check('no muestra montos', !txt.includes('$'));
+  const pasos = () => p.$$eval('#segLista .seg-card', cs => cs.map(c => [...c.querySelectorAll('.seg-paso')].map(li => (li.classList.contains('actual') ? '>' : '') + (li.classList.contains('hecho') ? '✓' : '·') + li.querySelector('b').textContent + (li.querySelector('.seg-camion') ? '🚚' : '')).join(' ')));
+  const p1 = await pasos();
+  check('pasos: pendiente queda en «Programado» con el camión', p1[0] === '✓Pedido creado >✓Programado🚚 ·En ruta ·Entregado', p1[0]);
+  check('pasos: entregado completa los cuatro', p1[1] === '✓Pedido creado ✓Programado ✓En ruta >✓Entregado', p1[1]);
   await p.evaluate(() => document.querySelector('.side-item[data-view="chofer"]').click()); await p.waitForTimeout(150);
   await p.evaluate(() => document.querySelector('.side-item[data-view="despachos"]').click()); await p.waitForTimeout(150);
   check('no puede abrir Entregas ni la Ruta del día', !(await p.$eval('#viewSeguimiento', e => e.hidden)) && await p.$eval('#viewChofer', e => e.hidden) && await p.$eval('#viewDespachos', e => e.hidden));
@@ -58,6 +68,7 @@ for (const w of [1280, 390]) {
   }, DIA);
   await p.waitForTimeout(300);
   const txt2 = await p.textContent('#segLista');
+  check('el camión avanza a «En ruta» con su hora', (await pasos())[0] === '✓Pedido creado ✓Programado >✓En ruta🚚 ·Entregado' && (await p.textContent('#segLista .seg-card:first-child .seg-pasos')).includes('10:05'), (await pasos())[0]);
   check('se actualiza en vivo con la hora de salida a ruta', txt2.includes('10:05') && txt2.includes('Salió a ruta') && (await p.textContent('#segChips')).includes('1 En ruta'), txt2.slice(0, 200));
   if(process.env.CAPTURA) await p.screenshot({ path: process.env.CAPTURA.replace('.png', '-' + w + '.png'), fullPage: true });
   if (w <= 820) {
