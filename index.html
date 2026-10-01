@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-01 · 1";
+const VERSION_APP = "2026-10-01 · 2";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -303,6 +303,15 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .hoja-bar input[type="date"]{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; font-size:14px; font-weight:700; color:var(--text); background:#fff; }
   .hoja-bar select{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; font-size:13px; color:var(--text); background:#fff; max-width:100%; min-width:0; }
   .hoja-bar button{ padding:7px 12px; }
+  .hoja-dia, .hoja-rango{ display:contents; }
+  .hoja-rango label{ font-size:13px; font-weight:700; color:var(--muted); }
+  .hoja-modo{ display:inline-flex; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; }
+  .hoja-bar .hoja-modo button{ border:0; border-radius:0; padding:7px 14px; font-weight:700; background:none; color:var(--muted); }
+  .hoja-bar .hoja-modo button.activo{ background:var(--marca-principal); color:#fff; }
+  .rango-nota{ font-size:13px; color:var(--muted); margin:0 0 12px; }
+  .seg-dia{ margin:18px 0 2px; font-size:15px; color:var(--marca-principal-oscuro); }
+  .seg-dia::first-letter{ text-transform:uppercase; }
+  .seg-dia small{ font-weight:600; color:var(--muted); text-transform:none; margin-left:6px; }
   .hoja-bar .hoja-nav{ padding:6px 8px; font-size:13px; color:var(--accent-dark); }
   .hoja-bar-info{ font-size:12.5px; color:var(--muted); font-weight:600; margin-left:auto; }
   @media (max-width:480px){ .hoja-bar-info{ margin-left:0; width:100%; } .hoja-bar select{ width:100%; } }
@@ -1225,12 +1234,27 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   </header>
   <div class="aviso-permisos" id="avisoPermisos" role="alert" hidden></div>
   <div class="hoja-bar" id="hojaBar">
+    <div class="hoja-modo" id="hojaModo" role="group" aria-label="Ver por" hidden>
+      <button type="button" data-modo="dia">Día</button><button type="button" data-modo="rango">Rango</button>
+    </div>
+    <span class="hoja-dia" id="hojaDia">
     <span class="hoja-bar-label">📅 Ruta del</span>
     <button class="icon-btn hoja-nav" id="hojaPrev" title="Día anterior" aria-label="Día anterior">◀</button>
     <input type="date" id="hojaFecha" aria-label="Fecha de la ruta">
     <button class="icon-btn hoja-nav" id="hojaNext" title="Día siguiente" aria-label="Día siguiente">▶</button>
     <button id="hojaHoy">Hoy</button>
     <select id="hojaRecientes" aria-label="Rutas guardadas"><option value="">Rutas guardadas…</option></select>
+    </span>
+    <span class="hoja-rango rango-ctrl" id="hojaRango" hidden>
+      <label for="rDesdeR">Desde</label><input type="date" id="rDesdeR">
+      <label for="rHastaR">Hasta</label><input type="date" id="rHastaR">
+      <span class="rango-atajos">
+        <button type="button" data-rango="semana">Esta semana</button>
+        <button type="button" data-rango="mes">Este mes</button>
+        <button type="button" data-rango="mespasado">Mes pasado</button>
+      </span>
+      <span class="rango-info" id="rInfoR"></span>
+    </span>
     <span class="rol-chip" id="rolChip" hidden>Vista transportista</span>
     <span class="hoja-bar-info" id="hojaInfo"></span>
   </div>
@@ -1361,6 +1385,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <div><b>📍 Ubicación para la agencia</b><p id="gpsEstado">No se está compartiendo.</p></div>
       <button type="button" id="btnGps">Compartir mi ubicación</button>
     </section>
+    <p class="rango-nota" id="choferRangoNota" hidden>Vista de varios días, solo para revisar. Para registrar una entrega, cambiá a «Día».</p>
     <div id="choferList"></div>
   </div>
 
@@ -1387,7 +1412,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <div id="viewReportes" hidden>
     <div class="content-header">
       <h1>Reportes</h1>
-      <p>Resumen de los despachos cargados en esta hoja de ruta.</p>
+      <p id="reportesSub">Resumen de los despachos cargados en esta hoja de ruta.</p>
     </div>
 
     <section class="stat-grid">
@@ -1617,7 +1642,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <div class="toolbar">
       <button class="primary" id="btnImprimirLiq">🖨️ Imprimir liquidación (PDF)</button>
       <span class="spacer"></span>
-      <label class="vb-email" for="liqTransportistaEmail">
+      <label class="vb-email" id="liqEmailBox" for="liqTransportistaEmail">
         <span>Correo del transportista</span>
         <input type="email" id="liqTransportistaEmail" placeholder="correo@transportista.cl" autocomplete="off">
       </label>
@@ -1629,6 +1654,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           <thead>
             <tr>
               <th class="col-num">N°</th>
+              <th id="thLiqFecha" hidden>Fecha</th>
               <th>Cliente</th>
               <th>Dirección</th>
               <th>Estado</th>
@@ -1990,8 +2016,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function currentEmail(){
     return ((auth && auth.currentUser && auth.currentUser.email) || '').trim().toLowerCase();
   }
-  function puedeDarVistoBueno(){
-    const t = (state.transportistaEmail || '').trim().toLowerCase();
+  function puedeDarVistoBueno(row){
+    const t = ((row && row._fecha && row._fecha !== hojaId ? row._transportistaEmail : state.transportistaEmail) || '').trim().toLowerCase();
     return !t || t === currentEmail();
   }
   function vistoBuenoDe(row){
@@ -2005,18 +2031,18 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(isNaN(d)) return '';
     return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
   }
+  const vbClave = row => fechaDe(row) + '|' + row.id;
   function marcarVistoBueno(row, estado, comentario){
-    row.vistoBueno = {
+    const vb = {
       estado,
       por: currentEmail() || 'sin sesión',
       at: new Date().toISOString(),
       tarifa: Number(row.tarifa) || 0,
       comentario: comentario || ''
     };
-    vbEditando.delete(row.id);
-    vbBorrador.delete(row.id);
-    renderLiquidaciones();
-    commit();
+    vbEditando.delete(vbClave(row));
+    vbBorrador.delete(vbClave(row));
+    actualizarFila(row, r => { r.vistoBueno = Object.assign({}, vb); });
   }
 
   function celdaVistoBueno(row){
@@ -2025,15 +2051,15 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const box = document.createElement('div');
     box.className = 'vb-box';
     td.appendChild(box);
-    const puede = puedeDarVistoBueno();
+    const puede = puedeDarVistoBueno(row);
     const vb = vistoBuenoDe(row);
 
-    if(puede && vbEditando.has(row.id)){
+    if(puede && vbEditando.has(vbClave(row))){
       const ta = document.createElement('textarea');
       ta.id = 'vbObs-' + row.id;
       ta.placeholder = '¿Qué no te cuadra de este despacho?';
-      ta.value = vbBorrador.has(row.id) ? vbBorrador.get(row.id) : ((row.vistoBueno && row.vistoBueno.estado === 'observado' && row.vistoBueno.comentario) || '');
-      ta.addEventListener('input', () => vbBorrador.set(row.id, ta.value));
+      ta.value = vbBorrador.has(vbClave(row)) ? vbBorrador.get(vbClave(row)) : ((row.vistoBueno && row.vistoBueno.estado === 'observado' && row.vistoBueno.comentario) || '');
+      ta.addEventListener('input', () => vbBorrador.set(vbClave(row), ta.value));
       const btns = document.createElement('div');
       btns.className = 'vb-btns';
       const enviar = document.createElement('button');
@@ -2045,7 +2071,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       });
       const cancelar = document.createElement('button');
       cancelar.textContent = 'Cancelar';
-      cancelar.addEventListener('click', () => { vbEditando.delete(row.id); vbBorrador.delete(row.id); renderLiquidaciones(); });
+      cancelar.addEventListener('click', () => { vbEditando.delete(vbClave(row)); vbBorrador.delete(vbClave(row)); renderLiquidaciones(); });
       btns.append(enviar, cancelar);
       box.append(ta, btns);
       setTimeout(() => ta.focus(), 0);
@@ -2070,7 +2096,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         const cambiar = document.createElement('button');
         cambiar.className = 'vb-link';
         cambiar.textContent = 'Cambiar mi respuesta';
-        cambiar.addEventListener('click', () => { delete row.vistoBueno; renderLiquidaciones(); commit(); });
+        cambiar.addEventListener('click', () => actualizarFila(row, r => { delete r.vistoBueno; }));
         box.appendChild(cambiar);
       }
       return td;
@@ -2092,7 +2118,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const obs = document.createElement('button');
       obs.className = 'vb-obs';
       obs.textContent = '⚠️ Observar';
-      obs.addEventListener('click', () => { vbEditando.add(row.id); renderLiquidaciones(); });
+      obs.addEventListener('click', () => { vbEditando.add(vbClave(row)); renderLiquidaciones(); });
       btns.append(ok, obs);
       box.appendChild(btns);
     } else if(!vb.cambioTarifa){
@@ -2110,9 +2136,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const inputEmail = $('liqTransportistaEmail');
     if(document.activeElement !== inputEmail) inputEmail.value = state.transportistaEmail || '';
     inputEmail.disabled = modoTransportista;
+    const rango = enRango();
+    $('liqEmailBox').hidden = rango;
+    $('thLiqFecha').hidden = !rango;
+    const filas = rango ? filasDelRango() : state.rows;
+    const numeros = numerar(filas);
 
     let total = 0, pagado = 0, vbConforme = 0, vbObservado = 0, vbTotal = 0;
-    state.rows.forEach((row, idx) => {
+    filas.forEach((row, idx) => {
       const tarifa = Number(row.tarifa) || 0;
       total += tarifa;
       if(row.pagado) pagado += tarifa;
@@ -2121,8 +2152,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
       const tdNum = document.createElement('td');
       tdNum.className = 'col-num';
-      tdNum.textContent = String(idx + 1);
+      tdNum.textContent = String(rango ? numeros.get(row) : idx + 1);
       tr.appendChild(tdNum);
+      if(rango){
+        const tdF = document.createElement('td');
+        tdF.textContent = fechaDe(row).split('-').reverse().join('/');
+        tdF.className = 'liq-fecha';
+        tr.appendChild(tdF);
+      }
 
       const tdCliente = document.createElement('td');
       tdCliente.textContent = row.cliente || '(sin cliente)';
@@ -2151,7 +2188,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       inputFactura.placeholder = 'N° factura';
       inputFactura.value = row.numeroFactura || '';
       inputFactura.disabled = modoTransportista;
-      inputFactura.addEventListener('input', () => {
+      if(rango) inputFactura.addEventListener('change', () => actualizarFila(row, r => { r.numeroFactura = inputFactura.value; }));
+      else inputFactura.addEventListener('input', () => {
         row.numeroFactura = inputFactura.value;
         commit();
       });
@@ -2190,12 +2228,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         if(!file) return;
         msgFactura.textContent = 'Subiendo…';
         try{
-          const path = 'hojasDeRuta/' + hojaId + '/' + row.id + '/factura-' + Date.now() + '-' + file.name;
+          const path = 'hojasDeRuta/' + fechaDe(row) + '/' + row.id + '/factura-' + Date.now() + '-' + file.name;
           const up = await uploadBlob(path, file, file.type || 'application/octet-stream');
-          row.facturaUrl = up.url;
-          row.facturaPath = up.path;
-          renderLiquidaciones();
-          commit();
+          await actualizarFila(row, r => { r.facturaUrl = up.url; r.facturaPath = up.path; });
         }catch(err){
           console.error(err);
           msgFactura.textContent = '';
@@ -2210,11 +2245,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       chk.type = 'checkbox';
       chk.checked = !!row.pagado;
       chk.disabled = modoTransportista;
-      chk.addEventListener('change', () => {
-        row.pagado = chk.checked;
-        renderLiquidaciones();
-        commit();
-      });
+      chk.addEventListener('change', () => actualizarFila(row, r => { r.pagado = chk.checked; }));
       tdPagado.appendChild(chk);
       tr.appendChild(tdPagado);
 
@@ -2252,6 +2283,20 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function imprimirLiquidacion(){
+    if(enRango()){
+      const rows = filasDelRango().filter(r => r.cliente || r.direccion || Number(r.tarifa))
+        .map(r => r._fecha ? r : Object.assign({}, r, { _fecha: hojaId, _transportista: (state.transportista || '').replace(/^—.*—$/, '').trim(), _transportistaEmail: state.transportistaEmail || '' }));
+      const nombres = [...new Set(rows.map(r => r._transportista).filter(Boolean))];
+      const correos = [...new Set(rows.map(r => r._transportistaEmail).filter(Boolean))];
+      abrirComprobante({
+        rows,
+        periodo: periodo.desde.split('-').reverse().join('/') + ' al ' + periodo.hasta.split('-').reverse().join('/'),
+        transportista: nombres.join(', '),
+        transportistaEmail: correos.length === 1 ? correos[0] : '',
+        hoja: '', puntoPartida: ''
+      });
+      return;
+    }
     abrirComprobante({
       rows: state.rows.filter(r => r.cliente || r.direccion || Number(r.tarifa)),
       periodo: null,
@@ -2950,7 +2995,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function pintarRangos(){
-    ['H', 'L', 'E'].forEach(suf => {
+    ['H', 'L', 'E', 'R'].forEach(suf => {
       $('rDesde' + suf).value = periodo.desde;
       $('rHasta' + suf).value = periodo.hasta;
       $('rInfo' + suf).textContent = periodo.cargando ? 'Cargando…' : (periodo.rutas + ' ruta(s) · ' + periodo.rows.length + ' despacho(s)');
@@ -3009,6 +3054,79 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(currentView === 'historial') pintarHistorial();
     if(currentView === 'liqperiodo') pintarLiqPeriodo();
     if(currentView === 'entregashist') pintarEntregasHist();
+    if(enRango()) renderVistaActual();
+  }
+
+  /* ---------- Día o rango en Seguimiento, Entregas, KPIs y Liquidación ---------- */
+  const VISTAS_RANGO = ['seguimiento', 'chofer', 'reportes', 'liquidaciones'];
+  let modoRango = (() => { try{ return localStorage.getItem('ruteka_modo') === 'rango'; }catch(e){ return false; } })();
+  function enRango(){ return modoRango && VISTAS_RANGO.includes(currentView); }
+  function fechaDe(r){ return r._fecha || hojaId; }
+  // Filas del período: los otros días tal como se cargaron y el día abierto en vivo (sus filas reales).
+  function filasDelRango(){
+    const incluyeAbierto = hojaId >= periodo.desde && hojaId <= periodo.hasta;
+    const todas = periodo.rows.filter(r => r._fecha !== hojaId).concat(incluyeAbierto ? state.rows.filter(r => !filaVacia(r)) : []);
+    return todas.map((r, i) => [r, i]).sort((a, b) => fechaDe(a[0]).localeCompare(fechaDe(b[0])) || a[1] - b[1]).map(x => x[0]);
+  }
+  // N° de cada despacho dentro de su día.
+  function numerar(rows){
+    const n = new Map(), porDia = {};
+    rows.forEach(r => { const f = fechaDe(r); porDia[f] = (porDia[f] || 0) + 1; n.set(r, porDia[f]); });
+    return n;
+  }
+  function renderVistaActual(){
+    if(currentView === 'seguimiento') renderSeguimiento();
+    if(currentView === 'chofer') renderChofer();
+    if(currentView === 'reportes') renderReportes();
+    if(currentView === 'liquidaciones') renderLiquidaciones();
+  }
+  function pintarModoBarra(){
+    const aplica = VISTAS_RANGO.includes(currentView), r = enRango();
+    $('hojaModo').hidden = !aplica;
+    $('hojaDia').hidden = r;
+    $('hojaRango').hidden = !r;
+    $('hojaInfo').hidden = r;
+    $('hojaModo').querySelectorAll('button').forEach(b => {
+      const activo = (b.dataset.modo === 'rango') === modoRango;
+      b.classList.toggle('activo', activo);
+      b.setAttribute('aria-pressed', activo ? 'true' : 'false');
+    });
+  }
+  $('hojaModo').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    modoRango = b.dataset.modo === 'rango';
+    try{ localStorage.setItem('ruteka_modo', modoRango ? 'rango' : 'dia'); }catch(e){}
+    pintarModoBarra();
+    if(enRango()) cargarPeriodo();
+    renderVistaActual();
+  }));
+  // Cambia un despacho de cualquier día: el abierto se guarda como siempre; otro día, en su propia ruta.
+  async function actualizarFila(row, cambiar){
+    const fecha = row._fecha;
+    if(!fecha || fecha === hojaId){
+      const real = fecha ? state.rows.find(x => x.id === row.id) : row;
+      if(real){ cambiar(real); commit(); }
+      renderVistaActual();
+      return true;
+    }
+    cambiar(row); // se ve al instante; si falla, se recarga el período
+    renderVistaActual();
+    try{
+      const ref = db.collection('hojasDeRuta').doc(fecha);
+      await db.runTransaction(async tx => {
+        const sn = await tx.get(ref);
+        const st = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : null;
+        const r = st && st.rows.find(x => x.id === row.id);
+        if(!r) throw new Error('ese despacho ya no está en la ruta');
+        cambiar(r);
+        tx.set(ref, { json: JSON.stringify(st), fecha, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: currentEmail() || 'alguien' }, { merge: true });
+      });
+      return true;
+    }catch(err){
+      console.error(err);
+      showDialog('No se pudo guardar el cambio en la ruta del ' + fecha.split('-').reverse().join('/') + ': ' + err.message);
+      cargarPeriodo(true);
+      return false;
+    }
   }
 
   /* ---------- Historial de entregas ---------- */
@@ -3202,7 +3320,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('lpVistoBuenoNota').textContent = obs ? obs + ' con observación' : (rows.length && ok === rows.length ? 'Todo conforme' : '');
   }
 
-  document.querySelectorAll('.rango-bar').forEach(bar => {
+  document.querySelectorAll('.rango-bar, .rango-ctrl').forEach(bar => {
     const [d, h] = bar.querySelectorAll('input[type="date"]');
     const aplicar = () => {
       if(!d.value || !h.value) return;
@@ -3278,6 +3396,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(view === 'config') pintarConfig();
 
     marcarMenuLateral(view);
+    pintarModoBarra();
+    if(enRango()) cargarPeriodo();
 
     if(view === 'reportes') renderReportes();
     if(view === 'chofer') renderChofer();
@@ -3368,11 +3488,15 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function renderReportes(){
-    const rows = state.rows.filter(r => r.cliente || r.direccion || Number(r.tarifa));
-    const total = state.rows.filter(r => !filaVacia(r)).length;
-    const totalTarifa = state.rows.reduce((acc, r) => acc + (Number(r.tarifa) || 0), 0);
+    const fuente = enRango() ? filasDelRango() : state.rows;
+    $('reportesSub').textContent = enRango()
+      ? 'Resumen de los despachos del ' + periodo.desde.split('-').reverse().join('/') + ' al ' + periodo.hasta.split('-').reverse().join('/') + '.'
+      : 'Resumen de los despachos cargados en esta hoja de ruta.';
+    const rows = fuente.filter(r => r.cliente || r.direccion || Number(r.tarifa));
+    const total = fuente.filter(r => !filaVacia(r)).length;
+    const totalTarifa = fuente.reduce((acc, r) => acc + (Number(r.tarifa) || 0), 0);
     const counts = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
-    state.rows.filter(r => !filaVacia(r)).forEach(r => { counts[r.estado] = (counts[r.estado] || 0) + 1; });
+    fuente.filter(r => !filaVacia(r)).forEach(r => { counts[r.estado] = (counts[r.estado] || 0) + 1; });
     const pct = total ? Math.round((counts.entregado / total) * 100) : 0;
 
     $('statTotalDespachos').textContent = total;
@@ -3388,7 +3512,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     ]);
 
     const comunaMap = {};
-    state.rows.forEach(r => {
+    fuente.forEach(r => {
       const key = (r.comuna || '').trim();
       if(!key) return;
       comunaMap[key] = (comunaMap[key] || 0) + 1;
@@ -3466,6 +3590,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function renderChofer(){
     const container = $('choferList');
     container.innerHTML = '';
+    $('choferRangoNota').hidden = !enRango();
+    $('gpsCard').hidden = enRango();
+    if(enRango()){ pintarListaPorDia(container, filasDelRango(), { dinero: verDinero }); return; }
     const pendientes = state.rows.filter(r => (r.estado === 'pendiente' || r.estado === 'en-ruta') && !filaVacia(r));
     const resueltos = state.rows.filter(r => r.estado === 'entregado' || r.estado === 'no-entregado');
 
@@ -4840,18 +4967,18 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   let segMap = null, segMarcadores = [], segEncuadre = '';
   const NOMBRE_EVENTO = { 'en-ruta': 'Salió a ruta', 'entregado': 'Entregado', 'no-entregado': 'No entregado', 'pendiente': 'Volvió a pendiente' };
-  function horaCorta(iso){
+  function horaCorta(iso, fecha){
     const d = new Date(iso);
     if(isNaN(d)) return '';
     const h = d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-    return fechaLocal(d) === hojaId ? h : d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' }) + ' ' + h;
+    return fechaLocal(d) === (fecha || hojaId) ? h : d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' }) + ' ' + h;
   }
   function eventosDe(r){
     const ev = (r.eventos || []).slice();
     const e = r.entrega || {};
     // Entregas registradas antes de existir el registro de eventos: se arma con los datos de la entrega.
     if((r.estado === 'entregado' || r.estado === 'no-entregado') && !ev.some(x => x.tipo === r.estado)){
-      const at = e.registradoAt || (e.horaEntrega ? hojaId + 'T' + e.horaEntrega + ':00' : '');
+      const at = e.registradoAt || (e.horaEntrega ? fechaDe(r) + 'T' + e.horaEntrega + ':00' : '');
       ev.push({ tipo: r.estado, at, por: e.registradoPor || '' });
     }
     return ev.sort((a, b) => String(a.at).localeCompare(String(b.at)));
@@ -4860,7 +4987,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(segMap || !window.__googleMapsReady || typeof google === 'undefined' || !google.maps) return;
     segMap = new google.maps.Map($('segMapa'), { center: { lat: -33.4489, lng: -70.6693 }, zoom: 11, mapTypeControl: false, streetViewControl: false, fullscreenControl: true });
   }
-  function pintarMapaSeguimiento(rows){
+  function pintarMapaSeguimiento(rows, numeros, conCamion){
     iniciarMapaSeguimiento();
     if(!segMap){ $('segMapaNota').textContent = 'El mapa no está disponible en este momento.'; return; }
     segMarcadores.forEach(m => m.setMap(null));
@@ -4868,7 +4995,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const bounds = new google.maps.LatLngBounds();
     rows.forEach(r => {
       if(r.lat == null || r.lng == null) return;
-      const n = state.rows.indexOf(r) + 1;
+      const n = numeros.get(r);
       const mk = new google.maps.Marker({
         position: { lat: r.lat, lng: r.lng }, map: segMap,
         label: { text: String(n), color: '#fff', fontSize: '11px', fontWeight: '700' },
@@ -4877,12 +5004,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       });
       segMarcadores.push(mk); bounds.extend(mk.getPosition());
     });
-    const g = gpsActual;
+    const g = conCamion ? gpsActual : null;
     if(g && g.lat != null){
       const mk = new google.maps.Marker({ position: { lat: g.lat, lng: g.lng }, map: segMap, label: { text: '🚚', fontSize: '22px' }, zIndex: 999, title: 'Camión · ' + (g.atMs ? hace(g.atMs) : '') });
       segMarcadores.push(mk); bounds.extend(mk.getPosition());
     }
-    const clave = hojaId + '|' + segMarcadores.length;
+    const clave = (enRango() ? periodo.desde + '|' + periodo.hasta : hojaId) + '|' + segMarcadores.length;
     if(segMarcadores.length && clave !== segEncuadre){
       segEncuadre = clave;
       if(segMarcadores.length === 1){ segMap.setCenter(bounds.getCenter()); segMap.setZoom(14); } else segMap.fitBounds(bounds, 40);
@@ -4890,10 +5017,76 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const sinUbicar = rows.filter(r => r.lat == null || r.lng == null).length;
     $('segMapaNota').textContent = sinUbicar ? sinUbicar + ' despacho(s) todavía sin ubicar en el mapa.' : '';
   }
+  // Tarjeta de un envío con su trazabilidad (Seguimiento y Entregas por rango). Sin montos salvo «dinero».
+  function tarjetaEnvio(r, n, opciones){
+    const fecha = fechaDe(r);
+    const card = document.createElement('section'); card.className = 'card seg-card';
+    const top = document.createElement('div'); top.className = 'seg-card-top';
+    const num = document.createElement('span'); num.className = 'seg-num'; num.textContent = n;
+    const cli = document.createElement('div'); cli.className = 'seg-cli';
+    const b = document.createElement('b'); b.textContent = r.cliente || '(sin cliente)';
+    const dir = document.createElement('span'); dir.textContent = [r.direccion, r.comuna].filter(Boolean).join(', ') + (opciones && opciones.dinero && Number(r.tarifa) ? ' · ' + formatMoney(r.tarifa) : '');
+    cli.append(b, dir);
+    if(r.eta && (r.estado === 'pendiente' || r.estado === 'en-ruta')){ const eta = document.createElement('div'); eta.className = 'seg-eta'; eta.textContent = '🕒 Llegada estimada ' + r.eta; cli.appendChild(eta); }
+    const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
+    const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label;
+    top.append(num, cli, pill);
+    card.appendChild(top);
+    const ev = eventosDe(r);
+    if(ev.length){
+      const ul = document.createElement('ul'); ul.className = 'seg-linea';
+      ev.forEach(x => {
+        const li = document.createElement('li'); li.className = x.tipo;
+        const t = document.createElement('time'); t.textContent = horaCorta(x.at, fecha) || '—';
+        li.append(t, document.createTextNode(NOMBRE_EVENTO[x.tipo] || x.tipo));
+        if(x.por){ const por = document.createElement('span'); por.className = 'seg-por'; por.textContent = ' · ' + x.por; li.appendChild(por); }
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
+    }
+    const e = r.entrega || {};
+    if(r.estado === 'entregado' || r.estado === 'no-entregado'){
+      const pr = document.createElement('div'); pr.className = 'seg-prueba';
+      const txt = document.createElement('span');
+      txt.textContent = r.estado === 'entregado' ? 'Recibió: ' + (e.recibidoPor || '—') + (e.horaEntrega ? ' · ' + e.horaEntrega : '') : 'Motivo: ' + (e.motivo || '—');
+      pr.appendChild(txt);
+      [miniaturaEh(e.fotoUrl, 'Foto de entrega'), miniaturaEh(e.firmaUrl, 'Firma', 'eh-firma')].forEach(x => { if(x instanceof Node) pr.appendChild(x); });
+      card.appendChild(pr);
+    }
+    return card;
+  }
+  // Lista de envíos; con varios días, agrupada bajo el título de cada fecha.
+  function pintarListaPorDia(lista, rows, opciones){
+    lista.innerHTML = '';
+    if(!rows.length){
+      lista.innerHTML = '<p class="chart-empty">' + (enRango() ? (periodo.cargando ? 'Cargando…' : 'No hay despachos en este período.') : 'No hay despachos cargados en esta ruta.') + '</p>';
+      return;
+    }
+    const numeros = numerar(rows);
+    let dia = '';
+    rows.forEach(r => {
+      const f = fechaDe(r);
+      if(enRango() && f !== dia){
+        dia = f;
+        const h = document.createElement('h3'); h.className = 'seg-dia';
+        h.textContent = fechaLarga(f);
+        const sm = document.createElement('small');
+        const delDia = rows.filter(x => fechaDe(x) === f);
+        sm.textContent = delDia.length + ' envío(s) · ' + delDia.filter(x => x.estado === 'entregado').length + ' entregado(s)';
+        h.appendChild(sm);
+        lista.appendChild(h);
+      }
+      lista.appendChild(tarjetaEnvio(r, numeros.get(r), opciones));
+    });
+  }
   function renderSeguimiento(){
     if($('viewSeguimiento').hidden) return;
-    const rows = state.rows.filter(r => !filaVacia(r));
-    $('segTransportista').textContent = (state.transportista || '').replace(/^—.*—$/, '').trim() || '—';
+    const rango = enRango();
+    const rows = rango ? filasDelRango() : state.rows.filter(r => !filaVacia(r));
+    const nombres = rango
+      ? [...new Set(rows.map(r => (r._fecha ? r._transportista : (state.transportista || '').replace(/^—.*—$/, '').trim())).filter(Boolean))]
+      : [(state.transportista || '').replace(/^—.*—$/, '').trim()].filter(Boolean);
+    $('segTransportista').textContent = nombres.join(', ') || '—';
     const c = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
     rows.forEach(r => { c[r.estado] = (c[r.estado] || 0) + 1; });
     const cerrados = c.entregado + c['no-entregado'];
@@ -4902,52 +5095,15 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     [['pendiente', 'Pendiente'], ['en-ruta', 'En ruta'], ['entregado', 'Entregado'], ['no-entregado', 'No entregado']].forEach(([k, t]) => {
       const sp = document.createElement('span'); sp.className = 'estado-pill ' + ((ESTADOS.find(e => e.value === k) || {}).cls || ''); sp.textContent = c[k] + ' ' + t; $('segChips').appendChild(sp);
     });
-    const g = gpsActual;
+    // El camión se muestra cuando el día abierto está dentro de lo que se ve.
+    const conCamion = !rango || (hojaId >= periodo.desde && hojaId <= periodo.hasta);
+    const g = conCamion ? gpsActual : null;
     const gpsVivo = g && g.activo && g.atMs && Date.now() - g.atMs < 10 * 60000;
     $('segGps').classList.toggle('vivo', !!gpsVivo);
     $('segGps').textContent = !g || !g.atMs ? 'Ubicación del camión: no se está compartiendo'
       : (gpsVivo ? '🚚 En vivo · ' : '🚚 Última ubicación conocida · ') + hace(g.atMs) + (g.por ? ' · ' + g.por : '');
-    pintarMapaSeguimiento(rows);
-    const lista = $('segLista');
-    lista.innerHTML = '';
-    if(!rows.length){ lista.innerHTML = '<p class="chart-empty">No hay despachos cargados en esta ruta.</p>'; return; }
-    rows.forEach(r => {
-      const n = state.rows.indexOf(r) + 1;
-      const card = document.createElement('section'); card.className = 'card seg-card';
-      const top = document.createElement('div'); top.className = 'seg-card-top';
-      const num = document.createElement('span'); num.className = 'seg-num'; num.textContent = n;
-      const cli = document.createElement('div'); cli.className = 'seg-cli';
-      const b = document.createElement('b'); b.textContent = r.cliente || '(sin cliente)';
-      const dir = document.createElement('span'); dir.textContent = [r.direccion, r.comuna].filter(Boolean).join(', ');
-      cli.append(b, dir);
-      if(r.eta && (r.estado === 'pendiente' || r.estado === 'en-ruta')){ const eta = document.createElement('div'); eta.className = 'seg-eta'; eta.textContent = '🕒 Llegada estimada ' + r.eta; cli.appendChild(eta); }
-      const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
-      const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label;
-      top.append(num, cli, pill);
-      card.appendChild(top);
-      const ev = eventosDe(r);
-      if(ev.length){
-        const ul = document.createElement('ul'); ul.className = 'seg-linea';
-        ev.forEach(x => {
-          const li = document.createElement('li'); li.className = x.tipo;
-          const t = document.createElement('time'); t.textContent = horaCorta(x.at) || '—';
-          li.append(t, document.createTextNode(NOMBRE_EVENTO[x.tipo] || x.tipo));
-          if(x.por){ const por = document.createElement('span'); por.className = 'seg-por'; por.textContent = ' · ' + x.por; li.appendChild(por); }
-          ul.appendChild(li);
-        });
-        card.appendChild(ul);
-      }
-      const e = r.entrega || {};
-      if(r.estado === 'entregado' || r.estado === 'no-entregado'){
-        const pr = document.createElement('div'); pr.className = 'seg-prueba';
-        const txt = document.createElement('span');
-        txt.textContent = r.estado === 'entregado' ? 'Recibió: ' + (e.recibidoPor || '—') + (e.horaEntrega ? ' · ' + e.horaEntrega : '') : 'Motivo: ' + (e.motivo || '—');
-        pr.appendChild(txt);
-        [miniaturaEh(e.fotoUrl, 'Foto de entrega'), miniaturaEh(e.firmaUrl, 'Firma', 'eh-firma')].forEach(x => { if(x instanceof Node) pr.appendChild(x); });
-        card.appendChild(pr);
-      }
-      lista.appendChild(card);
-    });
+    pintarMapaSeguimiento(rows, numerar(rows), conCamion);
+    pintarListaPorDia($('segLista'), rows);
   }
   setInterval(() => { if(currentView === 'seguimiento') renderSeguimiento(); }, 60000); // «hace X min» al día
 
