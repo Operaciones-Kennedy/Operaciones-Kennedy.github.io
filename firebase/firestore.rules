@@ -3,12 +3,12 @@ rules_version = '2';
 // Reglas de Firestore para la Hoja de Ruta.
 //
 // ⚠️ Este proyecto de Firebase ("tablero-de-trabajos") también lo usa el Panel de
-// Operaciones (colección "tableros"). Antes de publicar, compará con las reglas
-// que ya están en la consola y conservá las de otras colecciones que no estén acá.
+// Operaciones (colección "tableros"). Antes de publicar, compara con las reglas
+// que ya están en la consola y conserva las de otras colecciones que no estén aquí.
 //
 // Los correos no se guardan en este archivo porque el repositorio es público:
-// en la consola, reemplazá 'correo-admin@ejemplo.cl' por los correos de los
-// administradores y conservá el bloque /tableros que ya está allá.
+// en la consola, reemplaza 'correo-admin@ejemplo.cl' por los correos de los
+// administradores y conserva el bloque /tableros que ya está allí.
 //
 // Cómo publicarlas: consola de Firebase → Firestore Database → Reglas → pegar →
 // Publicar. Probalas antes con el "Área de pruebas de reglas" de la misma página.

@@ -18,9 +18,9 @@
 <script>
 /* ============================================================
    CONFIGURACIÓN GOOGLE MAPS
-   Conseguí tu clave en https://console.cloud.google.com/google/maps-apis
-   (creá un proyecto → habilitá "Maps JavaScript API" → Credenciales →
-   Crear credenciales → Clave de API) y pegala acá reemplazando el texto.
+   Consigue tu clave en https://console.cloud.google.com/google/maps-apis
+   (crea un proyecto → habilita "Maps JavaScript API" → Credenciales →
+   Crear credenciales → Clave de API) y pégala aquí reemplazando el texto.
    ============================================================ */
 /* ============================================================
    MARCA: nombre y lema que muestra la app (colores y letras: bloque
@@ -35,8 +35,8 @@ const VERSION_APP = "2026-10-01 · 6";
    usuario que entre ve la vista de transportista (Entregas y Pagos).
    Los correos están como SHA-256 del correo en minúsculas, para que no
    queden a la vista en el código público. Para agregar un administrador,
-   calculá el SHA-256 de su correo (por ejemplo en una terminal:
-   printf '%s' 'correo@dominio.cl' | sha256sum) y sumalo a la lista.
+   calcula el SHA-256 de su correo (por ejemplo en una terminal:
+   printf '%s' 'correo@dominio.cl' | sha256sum) y súmalo a la lista.
    ============================================================ */
 const ADMINISTRADORES_SHA256 = [
   "18dccc406e1ccec60e806e16f1348bd7dcf7fc3bcd367bb673116ce0aa55c14e",
@@ -79,7 +79,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 <style>
   /* ============================================================
      MARCA — RUTEKA
-     Todo el estilo de la app sale de estas variables: cambiá un color o
+     Todo el estilo de la app sale de estas variables: cambia un color o
      una letra aquí y se actualiza en todas las pantallas.
      (El nombre y el lema están en el bloque MARCA del <script> de arriba.)
      ============================================================ */
@@ -1273,7 +1273,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <div class="login-marca"><svg class="marca-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 52 V13 H33 A11.5 11.5 0 0 1 33 36 H17 M31 36 L45 51" fill="none" stroke="var(--marca-principal)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="52" r="5.5" fill="#fff" stroke="var(--marca-principal)" stroke-width="3.5"/><circle cx="47.5" cy="53" r="7" fill="var(--marca-acento)"/></svg><span class="marca-nombre" id="marcaNombreLogin">ruteka</span></div>
     <p class="login-lema" id="marcaLema">Todas tus rutas, en un solo lugar.</p>
     <h2 hidden>Ruteka</h2>
-    <p>Ingresá con el correo y la clave que te asignaron para ver y actualizar los despachos.</p>
+    <p>Ingresa con el correo y la clave que te asignaron para ver y actualizar los despachos.</p>
     <input id="lEmail" type="email" placeholder="Correo" autocomplete="username">
     <input id="lPass" type="password" placeholder="Contraseña" autocomplete="current-password">
     <div class="row-btns">
@@ -1392,7 +1392,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <div id="viewDespachos">
     <div class="content-header">
       <h1>Despachos</h1>
-      <p>Coordiná las entregas del día con tu transportista — se actualiza en vivo para los dos.</p>
+      <p>Coordina las entregas del día con tu transportista — se actualiza en vivo para los dos.</p>
     </div>
     <div class="aviso-sol" id="avisoSol" role="status" hidden>
       <span id="avisoSolTexto"></span>
@@ -1464,7 +1464,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <button class="danger" id="btnClear">🗑️ Vaciar todo</button>
     </div>
     <p class="footer-note" style="margin:-8px 0 6px;">
-      El Excel debe traer las columnas <strong>Cliente, Dirección, Comuna, Contacto, Productos</strong> y, si querés, <strong>Estado</strong> — son los datos que vos cargás. Si el Excel trae <strong>fotos de respaldo</strong> en alguna columna, se guardan como foto de prueba de entrega del despacho de esa fila. <strong>Hora de entrega</strong> y <strong>Prueba de Entrega</strong> las completa el chofer en el panel <strong>Entregas</strong>, no se cargan acá.
+      El Excel debe traer las columnas <strong>Cliente, Dirección, Comuna, Contacto, Productos</strong> y, si quieres, <strong>Estado</strong> — son los datos que tú cargas. Si el Excel trae <strong>fotos de respaldo</strong> en alguna columna, se guardan como foto de prueba de entrega del despacho de esa fila. <strong>Hora de entrega</strong> y <strong>Prueba de Entrega</strong> las completa el chofer en el panel <strong>Entregas</strong>, no se cargan aquí.
     </p>
     <details class="advanced-options">
       <summary>Opciones avanzadas (JSON / CSV)</summary>
@@ -1507,14 +1507,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     </section>
 
     <p class="footer-note">
-      Los cambios se sincronizan automáticamente entre todos los que tengan sesión abierta (vos y el transportista), usando el mismo proyecto Firebase del Panel de Operaciones. Si no hay conexión, se guarda solo en este dispositivo y se sincroniza al reconectar. El mapa se muestra con Google Maps y cada dirección se ubica automáticamente (geocodificación gratuita) — puede tardar unos segundos por despacho. Usá <strong>Exportar Excel</strong> para descargar la hoja como planilla, o las opciones avanzadas para respaldos técnicos (JSON/CSV).
+      Los cambios se sincronizan automáticamente entre todos los que tengan sesión abierta (tú y el transportista), usando el mismo proyecto Firebase del Panel de Operaciones. Si no hay conexión, se guarda solo en este dispositivo y se sincroniza al reconectar. El mapa se muestra con Google Maps y cada dirección se ubica automáticamente (geocodificación gratuita) — puede tardar unos segundos por despacho. Usa <strong>Exportar Excel</strong> para descargar la hoja como planilla, o las opciones avanzadas para respaldos técnicos (JSON/CSV).
     </p>
   </div>
 
   <div id="viewChofer" hidden>
     <div class="content-header">
       <h1>Entregas</h1>
-      <p>Registrá quién recibió cada despacho, con foto y firma como comprobante.</p>
+      <p>Registra quién recibió cada despacho, con foto y firma como comprobante.</p>
     </div>
     <section class="sol-aprobar" id="solAprobar" hidden>
       <div class="sol-aprobar-head">
@@ -1528,7 +1528,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <div><b>📍 Ubicación para la agencia</b><p id="gpsEstado">No se está compartiendo.</p></div>
       <button type="button" id="btnGps">Compartir mi ubicación</button>
     </section>
-    <p class="rango-nota" id="choferRangoNota" hidden>Vista de varios días, solo para revisar. Para registrar una entrega, cambiá a «Día».</p>
+    <p class="rango-nota" id="choferRangoNota" hidden>Vista de varios días, solo para revisar. Para registrar una entrega, cambia a «Día».</p>
     <div id="choferList"></div>
   </div>
 
@@ -1541,7 +1541,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <section class="card sol-form">
       <div class="sol-form-head">
         <div class="sol-form-icono" aria-hidden="true">📝</div>
-        <div><h2 id="solFormTitulo">Nueva solicitud</h2><p>Completá los datos y la operación te confirma la fecha (o te propone otra).</p></div>
+        <div><h2 id="solFormTitulo">Nueva solicitud</h2><p>Completa los datos y la operación te confirma la fecha (o te propone otra).</p></div>
       </div>
       <div class="sol-pasos">
         <div class="sol-paso" role="group" aria-labelledby="solPaso1">
@@ -1555,7 +1555,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div class="sol-paso" role="group" aria-labelledby="solPaso2">
           <h3 class="sol-paso-tit" id="solPaso2"><span>2</span>Cuándo</h3>
           <label class="sol-campo">Fecha de despacho <input type="date" id="solFecha"></label>
-          <p class="sol-ayuda">Si ese día no se puede, la operación te propone otra fecha y vos la aceptás o proponés otra.</p>
+          <p class="sol-ayuda">Si ese día no se puede, la operación te propone otra fecha y tú la aceptas o propones otra.</p>
         </div>
         <div class="sol-paso" role="group" aria-labelledby="solPaso3">
           <h3 class="sol-paso-tit" id="solPaso3"><span>3</span>Qué despachar</h3>
@@ -1685,7 +1685,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
     <section class="card chart-card">
       <h2>Buscar cliente</h2>
-      <p class="chart-note">Escribí un cliente, dirección o comuna para ver todas sus entregas del período, con la foto de prueba.</p>
+      <p class="chart-note">Escribe un cliente, dirección o comuna para ver todas sus entregas del período, con la foto de prueba.</p>
       <input type="search" id="hBuscar" class="hist-buscar" placeholder="Ej: Las Amikas, Vitacura, Ricardo Lyon…" autocomplete="off">
       <div class="table-wrap">
         <table class="hist-table">
@@ -1741,7 +1741,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <div id="viewConfig" hidden>
     <div class="content-header">
       <h1>Usuarios</h1>
-      <p>Los correos anotados aquí entran en vista transportista y ven Entregas, sin montos. Marcá «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno, y «Ve el historial» a quien puede revisar las entregas pasadas.</p>
+      <p>Los correos anotados aquí entran en vista transportista y ven Entregas, sin montos. Marca «Ve la liquidación» a quien también revisa los pagos del día y da el visto bueno, y «Ve el historial» a quien puede revisar las entregas pasadas.</p>
     </div>
     <section class="card config-card">
       <form class="config-agregar" id="configForm">
@@ -1805,13 +1805,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         </table>
       </div>
     </section>
-    <p class="footer-note">Para marcar un despacho como pagado o darle el visto bueno, abrí su ruta con el enlace de la fecha. Esta vista suma todo el período y arma el comprobante.</p>
+    <p class="footer-note">Para marcar un despacho como pagado o darle el visto bueno, abre su ruta con el enlace de la fecha. Esta vista suma todo el período y arma el comprobante.</p>
   </div>
 
   <div id="viewLiquidaciones" hidden>
     <div class="content-header">
       <h1>Liquidaciones</h1>
-      <p>Cuadrá con el transportista qué despachos ya se pagaron y cuáles quedan pendientes.</p>
+      <p>Cuadra con el transportista qué despachos ya se pagaron y cuáles quedan pendientes.</p>
     </div>
 
     <section class="stat-grid">
@@ -1866,8 +1866,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     </section>
 
     <p class="footer-note">
-      Marcá "Pagado" cuando le hayas transferido o entregado el dinero al transportista por ese despacho. Anotá el N° de factura y, si querés, adjuntá el archivo (PDF o foto) que te mandó. "Imprimir liquidación" arma un comprobante con todos los despachos listados acá para guardar como PDF. Se guarda junto con el resto de la hoja, así lo ve también si tiene sesión abierta.
-      En <strong>Visto bueno transportista</strong>, el transportista marca cada despacho como <strong>Conforme</strong> u <strong>Observar</strong> (con un comentario). Si anotás su correo arriba, solo él puede marcar. Si la tarifa de un despacho cambia después del visto bueno, vuelve a quedar pendiente.
+      Marca "Pagado" cuando le hayas transferido o entregado el dinero al transportista por ese despacho. Anota el N° de factura y, si quieres, adjunta el archivo (PDF o foto) que te mandó. "Imprimir liquidación" arma un comprobante con todos los despachos listados aquí para guardar como PDF. Se guarda junto con el resto de la hoja, así lo ve también si tiene sesión abierta.
+      En <strong>Visto bueno transportista</strong>, el transportista marca cada despacho como <strong>Conforme</strong> u <strong>Observar</strong> (con un comentario). Si anotas su correo arriba, solo él puede marcar. Si la tarifa de un despacho cambia después del visto bueno, vuelve a quedar pendiente.
     </p>
   </div>
   </main>
@@ -2531,7 +2531,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
     const fechaEmision = new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const win = window.open('', '_blank');
-    if(!win){ showDialog('El navegador bloqueó la ventana. Permití pop-ups para este sitio e intentá de nuevo.'); return; }
+    if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
 
     win.document.write(
       '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">' +
@@ -2781,7 +2781,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         chk.addEventListener('change', async () => {
           const ok = await marcarPermisoExtra(campo, email, chk.checked);
           const que = campo === 'conLiquidacion' ? 'la liquidación del día' : 'el Historial de entregas';
-          pintarConfig(ok ? email + (chk.checked ? ' ahora ve ' : ' ya no ve ') + que + '. Pedile que cierre y vuelva a abrir Ruteka.' : 'Firebase no permitió guardar el cambio (revisá las reglas).', !ok);
+          pintarConfig(ok ? email + (chk.checked ? ' ahora ve ' : ' ya no ve ') + que + '. Pídele que cierre y vuelva a abrir Ruteka.' : 'Firebase no permitió guardar el cambio (revisa las reglas).', !ok);
         });
         lab.append(chk, document.createTextNode(pm.texto));
         return lab;
@@ -2791,7 +2791,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       b.addEventListener('click', async () => {
         for(const campo of Object.keys(PERMISOS)) if(listaPermiso(campo).includes(email)) await marcarPermisoExtra(campo, email, false);
         const ok = await registrarTransportista(email, true);
-        pintarConfig(ok ? email + ' ya no es transportista.' : 'Se quitó solo de esta ruta: Firebase no permitió actualizar la lista general (revisá las reglas).', !ok);
+        pintarConfig(ok ? email + ' ya no es transportista.' : 'Se quitó solo de esta ruta: Firebase no permitió actualizar la lista general (revisa las reglas).', !ok);
         aplicarRol();
       });
       li.append(sp, permisos, b);
@@ -2815,7 +2815,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       b.setAttribute('aria-label', 'Quitar ' + email);
       b.addEventListener('click', async () => {
         const ok = await cambiarListaGeneral('agencias', AGENCIA, email, false);
-        pintarAgencia(ok ? email + ' ya no tiene vista agencia.' : 'Firebase no permitió guardar el cambio (revisá las reglas).', !ok);
+        pintarAgencia(ok ? email + ' ya no tiene vista agencia.' : 'Firebase no permitió guardar el cambio (revisa las reglas).', !ok);
       });
       li.append(sp, b);
       ul.appendChild(li);
@@ -2825,20 +2825,20 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('agenciaForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('agenciaEmail').value.trim().toLowerCase();
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ pintarAgencia('Escribí un correo válido.', true); return; }
-    if(email === currentEmail()){ pintarAgencia('Ese es tu propio correo: si lo agregás, dejarías de ver el menú de administrador.', true); return; }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ pintarAgencia('Escribe un correo válido.', true); return; }
+    if(email === currentEmail()){ pintarAgencia('Ese es tu propio correo: si lo agregas, dejarías de ver el menú de administrador.', true); return; }
     const ok = await cambiarListaGeneral('agencias', AGENCIA, email, true);
     $('agenciaEmail').value = '';
-    pintarAgencia(ok ? email + ' quedó con vista agencia (Seguimiento e Historial, sin montos). Debe tener su usuario en Firebase (Authentication → Users).' : 'Firebase no permitió guardar el cambio (revisá las reglas).', !ok);
+    pintarAgencia(ok ? email + ' quedó con vista agencia (Seguimiento e Historial, sin montos). Debe tener su usuario en Firebase (Authentication → Users).' : 'Firebase no permitió guardar el cambio (revisa las reglas).', !ok);
   });
   $('configForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('configEmail').value.trim().toLowerCase();
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ pintarConfig('Escribí un correo válido.', true); return; }
-    if(email === currentEmail()){ pintarConfig('Ese es tu propio correo: si lo agregás, dejarías de ver el menú de administrador.', true); return; }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ pintarConfig('Escribe un correo válido.', true); return; }
+    if(email === currentEmail()){ pintarConfig('Ese es tu propio correo: si lo agregas, dejarías de ver el menú de administrador.', true); return; }
     const ok = await registrarTransportista(email);
     $('configEmail').value = '';
-    pintarConfig(ok ? email + ' quedó como transportista en todas las rutas (solo Entregas, sin montos; marcá sus casillas si también debe ver la liquidación o el historial). Pedile que cierre y vuelva a abrir Ruteka.' : 'Quedó guardado solo en esta ruta (y las siguientes): Firebase no permitió guardarlo en la lista general. Revisá las reglas.', !ok);
+    pintarConfig(ok ? email + ' quedó como transportista en todas las rutas (solo Entregas, sin montos; marca sus casillas si también debe ver la liquidación o el historial). Pídele que cierre y vuelva a abrir Ruteka.' : 'Quedó guardado solo en esta ruta (y las siguientes): Firebase no permitió guardarlo en la lista general. Revisa las reglas.', !ok);
   });
 
   /* ---------- Aviso cuando Firebase bloquea una parte de la app ---------- */
@@ -2855,7 +2855,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(permisosFaltan.config) partes.push('la <b>lista de transportistas</b>');
     const av = $('avisoPermisos');
     av.innerHTML = '⚠️ Las reglas de Firebase no permiten usar ' + partes.join(' ni ') +
-      '. Publicá las reglas nuevas (archivo <b>firebase/firestore.rules</b> del repositorio) en la consola de Firebase → Firestore Database → Reglas.';
+      '. Publica las reglas nuevas (archivo <b>firebase/firestore.rules</b> del repositorio) en la consola de Firebase → Firestore Database → Reglas.';
     av.hidden = false;
   }
 
@@ -2940,7 +2940,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const sinUbicacion = pend.filter(r => r.lat == null || r.lng == null);
     if(conUbicacion.length < 2){
       showDialog(conUbicacion.length ? 'Hay un solo despacho pendiente con ubicación en el mapa: no hay nada que ordenar.'
-        : 'Todavía no hay despachos pendientes ubicados en el mapa. Esperá unos segundos a que se ubiquen las direcciones e intentá de nuevo.');
+        : 'Todavía no hay despachos pendientes ubicados en el mapa. Espera unos segundos a que se ubiquen las direcciones e intenta de nuevo.');
       return;
     }
     const antes = state.rows.map(r => r.id);
@@ -2958,8 +2958,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       `Ruta optimizada: ${orden.length} despacho(s) pendientes en orden, desde ${inicio ? 'el punto de partida' : 'el primer despacho'}.\n` +
       `Recorrido estimado: ${km.toFixed(1)} km` + (ahorro > 0.5 ? ` (${ahorro.toFixed(1)} km menos que antes)` : '') + `.\n` +
       `Saliendo a las ${state.horaSalida || '09:00'}, termina aprox. a las ${fin}.` +
-      (sinUbicacion.length ? `\n\n${sinUbicacion.length} despacho(s) sin ubicación en el mapa quedaron al final: revisá su dirección.` : '') +
-      (!inicio ? '\n\nOjo: el punto de partida no está ubicado en el mapa; revisá la dirección de partida.' : '') +
+      (sinUbicacion.length ? `\n\n${sinUbicacion.length} despacho(s) sin ubicación en el mapa quedaron al final: revisa su dirección.` : '') +
+      (!inicio ? '\n\nOjo: el punto de partida no está ubicado en el mapa; revisa la dirección de partida.' : '') +
       `\n\nLas horas son estimadas (${RUTA.kmh} km/h promedio y ${RUTA.minPorEntrega} min por entrega).`,
       [{ label: 'Deshacer' }, { label: 'Listo', primary: true }]
     );
@@ -3212,7 +3212,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       }
     }catch(err){
       console.error(err);
-      setSync('err', 'No se pudo cargar el período (revisá conexión o reglas de Firestore)');
+      setSync('err', 'No se pudo cargar el período (revisa conexión o reglas de Firestore)');
     }
     // La ruta abierta se toma de este dispositivo, que tiene lo último.
     if(hojaId >= periodo.desde && hojaId <= periodo.hasta) porDia.set(hojaId, state);
@@ -3375,12 +3375,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
     $('ehNota').textContent = !lista.length
       ? (todas.length ? 'No hay entregas que coincidan con el filtro.' : 'No hay rutas guardadas en este período.')
-      : (lista.length > MAX ? 'Se muestran las ' + MAX + ' más recientes de ' + lista.length + '. Afiná la búsqueda o el período para ver otras.' : lista.length + ' registro(s).');
+      : (lista.length > MAX ? 'Se muestran las ' + MAX + ' más recientes de ' + lista.length + '. Afina la búsqueda o el período para ver otras.' : lista.length + ' registro(s).');
   }
   $('ehBuscar').addEventListener('input', pintarEntregasHist);
   $('ehEstado').addEventListener('change', pintarEntregasHist);
   $('ehExcel').addEventListener('click', () => {
-    if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisá tu conexión e intentá de nuevo en unos segundos.'); return; }
+    if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisa tu conexión e intenta de nuevo en unos segundos.'); return; }
     const estadoLabel = v => (ESTADOS.find(x => x.value === v) || {}).label || v;
     const data = filasEntregasHist().map(r => {
       const e = r.entrega || {};
@@ -3466,7 +3466,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
     $('hResultadosNota').textContent = !lista.length
       ? (periodo.rows.length ? 'No hay entregas que coincidan con la búsqueda.' : 'No hay rutas guardadas en este período.')
-      : (lista.length > MAX ? 'Se muestran las ' + MAX + ' más recientes de ' + lista.length + '. Afiná la búsqueda para ver otras.' : lista.length + ' entrega(s).');
+      : (lista.length > MAX ? 'Se muestran las ' + MAX + ' más recientes de ' + lista.length + '. Afina la búsqueda para ver otras.' : lista.length + ' entrega(s).');
   }
 
   function filasLiqPeriodo(){
@@ -4143,7 +4143,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         motivo = prompt('¿Por qué no se pudo entregar?', motivo) || '';
         if(!motivo.trim()) return;
       } else if(!iRecibido.value.trim()){
-        alert('Escribí el nombre de quien recibió el despacho.');
+        alert('Escribe el nombre de quien recibió el despacho.');
         return;
       }
       btnOk.disabled = true; btnFail.disabled = true; btnCancel.disabled = true;
@@ -4443,7 +4443,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   $('btnExportExcel').addEventListener('click', () => {
     if(typeof XLSX === 'undefined'){
-      alert('No se pudo cargar el generador de Excel — revisá tu conexión e intentá de nuevo en unos segundos.');
+      alert('No se pudo cargar el generador de Excel — revisa tu conexión e intenta de nuevo en unos segundos.');
       return;
     }
     const estadoLabel = v => (ESTADOS.find(e => e.value === v) || {}).label || v;
@@ -4794,7 +4794,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const file = ev.target.files[0];
     if(!file) return;
     if(typeof XLSX === 'undefined'){
-      showDialog('No se pudo cargar el lector de Excel — revisá tu conexión a internet e intentá de nuevo en unos segundos.');
+      showDialog('No se pudo cargar el lector de Excel — revisa tu conexión a internet e intenta de nuevo en unos segundos.');
       excelFileInput.value = '';
       return;
     }
@@ -4823,7 +4823,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         });
 
         if(!imported.length){
-          showDialog('No se encontraron despachos para importar. Revisá que el Excel tenga columnas como Cliente, Dirección, Comuna, Contacto, Productos, Hora y Tarifa, con datos debajo de esa fila de encabezados.');
+          showDialog('No se encontraron despachos para importar. Revisa que el Excel tenga columnas como Cliente, Dirección, Comuna, Contacto, Productos, Hora y Tarifa, con datos debajo de esa fila de encabezados.');
           return;
         }
 
@@ -4874,7 +4874,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           (yaEstaban ? `\n${yaEstaban} ya estaban en la lista y se actualizarán (no se duplican).` : '') +
           (sobrantes.size ? `\nSe quitarán ${sobrantes.size} copia(s) repetida(s).` : '') +
           (sinCambios - sobrantes.size > 0 ? `\n\n«Dejar la lista igual al archivo» también quita ${sinCambios - sobrantes.size} despacho(s) que no vienen en el archivo.` : '') +
-          `\n\n¿Qué querés hacer?`,
+          `\n\n¿Qué quieres hacer?`,
           [
             { label: 'Cancelar' },
             { label: nuevos ? `Actualizar y agregar ${nuevos} nuevo(s)` : 'Actualizar los que ya están' },
@@ -4897,13 +4897,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         if(!pendingPhotos.length){
           const info = imagesByRow.info;
           let nota = '';
-          if(!isXlsx) nota = '\n\nEste archivo no es .xlsx, así que no puede traer fotos. Guardalo como "Libro de Excel (.xlsx)" para importar las fotos de respaldo.';
+          if(!isXlsx) nota = '\n\nEste archivo no es .xlsx, así que no puede traer fotos. Guárdalo como "Libro de Excel (.xlsx)" para importar las fotos de respaldo.';
           else if(info && info.media) nota = `\n\nEl archivo trae ${info.media} imagen(es), pero no se pudo ubicar a qué fila corresponde cada una, así que no se importaron. (Detalle: ${info.formatos.join(', ') || 'sin anclaje'})`;
           showDialog(`Se importaron ${imported.length} despacho(s) correctamente.` + nota);
           return;
         }
         if(!firebaseReady){
-          showDialog(`Se importaron ${imported.length} despacho(s), pero las ${pendingPhotos.length} foto(s) de respaldo no se pudieron guardar porque no hay conexión con la base de datos. Ingresá con tu correo y volvé a importar el Excel.`);
+          showDialog(`Se importaron ${imported.length} despacho(s), pero las ${pendingPhotos.length} foto(s) de respaldo no se pudieron guardar porque no hay conexión con la base de datos. Ingresa con tu correo y vuelve a importar el Excel.`);
           return;
         }
         const { done, failed, firstError } = await uploadExcelPhotos(pendingPhotos);
@@ -4913,7 +4913,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           (failed ? `\n\n${failed} foto(s) no se pudieron subir.\nMotivo: ${firstError}` : '')
         );
       }catch(e){
-        showDialog('No se pudo leer el archivo. Asegurate de que sea un Excel (.xlsx) o CSV válido.');
+        showDialog('No se pudo leer el archivo. Asegúrate de que sea un Excel (.xlsx) o CSV válido.');
       }
     };
     reader.readAsArrayBuffer(file);
@@ -5041,7 +5041,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }catch(err){
       console.error(err);
       if(err && err.code === 'permission-denied'){
-        setSync('err', 'Firestore no permite guardar esta ruta (revisá las reglas de seguridad)');
+        setSync('err', 'Firestore no permite guardar esta ruta (revisa las reglas de seguridad)');
         return;
       }
       // Sin conexión las transacciones no funcionan: se guarda igual y Firestore lo
@@ -5073,7 +5073,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         if(!remote.rows) remote.rows = [];
         if(isEditingNow()){
           pendingRemote = remote;
-          setSync('saving', 'Hay cambios nuevos — tocá afuera de una celda para verlos');
+          setSync('saving', 'Hay cambios nuevos — toca afuera de una celda para verlos');
           return;
         }
         state = conVaciasLocales(remote);
@@ -5093,7 +5093,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       if(sinSesion()) return; // se cerró la sesión: no es un error de la ruta
       console.error(err);
       setSync('err', err && err.code === 'permission-denied'
-        ? 'Firestore no permite leer esta ruta (revisá las reglas de seguridad)'
+        ? 'Firestore no permite leer esta ruta (revisa las reglas de seguridad)'
         : 'Sin conexión con Firestore — trabajando en modo local');
     });
     unsub = () => { unsubHoja(); unsubGps(); };
@@ -5156,7 +5156,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('avisoSol').hidden = !nOp;
     $('avisoSolTexto').textContent = '📝 La agencia tiene ' + nOp + (nOp === 1 ? ' solicitud pendiente' : ' solicitudes pendientes') + ' de aprobar.';
     $('avisoSolAg').hidden = !nAg;
-    $('avisoSolAgTexto').textContent = '📅 La operación propuso otra fecha para ' + (nAg === 1 ? '1 solicitud' : nAg + ' solicitudes') + '. Revisá si te sirve.';
+    $('avisoSolAgTexto').textContent = '📅 La operación propuso otra fecha para ' + (nAg === 1 ? '1 solicitud' : nAg + ' solicitudes') + '. Revisa si te sirve.';
   }
   // Cambia la lista del mes dentro de una transacción (varias personas pueden escribir a la vez).
   async function cambiarSolicitudes(mes, cambiar){
@@ -5189,7 +5189,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         cambio(s);
         return true;
       });
-      if(!ok) showDialog('Esa solicitud ya cambió: otra persona la respondió. Revisá la lista actualizada.');
+      if(!ok) showDialog('Esa solicitud ya cambió: otra persona la respondió. Revisa la lista actualizada.');
     }catch(err){
       console.error(err);
       showDialog('No se pudo guardar: ' + err.message);
@@ -5320,9 +5320,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const msg = $('solMsg');
     msg.classList.remove('err');
     const error = t => { msg.textContent = t; msg.classList.add('err'); };
-    if(!solicitante.nombre || !solicitante.empresa){ error('Escribí tu nombre y la empresa que solicita.'); ($('solNombre').value.trim() ? $('solEmpresa') : $('solNombre')).focus(); return; }
-    if(!fecha){ error('Elegí la fecha de despacho.'); return; }
-    if(!despachos.length){ error('Agregá al menos un despacho con cliente o dirección.'); return; }
+    if(!solicitante.nombre || !solicitante.empresa){ error('Escribe tu nombre y la empresa que solicita.'); ($('solNombre').value.trim() ? $('solEmpresa') : $('solNombre')).focus(); return; }
+    if(!fecha){ error('Elige la fecha de despacho.'); return; }
+    if(!despachos.length){ error('Agrega al menos un despacho con cliente o dirección.'); return; }
     if(!db){ error('Sin conexión con Firebase.'); return; }
     const ahora = new Date();
     const notas = $('solNotas').value.trim();
@@ -5429,8 +5429,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       lab.appendChild(f);
       texto.placeholder = pn.modo === 'proponer' ? 'Comentario para la agencia (ej: el 02 no hay camión disponible)' : 'Comentario para la operación (opcional)';
       const enviar = boton(pn.modo === 'proponer' ? '📅 Enviar propuesta' : '📅 Proponer esta fecha', 'enviar-fecha', 'primary', async () => {
-        if(!f.value){ err('Elegí la nueva fecha.'); f.focus(); return; }
-        if(f.value === actual){ err('Elegí una fecha distinta al ' + fechaDM(actual) + '.'); f.focus(); return; }
+        if(!f.value){ err('Elige la nueva fecha.'); f.focus(); return; }
+        if(f.value === actual){ err('Elige una fecha distinta al ' + fechaDM(actual) + '.'); f.focus(); return; }
         enviar.disabled = true;
         if(pn.modo === 'proponer') await proponerFecha(sol, f.value, texto.value.trim());
         else await contraproponerFecha(sol, f.value, texto.value.trim());
@@ -5440,7 +5440,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const rechazo = pn.modo === 'rechazar';
       texto.placeholder = rechazo ? 'Motivo del rechazo (la agencia lo verá)' : 'Motivo (opcional)';
       const conf = boton(rechazo ? 'Confirmar rechazo' : 'Confirmar cancelación', 'confirmar', 'danger', async () => {
-        if(rechazo && !texto.value.trim()){ err('Escribí el motivo para rechazar.'); texto.focus(); return; }
+        if(rechazo && !texto.value.trim()){ err('Escribe el motivo para rechazar.'); texto.focus(); return; }
         conf.disabled = true;
         if(rechazo) await rechazarSolicitud(sol, texto.value.trim());
         else await cancelarSolicitud(sol, texto.value.trim());
@@ -5660,8 +5660,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('gpsCard').classList.toggle('activo', activo);
     $('btnGps').textContent = activo ? 'Dejar de compartir' : 'Compartir mi ubicación';
     $('gpsEstado').textContent = gpsError || (activo
-      ? (gpsUltimoEnvio ? 'Compartiendo · último envío ' + new Date(gpsUltimoEnvio).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) + '. Mantené Ruteka abierta en pantalla.' : 'Buscando tu ubicación…')
-      : 'No se está compartiendo. Activalo al salir a ruta para que la agencia vea dónde va el camión.');
+      ? (gpsUltimoEnvio ? 'Compartiendo · último envío ' + new Date(gpsUltimoEnvio).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) + '. Mantén Ruteka abierta en pantalla.' : 'Buscando tu ubicación…')
+      : 'No se está compartiendo. Actívalo al salir a ruta para que la agencia vea dónde va el camión.');
   }
   $('btnGps').addEventListener('click', () => { if(gpsWatch !== null) detenerGps(); else iniciarGps(); });
   pintarGps();
@@ -5970,7 +5970,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       'auth/wrong-password': 'Contraseña incorrecta.',
       'auth/user-not-found': 'Ese correo no está registrado.',
       'auth/invalid-email': 'El correo no es válido.',
-      'auth/too-many-requests': 'Demasiados intentos, esperá unos minutos.'
+      'auth/too-many-requests': 'Demasiados intentos, espera unos minutos.'
     };
     return m[e.code] || ('No se pudo iniciar sesión: ' + e.message);
   }
@@ -5979,7 +5979,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('loginErr').style.color = 'var(--bad)';
     $('loginErr').textContent = '';
     const email = $('lEmail').value.trim(), pass = $('lPass').value;
-    if(!email || !pass){ $('loginErr').textContent = 'Escribí tu correo y contraseña.'; return; }
+    if(!email || !pass){ $('loginErr').textContent = 'Escribe tu correo y contraseña.'; return; }
     try{
       await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       await auth.signInWithEmailAndPassword(email, pass);
@@ -5990,7 +5990,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   async function doReset(){
     const email = $('lEmail').value.trim();
-    if(!email){ $('loginErr').textContent = 'Escribí tu correo y volvé a tocar "Olvidé mi clave".'; return; }
+    if(!email){ $('loginErr').textContent = 'Escribe tu correo y vuelve a tocar "Olvidé mi clave".'; return; }
     try{
       await auth.sendPasswordResetEmail(email);
       $('loginErr').style.color = 'var(--ok)';
@@ -6003,7 +6003,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   function startFirebase(){
     if(typeof firebase === 'undefined'){
-      $('loginErr').textContent = 'No se pudo cargar Firebase (revisá tu conexión).';
+      $('loginErr').textContent = 'No se pudo cargar Firebase (revisa tu conexión).';
       return;
     }
     try{ firebase.initializeApp(firebaseConfig); }catch(e){ /* ya inicializada */ }
