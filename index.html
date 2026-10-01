@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-01 · 4";
+const VERSION_APP = "2026-10-01 · 5";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -761,18 +761,26 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .seg-punto{ position:relative; z-index:1; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:#e3ecea; border:3px solid #fff; color:#fff; font-weight:800; font-size:14px; box-shadow:0 0 0 1px #dbe5e3; }
   .seg-paso.hecho .seg-punto{ background:var(--marca-principal-claro); box-shadow:none; }
   .seg-paso.fallo .seg-punto{ background:#E5484D; }
-  .seg-paso.actual:not(.fallo) .seg-punto{ background:#fff; box-shadow:0 0 0 3px var(--marca-principal-claro); }
-  .seg-paso.actual.hecho:last-child:not(.fallo) .seg-punto{ background:var(--marca-principal); color:#fff; }
-  .seg-camion{ display:block; width:30px; animation:segCamion 1.2s ease-in-out infinite; }
+  .seg-paso.actual:not(.fallo) .seg-punto{ box-shadow:0 0 0 3px #fff, 0 0 0 6px var(--marca-principal-claro); }
+  .seg-pasos{ position:relative; padding-top:30px; }
+  .seg-camion{ position:absolute; top:0; width:40px; margin-left:-20px; z-index:2; animation:segCamion 1.2s ease-in-out infinite; }
+  .seg-camion.avanza{ animation:segAvanza 1.6s ease-in-out, segCamion 1.2s ease-in-out 1.6s infinite; }
+  @keyframes segAvanza{ from{ left:var(--desde); } }
+  .seg-pasos.llego .seg-camion{ animation:none; }
+  .seg-pasos.llego .seg-camion.avanza{ animation:segAvanza 1.6s ease-in-out; }
+  .seg-pasos.fallo .seg-camion{ filter:grayscale(1); opacity:.7; }
   .seg-camion svg, .seg-ruta-camion svg{ display:block; width:100%; height:auto; }
   @keyframes segCamion{ 0%, 100%{ transform:translateY(0); } 50%{ transform:translateY(-2px); } }
-  .seg-paso.actual .seg-punto{ width:44px; height:44px; margin-top:-5px; }
-  .seg-ruta{ position:relative; padding:26px 26px 0 0; }
+  .seg-ruta{ position:relative; padding:28px 30px 0 0; }
   .seg-ruta .seg-barra{ height:12px; }
   .seg-ruta-camion{ position:absolute; top:0; left:0; width:44px; margin-left:-22px; transition:left .6s ease; animation:segCamion 1.2s ease-in-out infinite; }
   .seg-ruta-meta{ position:absolute; right:0; bottom:-6px; font-size:20px; }
-  @media (prefers-reduced-motion: reduce){ .seg-camion, .seg-ruta-camion{ animation:none; } }
+  @media (prefers-reduced-motion: reduce){ .seg-camion, .seg-camion.avanza, .seg-ruta-camion{ animation:none; } }
   /* Solicitudes de ruta */
+  .aviso-sol{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px 16px; margin-bottom:14px; border-radius:14px; background:#fff3d6; border:1px solid #f3d48a; color:#7a4d00; font-weight:700; }
+  .sol-cont{ display:flex; flex-direction:column; gap:12px; }
+  body:not(.modo-agencia) .sol-cont .sol-form{ order:2; margin-top:18px; }
+  body:not(.modo-agencia) .sol-bloque-lista .config-titulo2{ margin-top:0; }
   .sol-form{ padding:18px 20px; display:flex; flex-direction:column; gap:12px; }
   .sol-form h2{ margin:0; font-size:17px; }
   .sol-campo{ display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
@@ -1322,6 +1330,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <h1>Despachos</h1>
       <p>Coordiná las entregas del día con tu transportista — se actualiza en vivo para los dos.</p>
     </div>
+    <div class="aviso-sol" id="avisoSol" role="status" hidden>
+      <span id="avisoSolTexto"></span>
+      <button type="button" class="primary" id="avisoSolBtn">Revisar solicitudes</button>
+    </div>
 
     <section class="card kpi-bar">
       <div class="kpi-progress">
@@ -1453,19 +1465,23 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <h1>Solicitudes de ruta</h1>
       <p id="solSub">La agencia pide los despachos y la fecha; la operación los revisa y los programa en la ruta de ese día.</p>
     </div>
+    <div class="sol-cont">
     <section class="card sol-form">
-      <h2>Nueva solicitud</h2>
+      <h2 id="solFormTitulo">Nueva solicitud</h2>
       <label class="sol-campo">Fecha de despacho <input type="date" id="solFecha"></label>
       <div id="solFilas" class="sol-filas"></div>
       <button type="button" id="solAgregar">+ Agregar otro despacho</button>
       <label class="sol-campo">Observaciones <textarea id="solNotas" rows="2" placeholder="Horario de recepción, contacto en bodega, etc."></textarea></label>
       <div class="sol-acciones"><button type="button" class="primary" id="solEnviar">Enviar solicitud</button><span class="config-msg" id="solMsg" role="status"></span></div>
     </section>
-    <h2 class="config-titulo2">Solicitudes enviadas</h2>
+    <div class="sol-bloque-lista">
+    <h2 class="config-titulo2" id="solListaTitulo">Solicitudes enviadas</h2>
     <div class="sol-filtros" id="solFiltros">
       <button type="button" data-f="pendiente" class="activo">Pendientes</button><button type="button" data-f="programada">Programadas</button><button type="button" data-f="rechazada">Rechazadas</button><button type="button" data-f="todas">Todas</button>
     </div>
     <div id="solLista" class="sol-lista"></div>
+    </div>
+    </div>
   </div>
 
   <div id="viewSeguimiento" hidden>
@@ -5009,6 +5025,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const n = todasLasSolicitudes().filter(x => x.estado === 'pendiente').length;
     $('solBadge').hidden = !n || modoTransportista;
     $('solBadge').textContent = n;
+    $('avisoSol').hidden = !n || modoTransportista;
+    $('avisoSolTexto').textContent = '📝 La agencia tiene ' + n + (n === 1 ? ' solicitud pendiente' : ' solicitudes pendientes') + ' de programar.';
   }
   // Cambia la lista del mes dentro de una transacción (varias personas pueden escribir a la vez).
   async function cambiarSolicitudes(mes, cambiar){
@@ -5053,6 +5071,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('solNotas').value = '';
     filaSolicitud();
   }
+  $('avisoSolBtn').addEventListener('click', () => { solFiltro = 'pendiente'; switchView('solicitudes'); window.scrollTo(0, 0); });
   $('solAgregar').addEventListener('click', () => filaSolicitud().querySelector('input').focus());
   $('solEnviar').addEventListener('click', async () => {
     const fecha = $('solFecha').value;
@@ -5139,6 +5158,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     cont.innerHTML = '';
     if(!lista.length){ cont.innerHTML = '<p class="chart-empty">' + (todas.length ? 'No hay solicitudes en este filtro.' : 'Todavía no hay solicitudes.') + '</p>'; return; }
     const esAdmin = !modoTransportista;
+    $('solListaTitulo').textContent = esAdmin ? 'Solicitudes de la agencia' : 'Solicitudes enviadas';
+    $('solFormTitulo').textContent = esAdmin ? 'Crear una solicitud' : 'Nueva solicitud';
     const ESTADO_SOL = { pendiente: 'Pendiente', programada: 'Programada', rechazada: 'Rechazada' };
     lista.forEach(sol => {
       const card = document.createElement('section'); card.className = 'card sol-card';
@@ -5329,7 +5350,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     ];
     const actual = pasos.map(x => x.hecho).lastIndexOf(true);
     const ol = document.createElement('ol');
-    ol.className = 'seg-pasos';
+    ol.className = 'seg-pasos' + (pasos[3].hecho ? ' llego' : '') + (pasos[3].fallo ? ' fallo' : '');
     ol.setAttribute('aria-label', 'Estado del envío: ' + pasos[actual].t);
     pasos.forEach((x, i) => {
       const li = document.createElement('li');
@@ -5338,15 +5359,28 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const punto = document.createElement('span');
       punto.className = 'seg-punto';
       punto.setAttribute('aria-hidden', 'true');
-      if(i === actual && i < 3) punto.innerHTML = '<span class="seg-camion">' + CAMION_SVG + '</span>';
-      else punto.textContent = x.fallo ? '✕' : (x.hecho ? '✓' : '');
+      punto.textContent = x.fallo ? '✕' : (x.hecho ? '✓' : '');
       const b = document.createElement('b'); b.textContent = x.t;
       li.append(punto, b);
       if(x.d){ const d = document.createElement('small'); d.textContent = x.d; li.appendChild(d); }
       ol.appendChild(li);
     });
+    // El camión de este envío va sobre la línea, en el paso en que está; si avanzó desde
+    // la última vez que se dibujó, se lo ve recorrer el tramo.
+    const camion = document.createElement('span');
+    camion.className = 'seg-camion';
+    camion.setAttribute('aria-hidden', 'true');
+    camion.innerHTML = CAMION_SVG;
+    const pos = i => ((i + 0.5) / pasos.length * 100) + '%';
+    camion.style.left = pos(actual);
+    const clave = fecha + '|' + r.id;
+    const antes = pasoDibujado.get(clave);
+    if(antes !== undefined && antes < actual){ camion.style.setProperty('--desde', pos(antes)); camion.classList.add('avanza'); }
+    pasoDibujado.set(clave, actual);
+    ol.appendChild(camion);
     return ol;
   }
+  const pasoDibujado = new Map();
   // Tarjeta de un envío con su trazabilidad (Seguimiento y Entregas por rango). Sin montos salvo «dinero».
   function tarjetaEnvio(r, n, opciones){
     const fecha = fechaDe(r);
@@ -5424,7 +5458,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const pctRuta = rows.length ? Math.round(cerrados / rows.length * 100) : 0;
     $('segBarra').style.width = pctRuta + '%';
     if(!$('segBarraCamion').firstChild) $('segBarraCamion').innerHTML = CAMION_SVG;
-    $('segBarraCamion').style.left = pctRuta + '%';
+    $('segBarraCamion').style.left = 'calc(22px + (100% - 70px) * ' + (pctRuta / 100) + ')';
     $('segBarraCamion').title = pctRuta + '% de la ruta cerrada';
     $('segChips').innerHTML = '';
     [['pendiente', 'Pendiente'], ['en-ruta', 'En ruta'], ['entregado', 'Entregado'], ['no-entregado', 'No entregado']].forEach(([k, t]) => {
