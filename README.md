@@ -13,6 +13,7 @@ Se publica sola con GitHub Pages en **https://operaciones-kennedy.github.io**. C
 | **Entregas** | Lo que usa el transportista: cómo llegar (Google Maps/Waze), llamar, avisar por WhatsApp, y registrar la entrega con foto y firma. Funciona sin señal: la foto se sube sola al volver la conexión. |
 | **Reportes → KPIs del día** | Estados, comunas y tarifas de la ruta abierta. |
 | **Seguimiento** | Para la agencia (y los administradores): cada envío de la ruta en vivo, con su estado, la hora de cada paso (salió a ruta, entregado o no entregado y quién lo registró), quién recibió, foto, firma, hora estimada de llegada y la ubicación del camión en el mapa. |
+| **Solicitudes** | La agencia pide rutas: fecha de despacho, los despachos (cliente, dirección, comuna, contacto, productos) y observaciones. La operación las ve con un contador en el menú y las **programa** en la ruta de un día (los despachos pasan a esa ruta, con «Solicitado por la agencia» y «Programado» en la trazabilidad) o las **rechaza** con un motivo. Se guardan por mes en `hojasDeRuta/sol_AAAA-MM`. |
 | **Reportes → Historial de entregas** | Cada entrega del período con hora, quién recibió (o el motivo si no se entregó), quién la registró, foto y firma; filtro, buscador y exportar a Excel. |
 | **Reportes → Historial y reportes del período** | Cumplimiento, gasto en fletes, gráficos por día/mes, comuna y transportista, y buscador de clientes con su foto de entrega. |
 | **Gestión de flotas → Liquidación del día / del período** | Pagos, facturas, visto bueno del transportista (Conforme / Observar) y comprobante en PDF. |
@@ -21,7 +22,7 @@ Se publica sola con GitHub Pages en **https://operaciones-kennedy.github.io**. C
 
 **Día o rango.** En Seguimiento, Entregas, KPIs del día y Liquidación del día, el selector «Día / Rango» de la barra de arriba permite ver varios días juntos (Desde / Hasta, o «Esta semana», «Este mes», «Mes pasado»). En Liquidación por rango se puede marcar pagado, anotar factura y dar el visto bueno: cada cambio se guarda en la ruta de su día. Entregas por rango es solo para revisar.
 
-**Agencia.** En **Ajustes → Usuarios → Agencia** se anotan los correos de la agencia (campo `agencias` de `config/app` y `hojasDeRuta/principal`). Entran en *vista agencia*: Seguimiento e Historial de entregas, sin montos ni edición.
+**Agencia.** En **Ajustes → Usuarios → Agencia** se anotan los correos de la agencia (campo `agencias` de `config/app` y `hojasDeRuta/principal`). Entran en *vista agencia*: Seguimiento, Solicitudes e Historial de entregas, sin montos ni edición de rutas.
 
 **Ubicación del camión.** En Entregas, el transportista toca «Compartir mi ubicación». Mientras Ruteka está abierta en pantalla, la posición se envía cada 30 segundos a `hojasDeRuta/gps_AAAA-MM-DD`. Una página web no puede enviar la ubicación con el teléfono bloqueado o con otra app abierta: en ese caso la agencia ve «última ubicación conocida · hace X min».
 
