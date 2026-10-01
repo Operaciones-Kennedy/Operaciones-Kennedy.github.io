@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-01 · 5";
+const VERSION_APP = "2026-10-01 · 6";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -778,39 +778,103 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   @media (prefers-reduced-motion: reduce){ .seg-camion, .seg-camion.avanza, .seg-ruta-camion{ animation:none; } }
   /* Solicitudes de ruta */
   .aviso-sol{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px 16px; margin-bottom:14px; border-radius:14px; background:#fff3d6; border:1px solid #f3d48a; color:#7a4d00; font-weight:700; }
-  .sol-cont{ display:flex; flex-direction:column; gap:12px; }
+  .aviso-sol.azul{ background:#e8f0ff; border-color:#bcd0fb; color:#1e3a8a; }
+  .sol-cont{ display:flex; flex-direction:column; gap:16px; }
   body:not(.modo-agencia) .sol-cont .sol-form{ order:2; margin-top:18px; }
   body:not(.modo-agencia) .sol-bloque-lista .config-titulo2{ margin-top:0; }
-  .sol-form{ padding:18px 20px; display:flex; flex-direction:column; gap:12px; }
-  .sol-form h2{ margin:0; font-size:17px; }
-  .sol-campo{ display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
-  .sol-campo input, .sol-campo textarea, .sol-desp input{ font:inherit; font-size:14px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:9px 11px; background:#fff; }
-  .sol-campo input[type="date"]{ max-width:220px; }
+  .sol-form{ padding:0; overflow:hidden; display:flex; flex-direction:column; }
+  .sol-form-head{ display:flex; gap:14px; align-items:center; padding:18px 20px; background:linear-gradient(135deg, var(--marca-tinta), var(--marca-principal)); color:#fff; }
+  .sol-form-head h2{ margin:0; font-size:18px; color:#fff; }
+  .sol-form-head p{ margin:3px 0 0; font-size:13px; opacity:.85; }
+  .sol-form-icono{ flex:none; width:46px; height:46px; border-radius:14px; background:rgba(255,255,255,.15); display:grid; place-items:center; font-size:23px; }
+  .sol-pasos{ padding:4px 20px 6px; display:flex; flex-direction:column; }
+  .sol-paso{ padding:16px 0; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .sol-paso:last-child{ border-bottom:0; }
+  .sol-paso-tit{ display:flex; align-items:center; gap:9px; margin:0; font-size:14px; font-weight:800; color:var(--text); }
+  .sol-paso-tit span{ flex:none; width:24px; height:24px; border-radius:50%; background:var(--ok-bg); color:var(--marca-principal-oscuro); display:grid; place-items:center; font-size:12px; }
+  .sol-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; }
+  .sol-campo{ display:flex; flex-direction:column; gap:5px; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); min-width:0; }
+  .sol-campo input, .sol-campo textarea, .sol-desp input{ font:inherit; font-size:14px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:#fff; box-sizing:border-box; width:100%; }
+  .sol-campo input[type="date"]{ max-width:240px; }
+  .sol-form input:focus, .sol-form textarea:focus, .sol-panel input:focus{ outline:none; border-color:var(--marca-principal-claro); box-shadow:0 0 0 3px rgba(20,163,142,.18); }
+  .sol-ayuda{ margin:0; font-size:12px; color:var(--muted); }
   .sol-filas{ display:flex; flex-direction:column; gap:10px; }
-  .sol-desp{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px; border:1px dashed var(--border); border-radius:12px; }
+  .sol-desp{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px; border:1px solid var(--border); border-radius:14px; background:#f7fbfa; }
   .sol-desp .seg-num{ flex:none; width:26px; height:26px; }
-  .sol-desp input{ flex:1 1 150px; min-width:0; box-sizing:border-box; }
+  .sol-desp input{ flex:1 1 150px; width:auto; min-width:0; }
   .sol-desp .icon-btn{ flex:none; }
   @media (max-width: 520px){ .sol-desp input{ flex-basis:100%; } .sol-desp .icon-btn{ order:-1; margin-left:auto; } .sol-desp .seg-num{ order:-2; } }
-  .sol-acciones{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  #solAgregar{ align-self:flex-start; border-style:dashed; border-radius:999px; }
+  .sol-acciones{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding:14px 20px; background:#f7fbfa; border-top:1px solid var(--border); }
   .sol-filtros{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 12px; }
-  .sol-filtros button{ border-radius:999px; padding:6px 14px; }
+  .sol-filtros button{ border-radius:999px; padding:6px 12px 6px 14px; }
+  .sol-filtros button b{ margin-left:6px; font-size:11px; background:rgba(18,41,45,.08); border-radius:999px; padding:1px 7px; }
   .sol-filtros button.activo{ background:var(--marca-principal); color:#fff; border-color:var(--marca-principal); }
-  .sol-lista{ display:flex; flex-direction:column; gap:12px; }
-  .sol-card{ padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
-  .sol-card-top{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; }
-  .sol-card-top b{ font-size:15px; }
-  .sol-card-top small{ display:block; color:var(--muted); font-size:12px; margin-top:2px; }
-  .sol-estado{ font-size:12px; font-weight:800; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+  .sol-filtros button.activo b{ background:rgba(255,255,255,.25); }
+  .sol-lista{ display:flex; flex-direction:column; gap:14px; }
+  .sol-ok{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 14px; margin-bottom:12px; border-radius:12px; background:var(--ok-bg); border:1px solid #a8e6dc; color:var(--marca-principal-oscuro); font-weight:700; font-size:14px; }
+  .sol-ok span{ flex:1 1 220px; }
+  .sol-card{ padding:0; overflow:hidden; display:flex; flex-direction:column; border-left:5px solid #f0b429; transition:box-shadow .2s ease; }
+  .sol-card:hover{ box-shadow:0 10px 26px rgba(18,41,45,.10); }
+  .sol-card.est-propuesta{ border-left-color:#3b82f6; }
+  .sol-card.est-programada{ border-left-color:var(--marca-principal-claro); }
+  .sol-card.est-rechazada{ border-left-color:#E5484D; }
+  .sol-card.est-cancelada{ border-left-color:#9fb3b0; }
+  .sol-card-top{ display:flex; gap:12px; align-items:center; padding:14px 16px 10px; }
+  .sol-avatar{ flex:none; width:44px; height:44px; border-radius:14px; color:#fff; font-weight:800; font-size:15px; display:grid; place-items:center; letter-spacing:.02em; }
+  .sol-quien{ flex:1; min-width:0; }
+  .sol-quien b{ display:block; font-size:15px; }
+  .sol-quien small{ display:block; margin-top:2px; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+  .sol-quien a{ color:inherit; }
+  .sol-estado{ flex:none; font-size:12px; font-weight:800; padding:5px 11px; border-radius:999px; white-space:nowrap; }
   .sol-estado.pendiente{ background:#fff3d6; color:#9a6200; }
+  .sol-estado.propuesta{ background:#e3edff; color:#1d4ed8; }
   .sol-estado.programada{ background:var(--ok-bg); color:var(--marca-principal-oscuro); }
   .sol-estado.rechazada{ background:#fde8e8; color:#c2333a; }
-  .sol-card ul{ margin:0; padding-left:18px; font-size:13px; }
-  .sol-card ul li span{ color:var(--muted); }
-  .sol-nota{ font-size:13px; color:var(--muted); font-style:italic; }
-  .sol-admin{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:8px; border-top:1px solid var(--border); }
-  .sol-admin input{ font:inherit; font-size:14px; border:1px solid var(--border); border-radius:8px; padding:7px 9px; }
-  .sol-admin input[type="text"]{ flex:1; min-width:160px; }
+  .sol-estado.cancelada{ background:#eef2f1; color:#5b7473; }
+  .sol-fechas{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:0 16px 12px; }
+  .sol-dia{ display:flex; flex-direction:column; align-items:center; min-width:66px; padding:6px 10px; border-radius:12px; background:#f3f7f6; border:1px solid var(--border); line-height:1.15; }
+  .sol-dia small{ font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .sol-dia b{ font-size:22px; }
+  .sol-dia span{ font-size:11px; color:var(--muted); text-transform:capitalize; }
+  .sol-dia.tachada b{ text-decoration:line-through; opacity:.5; }
+  .sol-dia.nueva{ background:#e3edff; border-color:#bcd0fb; }
+  .sol-dia.final{ background:var(--ok-bg); border-color:#a8e6dc; }
+  .sol-flecha{ color:var(--muted); font-weight:800; font-size:18px; }
+  .sol-meta{ margin-left:auto; text-align:right; font-size:12px; color:var(--muted); }
+  .sol-meta b{ display:block; font-size:14px; color:var(--text); }
+  .sol-despachos{ list-style:none; margin:0; padding:0 16px 12px; display:flex; flex-direction:column; gap:6px; }
+  .sol-despachos li{ display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border-radius:10px; background:#f7fbfa; font-size:13px; }
+  .sol-despachos li .seg-num{ flex:none; width:22px; height:22px; font-size:11px; }
+  .sol-despachos li b{ display:block; }
+  .sol-despachos li span{ color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+  .sol-nota{ margin:0 16px 12px; padding:8px 12px; border-radius:10px; background:#fffaf0; border:1px solid #f6e3b5; font-size:13px; color:#7a5a12; }
+  .sol-propone{ margin:0 16px 12px; padding:10px 14px; border-radius:12px; background:#e8f0ff; border:1px solid #bcd0fb; color:#1e3a8a; font-size:14px; }
+  .sol-propone q{ display:block; margin-top:4px; font-size:13px; font-style:italic; quotes:'«' '»'; }
+  .sol-hilo{ list-style:none; margin:0 16px 12px 22px; padding:0 0 0 16px; border-left:2px solid #dbe5e3; display:flex; flex-direction:column; gap:9px; }
+  .sol-hilo li{ position:relative; font-size:13px; }
+  .sol-hilo li::before{ content:''; position:absolute; left:-23px; top:3px; width:10px; height:10px; border-radius:50%; background:#9fb3b0; border:2px solid #fff; }
+  .sol-hilo li.op::before{ background:var(--marca-principal-claro); }
+  .sol-hilo li.ag::before{ background:var(--marca-acento); }
+  .sol-hilo li.rojo::before{ background:#E5484D; }
+  .sol-hilo small{ display:block; font-size:11px; color:var(--muted); overflow-wrap:anywhere; }
+  .sol-hilo q{ display:inline-block; margin-top:4px; padding:5px 10px; border-radius:10px; background:#f3f7f6; font-style:italic; quotes:'«' '»'; }
+  .sol-pie{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:12px 16px; border-top:1px solid var(--border); background:#fbfdfc; }
+  .sol-espera{ flex:1 1 220px; font-size:13px; color:var(--muted); }
+  .sol-panel{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:12px 16px; border-top:1px dashed var(--border); background:#fff; }
+  .sol-panel label{ display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; }
+  .sol-panel input{ font:inherit; font-size:14px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; min-width:0; }
+  .sol-panel input[type="text"]{ flex:1 1 220px; }
+  .sol-panel .config-msg{ flex-basis:100%; }
+  @media (max-width: 520px){ .sol-meta{ margin-left:0; text-align:left; flex-basis:100%; } .sol-pie button, .sol-panel button{ flex:1 1 auto; } .sol-card-top{ flex-wrap:wrap; } }
+  /* Entregas: solicitudes por aprobar */
+  .sol-aprobar{ margin-bottom:16px; padding:16px; border-radius:18px; background:linear-gradient(135deg, #fff6e5, #ffffff 70%); border:1px solid #f3d48a; }
+  .sol-aprobar-head{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; margin-bottom:12px; }
+  .sol-aprobar-head h2{ margin:0; font-size:17px; display:flex; align-items:center; gap:8px; }
+  .sol-aprobar-head p{ margin:3px 0 0; font-size:13px; color:var(--muted); }
+  .sol-aprobar-head .side-badge{ margin-left:0; }
+  .movil-tab{ position:relative; }
+  .movil-tab .side-badge{ position:absolute; top:2px; left:calc(50% + 6px); margin:0; }
   .side-badge{ margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--marca-acento); color:#fff; font-size:11px; font-weight:800; display:inline-grid; place-items:center; }
   .seg-paso b{ font-size:12px; color:var(--text); line-height:1.2; margin-top:2px; }
   .seg-paso:not(.hecho) b{ color:var(--muted); font-weight:600; }
@@ -1268,7 +1332,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <nav class="movil-nav" aria-label="Menú principal">
     <button class="movil-tab" type="button" data-tab="despachos" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta</span></button>
     <button class="movil-tab" type="button" data-tab="seguimiento" data-solo-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
-    <button class="movil-tab" type="button" data-tab="solicitudes" data-solo-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span></button>
+    <button class="movil-tab" type="button" data-tab="solicitudes" data-solo-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span><b class="side-badge" id="solBadgeMovil" hidden></b></button>
     <button class="movil-tab" type="button" data-tab="chofer" data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
     <button class="movil-tab" type="button" data-tab="historial" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Reportes</span></button>
     <button class="movil-tab" type="button" data-tab="liquidaciones" data-dinero><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M15.5 15h2.5"/></svg><span>Pagos</span></button>
@@ -1452,6 +1516,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <h1>Entregas</h1>
       <p>Registrá quién recibió cada despacho, con foto y firma como comprobante.</p>
     </div>
+    <section class="sol-aprobar" id="solAprobar" hidden>
+      <div class="sol-aprobar-head">
+        <div><h2>📥 Solicitudes por aprobar <b class="side-badge" id="solAprobarN" hidden></b></h2><p id="solAprobarSub"></p></div>
+        <button type="button" id="solAprobarVer">Ver todas las solicitudes</button>
+      </div>
+      <div class="sol-ok" id="solAprobarOk" role="status" hidden></div>
+      <div class="sol-lista" id="solAprobarLista"></div>
+    </section>
     <section class="card gps-card" id="gpsCard">
       <div><b>📍 Ubicación para la agencia</b><p id="gpsEstado">No se está compartiendo.</p></div>
       <button type="button" id="btnGps">Compartir mi ubicación</button>
@@ -1463,22 +1535,46 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   <div id="viewSolicitudes" hidden>
     <div class="content-header">
       <h1>Solicitudes de ruta</h1>
-      <p id="solSub">La agencia pide los despachos y la fecha; la operación los revisa y los programa en la ruta de ese día.</p>
+      <p id="solSub">La agencia pide los despachos y la fecha; la operación la aprueba, la rechaza o propone otra fecha hasta que se pongan de acuerdo.</p>
     </div>
     <div class="sol-cont">
     <section class="card sol-form">
-      <h2 id="solFormTitulo">Nueva solicitud</h2>
-      <label class="sol-campo">Fecha de despacho <input type="date" id="solFecha"></label>
-      <div id="solFilas" class="sol-filas"></div>
-      <button type="button" id="solAgregar">+ Agregar otro despacho</button>
-      <label class="sol-campo">Observaciones <textarea id="solNotas" rows="2" placeholder="Horario de recepción, contacto en bodega, etc."></textarea></label>
+      <div class="sol-form-head">
+        <div class="sol-form-icono" aria-hidden="true">📝</div>
+        <div><h2 id="solFormTitulo">Nueva solicitud</h2><p>Completá los datos y la operación te confirma la fecha (o te propone otra).</p></div>
+      </div>
+      <div class="sol-pasos">
+        <div class="sol-paso" role="group" aria-labelledby="solPaso1">
+          <h3 class="sol-paso-tit" id="solPaso1"><span>1</span>Quién solicita</h3>
+          <div class="sol-grid">
+            <label class="sol-campo">Nombre <input type="text" id="solNombre" autocomplete="name" placeholder="Ej: Camila Rojas"></label>
+            <label class="sol-campo">Empresa <input type="text" id="solEmpresa" autocomplete="organization" placeholder="Ej: Agencia Kennedy"></label>
+            <label class="sol-campo">Teléfono <input type="tel" id="solTelefono" autocomplete="tel" placeholder="+56 9 …"></label>
+          </div>
+        </div>
+        <div class="sol-paso" role="group" aria-labelledby="solPaso2">
+          <h3 class="sol-paso-tit" id="solPaso2"><span>2</span>Cuándo</h3>
+          <label class="sol-campo">Fecha de despacho <input type="date" id="solFecha"></label>
+          <p class="sol-ayuda">Si ese día no se puede, la operación te propone otra fecha y vos la aceptás o proponés otra.</p>
+        </div>
+        <div class="sol-paso" role="group" aria-labelledby="solPaso3">
+          <h3 class="sol-paso-tit" id="solPaso3"><span>3</span>Qué despachar</h3>
+          <div id="solFilas" class="sol-filas"></div>
+          <button type="button" id="solAgregar">+ Agregar otro despacho</button>
+        </div>
+        <div class="sol-paso" role="group" aria-labelledby="solPaso4">
+          <h3 class="sol-paso-tit" id="solPaso4"><span>4</span>Observaciones</h3>
+          <label class="sol-campo"><span hidden>Observaciones</span><textarea id="solNotas" rows="2" placeholder="Horario de recepción, contacto en bodega, etc."></textarea></label>
+        </div>
+      </div>
       <div class="sol-acciones"><button type="button" class="primary" id="solEnviar">Enviar solicitud</button><span class="config-msg" id="solMsg" role="status"></span></div>
     </section>
     <div class="sol-bloque-lista">
     <h2 class="config-titulo2" id="solListaTitulo">Solicitudes enviadas</h2>
     <div class="sol-filtros" id="solFiltros">
-      <button type="button" data-f="pendiente" class="activo">Pendientes</button><button type="button" data-f="programada">Programadas</button><button type="button" data-f="rechazada">Rechazadas</button><button type="button" data-f="todas">Todas</button>
+      <button type="button" data-f="activas" class="activo">En curso<b></b></button><button type="button" data-f="programada">Programadas<b></b></button><button type="button" data-f="cerradas">Rechazadas<b></b></button><button type="button" data-f="todas">Todas<b></b></button>
     </div>
+    <div class="sol-ok" id="solOk" role="status" hidden></div>
     <div id="solLista" class="sol-lista"></div>
     </div>
     </div>
@@ -1488,6 +1584,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <div class="content-header">
       <h1>Seguimiento</h1>
       <p>Cada envío de la ruta en vivo: estado, hora de cada paso, quién recibió y la ubicación del camión.</p>
+    </div>
+    <div class="aviso-sol azul" id="avisoSolAg" role="status" hidden>
+      <span id="avisoSolAgTexto"></span>
+      <button type="button" class="primary" id="avisoSolAgBtn">Responder</button>
     </div>
     <section class="card seg-resumen">
       <div class="seg-top">
@@ -2561,6 +2661,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(modoTransportista && !vistasPermitidas().includes(currentView)) switchView(vistaInicial());
     if(antes !== modoTransportista && currentView === 'liquidaciones') renderLiquidaciones();
     if(dineroAntes !== verDinero && currentView === 'chofer') renderChofer();
+    pintarTodoSolicitudes();
   }
 
   // Se cortan al cerrar sesión: si no, Firebase los rechaza (ya no hay usuario)
@@ -3687,6 +3788,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function renderChofer(){
     const container = $('choferList');
     container.innerHTML = '';
+    pintarSolAprobar();
     $('choferRangoNota').hidden = !enRango();
     $('gpsCard').hidden = enRango();
     if(enRango()){ pintarListaPorDia(container, filasDelRango(), { dinero: verDinero }); return; }
@@ -4998,16 +5100,32 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   /* ============================================================
-     SOLICITUDES DE RUTA (agencia → operación)
+     SOLICITUDES DE RUTA (agencia ⇄ operación)
      Cada mes en hojasDeRuta/sol_AAAA-MM (campo json con la lista), así no hace
      falta cambiar las reglas de Firebase. Se escuchan el mes actual y el anterior.
+     Estados: pendiente (la revisa la operación) → programada | rechazada, o
+     propuesta (la operación pidió otra fecha; la agencia acepta, propone otra
+     o cancela). Cada paso queda en `historial`.
      ============================================================ */
-  const SOL_PREFIJO = 'sol_';
-  let solicitudesPorMes = {};
-  let solFiltro = 'pendiente';
-  const mesDe = d => fechaLocal(d).slice(0, 7);
+  var SOL_PREFIJO = 'sol_';
+  var solicitudesPorMes = {};
+  var solFiltro = 'activas';
+  var solPanel = null;          // { id, modo, fecha, texto }: el formulario abierto en una tarjeta
+  var solUltimoAviso = null;    // { fecha, n, at }: «los despachos pasaron a la ruta del …»
+  var SOL_ACTIVAS = ['pendiente', 'propuesta'];
+  var SOL_FILTROS = {
+    activas: s => SOL_ACTIVAS.includes(s.estado),
+    programada: s => s.estado === 'programada',
+    cerradas: s => s.estado === 'rechazada' || s.estado === 'cancelada',
+    todas: () => true
+  };
+  var ESTADO_SOL = { pendiente: 'Pendiente', propuesta: 'Nueva fecha propuesta', programada: 'Programada', rechazada: 'Rechazada', cancelada: 'Cancelada' };
+  function mesDe(d){ return fechaLocal(d).slice(0, 7); }
+  function fechaDM(id){ return id ? id.split('-').reverse().slice(0, 2).join('/') : '—'; }
+  function fechaL(id){ return id ? fechaLarga(id) : '—'; }
+  function solicitanteGuardado(){ try{ return JSON.parse(localStorage.getItem('ruteka_solicitante')) || {}; }catch(e){ return {}; } }
   function todasLasSolicitudes(){
-    return Object.values(solicitudesPorMes).flat().sort((a, b) => String(b.creadoAt).localeCompare(String(a.creadoAt)));
+    return Object.values(solicitudesPorMes || {}).flat().sort((a, b) => String(b.creadoAt).localeCompare(String(a.creadoAt)));
   }
   function escucharSolicitudes(){
     if(!db) return;
@@ -5016,17 +5134,29 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     [mesDe(hoy), mesDe(new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1))].forEach(mes => {
       unsubConfig.push(db.collection('hojasDeRuta').doc(SOL_PREFIJO + mes).onSnapshot(sn => {
         solicitudesPorMes[mes] = sn.exists && sn.data().json ? (JSON.parse(sn.data().json).solicitudes || []) : [];
-        pintarBadgeSolicitudes();
-        if(currentView === 'solicitudes') pintarSolicitudes();
+        pintarTodoSolicitudes();
       }, () => {}));
     });
   }
+  function pintarTodoSolicitudes(){
+    pintarBadgeSolicitudes();
+    if(currentView === 'solicitudes') pintarSolicitudes();
+    if(currentView === 'chofer') pintarSolAprobar();
+  }
+  // Contador del menú: a la operación, lo que tiene que aprobar; a la agencia, las fechas que le propusieron.
   function pintarBadgeSolicitudes(){
-    const n = todasLasSolicitudes().filter(x => x.estado === 'pendiente').length;
-    $('solBadge').hidden = !n || modoTransportista;
+    const todas = todasLasSolicitudes();
+    const nOp = modoTransportista ? 0 : todas.filter(s => s.estado === 'pendiente').length;
+    const nAg = modoAgencia ? todas.filter(s => s.estado === 'propuesta').length : 0;
+    const n = nOp || nAg;
+    $('solBadge').hidden = !n;
     $('solBadge').textContent = n;
-    $('avisoSol').hidden = !n || modoTransportista;
-    $('avisoSolTexto').textContent = '📝 La agencia tiene ' + n + (n === 1 ? ' solicitud pendiente' : ' solicitudes pendientes') + ' de programar.';
+    $('solBadgeMovil').hidden = !nAg;
+    $('solBadgeMovil').textContent = nAg;
+    $('avisoSol').hidden = !nOp;
+    $('avisoSolTexto').textContent = '📝 La agencia tiene ' + nOp + (nOp === 1 ? ' solicitud pendiente' : ' solicitudes pendientes') + ' de aprobar.';
+    $('avisoSolAg').hidden = !nAg;
+    $('avisoSolAgTexto').textContent = '📅 La operación propuso otra fecha para ' + (nAg === 1 ? '1 solicitud' : nAg + ' solicitudes') + '. Revisá si te sirve.';
   }
   // Cambia la lista del mes dentro de una transacción (varias personas pueden escribir a la vez).
   async function cambiarSolicitudes(mes, cambiar){
@@ -5039,6 +5169,107 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       solicitudesPorMes[mes] = lista;
       return res;
     });
+  }
+  // Las solicitudes anteriores a la negociación no tienen historial: se arma con sus datos.
+  function hiloDe(sol){
+    if(Array.isArray(sol.historial) && sol.historial.length) return sol.historial;
+    const h = [{ accion: 'solicitada', at: sol.creadoAt, por: sol.por, fecha: sol.fecha }];
+    if(sol.estado === 'programada') h.push({ accion: 'programada', at: sol.resueltoAt, por: sol.resueltoPor, fecha: sol.rutaFecha });
+    if(sol.estado === 'rechazada') h.push({ accion: 'rechazada', at: sol.resueltoAt, por: sol.resueltoPor, comentario: sol.motivo });
+    return h;
+  }
+  // Pasa la solicitud de un estado a otro si sigue en uno de `desde` (si no, otra persona ya respondió).
+  async function moverSolicitud(sol, desde, cambio){
+    let ok = false;
+    try{
+      ok = await cambiarSolicitudes(sol.mes, lista => {
+        const s = lista.find(x => x.id === sol.id);
+        if(!s || !desde.includes(s.estado)) return false;
+        s.historial = hiloDe(s).slice();
+        cambio(s);
+        return true;
+      });
+      if(!ok) showDialog('Esa solicitud ya cambió: otra persona la respondió. Revisá la lista actualizada.');
+    }catch(err){
+      console.error(err);
+      showDialog('No se pudo guardar: ' + err.message);
+    }
+    solPanel = null;
+    pintarTodoSolicitudes();
+    return ok;
+  }
+  function pasoSol(accion, extra){
+    return Object.assign({ accion, at: new Date().toISOString(), por: currentEmail() }, modoAgencia ? { nombre: solicitanteGuardado().nombre || '' } : {}, extra);
+  }
+  const proponerFecha = (sol, fecha, comentario) => moverSolicitud(sol, ['pendiente'], s => {
+    s.historial.push(pasoSol('propuesta', { fecha, comentario }));
+    Object.assign(s, { estado: 'propuesta', fechaPropuesta: fecha });
+  });
+  const contraproponerFecha = (sol, fecha, comentario) => moverSolicitud(sol, ['propuesta'], s => {
+    s.historial.push(pasoSol('contrapropuesta', { fecha, comentario }));
+    Object.assign(s, { estado: 'pendiente', fecha, fechaPropuesta: '' });
+  });
+  const rechazarSolicitud = (sol, motivo) => moverSolicitud(sol, SOL_ACTIVAS, s => {
+    s.historial.push(pasoSol('rechazada', { comentario: motivo }));
+    Object.assign(s, { estado: 'rechazada', motivo, resueltoPor: currentEmail(), resueltoAt: new Date().toISOString() });
+  });
+  const cancelarSolicitud = (sol, motivo) => moverSolicitud(sol, SOL_ACTIVAS, s => {
+    s.historial.push(pasoSol('cancelada', { comentario: motivo }));
+    Object.assign(s, { estado: 'cancelada', motivo, resueltoPor: currentEmail(), resueltoAt: new Date().toISOString() });
+  });
+
+  // Aprobar (operación) o aceptar la fecha propuesta (agencia): los despachos pasan a la ruta de ese día.
+  async function programarSolicitud(sol, fecha){
+    const quien = currentEmail();
+    const ahora = new Date().toISOString();
+    let antes = null, programadoPor = quien;
+    // 1) Se marca primero, para que nadie la programe dos veces.
+    const ok = await cambiarSolicitudes(sol.mes, lista => {
+      const s = lista.find(x => x.id === sol.id);
+      if(!s || !SOL_ACTIVAS.includes(s.estado)) return false;
+      s.historial = hiloDe(s).slice();
+      antes = { estado: s.estado, n: s.historial.length, fechaPropuesta: s.fechaPropuesta || '' };
+      const acepta = s.estado === 'propuesta';
+      // Si la agencia acepta la fecha que propuso la operación, «programado» queda a nombre de quien la propuso.
+      const prop = acepta ? s.historial.slice().reverse().find(h => h.accion === 'propuesta') : null;
+      programadoPor = (prop && prop.por) || quien;
+      s.historial.push(pasoSol(acepta ? 'aceptada' : 'programada', { at: ahora, fecha }));
+      Object.assign(s, { estado: 'programada', rutaFecha: fecha, fechaPropuesta: '', resueltoPor: quien, resueltoAt: ahora });
+      return true;
+    }).catch(err => { console.error(err); return false; });
+    if(!ok){ showDialog('Esa solicitud ya fue resuelta por otra persona.'); solPanel = null; pintarTodoSolicitudes(); return null; }
+    // 2) Los despachos se agregan a la ruta de ese día (se crea si no existe).
+    try{
+      const ref = db.collection('hojasDeRuta').doc(fecha);
+      const final = await db.runTransaction(async tx => {
+        const sn = await tx.get(ref);
+        const st = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : {
+          titulo: state.titulo || '', puntoPartida: state.puntoPartida || '', startLat: state.startLat, startLng: state.startLng,
+          transportista: state.transportista || '', transportistaEmail: state.transportistaEmail || '', transportistas: state.transportistas || [], fecha, rows: []
+        };
+        st.rows = (st.rows || []).concat(sol.despachos.map(d => Object.assign(defaultRow(), {
+          cliente: d.cliente || '', direccion: d.direccion || '', comuna: d.comuna || '', contacto: d.contacto || '', productos: d.productos || '',
+          creadoAt: sol.creadoAt, solicitudId: sol.id,
+          eventos: [{ tipo: 'solicitado', at: sol.creadoAt, por: sol.por || '' }, { tipo: 'programado', at: ahora, por: programadoPor }]
+        })));
+        tx.set(ref, { json: JSON.stringify(st), fecha, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: quien }, { merge: true });
+        return st;
+      });
+      guardarResumen(final, fecha, quien);
+      solUltimoAviso = { fecha, n: sol.despachos.length, at: Date.now() };
+      solPanel = null;
+      pintarTodoSolicitudes();
+      return fecha;
+    }catch(err){
+      console.error(err);
+      await cambiarSolicitudes(sol.mes, lista => {
+        const s = lista.find(x => x.id === sol.id);
+        if(s && antes){ s.historial = (s.historial || []).slice(0, antes.n); Object.assign(s, { estado: antes.estado, fechaPropuesta: antes.fechaPropuesta, rutaFecha: '', resueltoPor: '', resueltoAt: '' }); }
+      }).catch(() => {});
+      showDialog('No se pudo agregar a la ruta del ' + fecha.split('-').reverse().join('/') + ': ' + err.message);
+      pintarTodoSolicitudes();
+      return null;
+    }
   }
 
   // Formulario «Nueva solicitud»
@@ -5067,14 +5298,20 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function limpiarFormSolicitud(){
     const man = new Date(); man.setDate(man.getDate() + 1);
     $('solFecha').value = fechaLocal(man);
+    $('solFecha').min = fechaLocal();
     $('solFilas').innerHTML = '';
     $('solNotas').value = '';
+    const g = solicitanteGuardado();
+    [['solNombre', 'nombre'], ['solEmpresa', 'empresa'], ['solTelefono', 'telefono']].forEach(([id, k]) => { if(!$(id).value) $(id).value = g[k] || ''; });
     filaSolicitud();
   }
-  $('avisoSolBtn').addEventListener('click', () => { solFiltro = 'pendiente'; switchView('solicitudes'); window.scrollTo(0, 0); });
+  $('avisoSolBtn').addEventListener('click', () => { solFiltro = 'activas'; switchView('solicitudes'); window.scrollTo(0, 0); });
+  $('avisoSolAgBtn').addEventListener('click', () => { solFiltro = 'activas'; switchView('solicitudes'); window.scrollTo(0, 0); });
+  $('solAprobarVer').addEventListener('click', () => { solFiltro = 'activas'; switchView('solicitudes'); window.scrollTo(0, 0); });
   $('solAgregar').addEventListener('click', () => filaSolicitud().querySelector('input').focus());
   $('solEnviar').addEventListener('click', async () => {
     const fecha = $('solFecha').value;
+    const solicitante = { nombre: $('solNombre').value.trim(), empresa: $('solEmpresa').value.trim(), telefono: $('solTelefono').value.trim() };
     const despachos = [...$('solFilas').children].map(f => {
       const o = {};
       f.querySelectorAll('input[data-k]').forEach(i => { o[i.dataset.k] = i.value.trim(); });
@@ -5082,139 +5319,286 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }).filter(o => o.cliente || o.direccion);
     const msg = $('solMsg');
     msg.classList.remove('err');
-    if(!fecha){ msg.textContent = 'Elegí la fecha de despacho.'; msg.classList.add('err'); return; }
-    if(!despachos.length){ msg.textContent = 'Agregá al menos un despacho con cliente o dirección.'; msg.classList.add('err'); return; }
-    if(!db){ msg.textContent = 'Sin conexión con Firebase.'; msg.classList.add('err'); return; }
+    const error = t => { msg.textContent = t; msg.classList.add('err'); };
+    if(!solicitante.nombre || !solicitante.empresa){ error('Escribí tu nombre y la empresa que solicita.'); ($('solNombre').value.trim() ? $('solEmpresa') : $('solNombre')).focus(); return; }
+    if(!fecha){ error('Elegí la fecha de despacho.'); return; }
+    if(!despachos.length){ error('Agregá al menos un despacho con cliente o dirección.'); return; }
+    if(!db){ error('Sin conexión con Firebase.'); return; }
     const ahora = new Date();
-    const sol = { id: 'sol' + uid(), creadoAt: ahora.toISOString(), mes: mesDe(ahora), por: currentEmail(), fecha, notas: $('solNotas').value.trim(), estado: 'pendiente', despachos };
+    const notas = $('solNotas').value.trim();
+    const sol = { id: 'sol' + uid(), creadoAt: ahora.toISOString(), mes: mesDe(ahora), por: currentEmail(), solicitante, fecha, notas, estado: 'pendiente', despachos,
+      historial: [{ accion: 'solicitada', at: ahora.toISOString(), por: currentEmail(), nombre: solicitante.nombre, fecha }] };
+    try{ localStorage.setItem('ruteka_solicitante', JSON.stringify(solicitante)); }catch(e){}
     $('solEnviar').disabled = true;
     try{
       await cambiarSolicitudes(sol.mes, lista => { lista.push(sol); });
       limpiarFormSolicitud();
-      solFiltro = 'pendiente';
+      solFiltro = 'activas';
       pintarSolicitudes();
-      msg.textContent = 'Solicitud enviada para el ' + fechaLarga(fecha) + ' (' + despachos.length + ' despacho(s)). Te avisamos aquí cuando quede programada.';
+      msg.textContent = 'Solicitud enviada para el ' + fechaLarga(fecha) + ' (' + despachos.length + ' despacho(s)). Te avisamos aquí cuando la operación responda.';
     }catch(err){
       console.error(err);
-      msg.textContent = 'No se pudo enviar la solicitud: ' + err.message;
-      msg.classList.add('err');
+      error('No se pudo enviar la solicitud: ' + err.message);
     }finally{ $('solEnviar').disabled = false; }
   });
   $('solFiltros').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { solFiltro = b.dataset.f; pintarSolicitudes(); }));
 
-  // La operación programa la solicitud: sus despachos pasan a la ruta del día elegido.
-  async function programarSolicitud(sol, fecha){
-    const quien = currentEmail();
-    const ahora = new Date().toISOString();
-    // 1) Se marca primero, para que nadie la programe dos veces.
-    const ok = await cambiarSolicitudes(sol.mes, lista => {
-      const s = lista.find(x => x.id === sol.id);
-      if(!s || s.estado !== 'pendiente') return false;
-      Object.assign(s, { estado: 'programada', rutaFecha: fecha, resueltoPor: quien, resueltoAt: ahora });
-      return true;
-    });
-    if(!ok){ showDialog('Esa solicitud ya fue resuelta por otra persona.'); return; }
-    // 2) Los despachos se agregan a la ruta de ese día (se crea si no existe).
-    try{
-      const ref = db.collection('hojasDeRuta').doc(fecha);
-      const final = await db.runTransaction(async tx => {
-        const sn = await tx.get(ref);
-        const st = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : {
-          titulo: state.titulo || '', puntoPartida: state.puntoPartida || '', startLat: state.startLat, startLng: state.startLng,
-          transportista: state.transportista || '', transportistaEmail: state.transportistaEmail || '', transportistas: state.transportistas || [], fecha, rows: []
-        };
-        st.rows = (st.rows || []).concat(sol.despachos.map(d => Object.assign(defaultRow(), {
-          cliente: d.cliente || '', direccion: d.direccion || '', comuna: d.comuna || '', contacto: d.contacto || '', productos: d.productos || '',
-          creadoAt: sol.creadoAt, solicitudId: sol.id,
-          eventos: [{ tipo: 'solicitado', at: sol.creadoAt, por: sol.por || '' }, { tipo: 'programado', at: ahora, por: quien }]
-        })));
-        tx.set(ref, { json: JSON.stringify(st), fecha, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: quien }, { merge: true });
-        return st;
-      });
-      guardarResumen(final, fecha, quien);
-      pintarSolicitudes();
-    }catch(err){
-      console.error(err);
-      await cambiarSolicitudes(sol.mes, lista => { const s = lista.find(x => x.id === sol.id); if(s) Object.assign(s, { estado: 'pendiente', rutaFecha: '', resueltoPor: '', resueltoAt: '' }); });
-      showDialog('No se pudo agregar a la ruta del ' + fecha.split('-').reverse().join('/') + ': ' + err.message);
-      pintarSolicitudes();
+  // Tarjeta de una solicitud (en Solicitudes y en «por aprobar» de Entregas).
+  function nuevo(tag, clase, texto){
+    const e = document.createElement(tag);
+    if(clase) e.className = clase;
+    if(texto !== undefined) e.textContent = texto;
+    return e;
+  }
+  function boton(texto, acc, clase, alClic){
+    const b = nuevo('button', clase || '', texto);
+    b.type = 'button'; b.dataset.acc = acc;
+    b.addEventListener('click', alClic);
+    return b;
+  }
+  function iniciales(txt){
+    const p = String(txt || '?').replace(/@.*/, '').split(/[\s._-]+/).filter(Boolean);
+    return ((p[0] || '?')[0] + (p[1] ? p[1][0] : '')).toUpperCase();
+  }
+  function colorDe(txt){
+    let h = 0;
+    for(const c of String(txt || '')) h = (h * 31 + c.charCodeAt(0)) % 360;
+    return 'hsl(' + h + ' 52% 40%)';
+  }
+  function cajaDia(id, etiqueta, clase){
+    const d = nuevo('div', 'sol-dia' + (clase ? ' ' + clase : ''));
+    d.appendChild(nuevo('small', '', etiqueta));
+    if(!id){ d.appendChild(nuevo('b', '', '—')); return d; }
+    const [y, m, dd] = id.split('-').map(Number);
+    const f = new Date(y, m - 1, dd);
+    d.append(nuevo('b', '', String(dd)), nuevo('span', '', (f.toLocaleDateString('es-CL', { weekday: 'short' }) + ' · ' + f.toLocaleDateString('es-CL', { month: 'short' })).replace(/\./g, '')));
+    d.title = fechaLarga(id);
+    return d;
+  }
+  function textoPaso(h){
+    const quien = h.nombre || h.por || '—';
+    switch(h.accion){
+      case 'solicitada': return [quien + ' pidió despacho para el ' + fechaL(h.fecha), 'ag'];
+      case 'propuesta': return ['La operación propone el ' + fechaL(h.fecha), 'op'];
+      case 'contrapropuesta': return [quien + ' propone el ' + fechaL(h.fecha), 'ag'];
+      case 'programada': return ['Aprobada: programada en la ruta del ' + fechaL(h.fecha), 'op'];
+      case 'aceptada': return [quien + ' aceptó: programada en la ruta del ' + fechaL(h.fecha), 'ag'];
+      case 'rechazada': return ['La operación la rechazó', 'rojo'];
+      case 'cancelada': return [quien + ' canceló la solicitud', 'rojo'];
+      default: return [h.accion || '', ''];
     }
   }
-  async function rechazarSolicitud(sol, motivo){
-    await cambiarSolicitudes(sol.mes, lista => {
-      const s = lista.find(x => x.id === sol.id);
-      if(s && s.estado === 'pendiente') Object.assign(s, { estado: 'rechazada', motivo, resueltoPor: currentEmail(), resueltoAt: new Date().toISOString() });
+  function irARuta(fecha, vista){
+    modoRango = false; try{ localStorage.setItem('ruteka_modo', 'dia'); }catch(e){}
+    abrirHoja(fecha); switchView(vista); window.scrollTo(0, 0);
+  }
+  function pintarOk(box){
+    const a = solUltimoAviso && Date.now() - solUltimoAviso.at < 15 * 60000 ? solUltimoAviso : null;
+    box.innerHTML = '';
+    box.hidden = !a;
+    if(!a) return;
+    box.appendChild(nuevo('span', '', '✅ ' + (a.n === 1 ? '1 despacho pasó' : a.n + ' despachos pasaron') + ' a la ruta del ' + fechaLarga(a.fecha) + '.'));
+    const agencia = modoAgencia;
+    box.appendChild(boton(agencia ? '📍 Ver seguimiento' : '🚚 Ver en Entregas', 'ir-ruta', '', () => { solUltimoAviso = null; irARuta(a.fecha, agencia ? 'seguimiento' : 'chofer'); }));
+    const x = boton('✕', 'cerrar-ok', 'icon-btn', () => { solUltimoAviso = null; pintarTodoSolicitudes(); });
+    x.title = 'Cerrar aviso';
+    box.appendChild(x);
+  }
+  function abrirPanelSol(sol, modo){
+    solPanel = { id: sol.id, modo, fecha: '', texto: '' };
+    pintarTodoSolicitudes();
+    const i = [...document.querySelectorAll('.sol-card[data-id="' + sol.id + '"] .sol-panel input')].find(e => e.offsetParent);
+    if(i) i.focus();
+  }
+  function panelSolicitud(sol){
+    const pn = solPanel;
+    const panel = nuevo('div', 'sol-panel');
+    const msg = nuevo('span', 'config-msg'); msg.setAttribute('role', 'status');
+    const err = t => { msg.textContent = t; msg.classList.add('err'); };
+    const volver = boton('Volver', 'cerrar', '', () => { solPanel = null; pintarTodoSolicitudes(); });
+    const texto = nuevo('input'); texto.type = 'text'; texto.dataset.k = 'texto'; texto.value = pn.texto;
+    texto.addEventListener('input', () => { pn.texto = texto.value; });
+    if(pn.modo === 'proponer' || pn.modo === 'contraproponer'){
+      const actual = pn.modo === 'proponer' ? sol.fecha : sol.fechaPropuesta;
+      const lab = nuevo('label', '', 'Nueva fecha ');
+      const f = nuevo('input'); f.type = 'date'; f.dataset.k = 'fecha'; f.min = fechaLocal();
+      f.value = pn.fecha || (actual ? sumarDias(actual, 1) : '');
+      pn.fecha = f.value;
+      f.addEventListener('input', () => { pn.fecha = f.value; });
+      f.addEventListener('change', () => { pn.fecha = f.value; });
+      lab.appendChild(f);
+      texto.placeholder = pn.modo === 'proponer' ? 'Comentario para la agencia (ej: el 02 no hay camión disponible)' : 'Comentario para la operación (opcional)';
+      const enviar = boton(pn.modo === 'proponer' ? '📅 Enviar propuesta' : '📅 Proponer esta fecha', 'enviar-fecha', 'primary', async () => {
+        if(!f.value){ err('Elegí la nueva fecha.'); f.focus(); return; }
+        if(f.value === actual){ err('Elegí una fecha distinta al ' + fechaDM(actual) + '.'); f.focus(); return; }
+        enviar.disabled = true;
+        if(pn.modo === 'proponer') await proponerFecha(sol, f.value, texto.value.trim());
+        else await contraproponerFecha(sol, f.value, texto.value.trim());
+      });
+      panel.append(lab, texto, enviar, volver, msg);
+    } else {
+      const rechazo = pn.modo === 'rechazar';
+      texto.placeholder = rechazo ? 'Motivo del rechazo (la agencia lo verá)' : 'Motivo (opcional)';
+      const conf = boton(rechazo ? 'Confirmar rechazo' : 'Confirmar cancelación', 'confirmar', 'danger', async () => {
+        if(rechazo && !texto.value.trim()){ err('Escribí el motivo para rechazar.'); texto.focus(); return; }
+        conf.disabled = true;
+        if(rechazo) await rechazarSolicitud(sol, texto.value.trim());
+        else await cancelarSolicitud(sol, texto.value.trim());
+      });
+      panel.append(texto, conf, volver, msg);
+    }
+    return panel;
+  }
+  function tarjetaSolicitud(sol, opciones){
+    const compacta = !!(opciones && opciones.compacta);
+    const esAdmin = !modoTransportista;
+    const quien = sol.solicitante || {};
+    const card = nuevo('section', 'card sol-card est-' + sol.estado);
+    card.dataset.id = sol.id;
+    // Quién pide
+    const top = nuevo('div', 'sol-card-top');
+    const titulo = quien.empresa || quien.nombre || sol.por || 'Agencia';
+    const av = nuevo('div', 'sol-avatar', iniciales(titulo));
+    av.style.background = colorDe(titulo);
+    av.setAttribute('aria-hidden', 'true');
+    const q = nuevo('div', 'sol-quien');
+    q.appendChild(nuevo('b', '', titulo));
+    const sm = nuevo('small');
+    const partes = [quien.empresa ? quien.nombre : '', sol.por].filter(Boolean);
+    sm.textContent = partes.join(' · ');
+    if(quien.telefono){
+      if(partes.length) sm.appendChild(document.createTextNode(' · '));
+      const tel = nuevo('a', '', '📞 ' + quien.telefono); tel.href = 'tel:' + quien.telefono.replace(/[^\d+]/g, '');
+      sm.appendChild(tel);
+    }
+    q.appendChild(sm);
+    top.append(av, q, nuevo('span', 'sol-estado ' + sol.estado, ESTADO_SOL[sol.estado] || sol.estado));
+    card.appendChild(top);
+    // Fechas: la pedida y, si cambió, la propuesta o la de la ruta
+    const fechas = nuevo('div', 'sol-fechas');
+    if(sol.estado === 'propuesta'){
+      fechas.append(cajaDia(sol.fecha, 'Pidió', 'tachada'), nuevo('span', 'sol-flecha', '→'), cajaDia(sol.fechaPropuesta, 'Propuesta', 'nueva'));
+    } else if(sol.estado === 'programada'){
+      if(sol.rutaFecha && sol.rutaFecha !== sol.fecha) fechas.append(cajaDia(sol.fecha, 'Pidió', 'tachada'), nuevo('span', 'sol-flecha', '→'));
+      fechas.appendChild(cajaDia(sol.rutaFecha || sol.fecha, 'En ruta', 'final'));
+    } else {
+      fechas.appendChild(cajaDia(sol.fecha, 'Pide', sol.estado === 'pendiente' ? '' : 'tachada'));
+    }
+    const meta = nuevo('div', 'sol-meta');
+    meta.append(nuevo('b', '', sol.despachos.length + (sol.despachos.length === 1 ? ' despacho' : ' despachos')), document.createTextNode('Enviada ' + fechaCorta(sol.creadoAt)));
+    fechas.appendChild(meta);
+    card.appendChild(fechas);
+    // Despachos
+    const ul = nuevo('ul', 'sol-despachos');
+    sol.despachos.forEach((d, i) => {
+      const li = nuevo('li');
+      const tx = nuevo('div');
+      tx.append(nuevo('b', '', d.cliente || '(sin cliente)'), nuevo('span', '', [[d.direccion, d.comuna].filter(Boolean).join(', '), d.productos, d.contacto].filter(Boolean).join(' · ')));
+      li.append(nuevo('span', 'seg-num', String(i + 1)), tx);
+      ul.appendChild(li);
     });
-    pintarSolicitudes();
+    card.appendChild(ul);
+    if(sol.notas) card.appendChild(nuevo('div', 'sol-nota', '📌 ' + sol.notas));
+    // Conversación de fechas
+    const hilo = hiloDe(sol);
+    if(!compacta || hilo.length > 1){
+      const ol = nuevo('ol', 'sol-hilo');
+      hilo.forEach(h => {
+        const [txt, clase] = textoPaso(h);
+        const li = nuevo('li', clase);
+        li.appendChild(document.createTextNode(txt));
+        li.appendChild(nuevo('small', '', [h.nombre ? h.por : (h.accion === 'solicitada' ? '' : h.por), fechaCorta(h.at)].filter(Boolean).join(' · ')));
+        if(h.comentario) li.appendChild(nuevo('q', '', h.comentario));
+        ol.appendChild(li);
+      });
+      card.appendChild(ol);
+    }
+    // La agencia ve destacada la fecha que le proponen
+    if(sol.estado === 'propuesta' && !esAdmin){
+      const ult = hilo.slice().reverse().find(h => h.accion === 'propuesta') || {};
+      const box = nuevo('div', 'sol-propone');
+      box.appendChild(document.createTextNode('📅 La operación no puede el ' + fechaDM(sol.fecha) + ' y propone despachar el '));
+      box.appendChild(nuevo('b', '', fechaLarga(sol.fechaPropuesta)));
+      box.appendChild(document.createTextNode('.'));
+      if(ult.comentario) box.appendChild(nuevo('q', '', ult.comentario));
+      card.appendChild(box);
+    }
+    // Acciones
+    if(solPanel && solPanel.id === sol.id && SOL_ACTIVAS.includes(sol.estado)){
+      card.appendChild(panelSolicitud(sol));
+      return card;
+    }
+    const pie = nuevo('div', 'sol-pie');
+    const espera = t => pie.appendChild(nuevo('span', 'sol-espera', t));
+    if(sol.estado === 'programada'){
+      espera('✅ Programada en la ruta del ' + fechaDM(sol.rutaFecha) + ' por ' + (sol.resueltoPor || '—') + ' · ' + fechaCorta(sol.resueltoAt));
+      pie.appendChild(boton('📍 Ver seguimiento', 'seguimiento', '', () => irARuta(sol.rutaFecha, 'seguimiento')));
+    } else if(sol.estado === 'rechazada'){
+      espera('✕ Rechazada por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : ''));
+    } else if(sol.estado === 'cancelada'){
+      espera('✕ Cancelada por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : ''));
+    } else if(esAdmin && sol.estado === 'pendiente'){
+      pie.appendChild(boton('✅ Aprobar para el ' + fechaDM(sol.fecha), 'aprobar', 'primary', async ev => {
+        ev.currentTarget.disabled = true;
+        await programarSolicitud(sol, sol.fecha);
+      }));
+      pie.appendChild(boton('📅 Proponer otra fecha', 'proponer', '', () => abrirPanelSol(sol, 'proponer')));
+      pie.appendChild(boton('Rechazar', 'rechazar', 'danger', () => abrirPanelSol(sol, 'rechazar')));
+    } else if(esAdmin){
+      espera('⏳ Esperando que la agencia acepte el ' + fechaDM(sol.fechaPropuesta) + ' o proponga otra fecha.');
+      pie.appendChild(boton('Rechazar', 'rechazar', 'danger', () => abrirPanelSol(sol, 'rechazar')));
+    } else if(sol.estado === 'propuesta'){
+      pie.appendChild(boton('✅ Aceptar el ' + fechaDM(sol.fechaPropuesta), 'aceptar', 'primary', async ev => {
+        ev.currentTarget.disabled = true;
+        await programarSolicitud(sol, sol.fechaPropuesta);
+      }));
+      pie.appendChild(boton('📅 Proponer otra fecha', 'contraproponer', '', () => abrirPanelSol(sol, 'contraproponer')));
+      pie.appendChild(boton('Cancelar solicitud', 'cancelar', '', () => abrirPanelSol(sol, 'cancelar')));
+    } else {
+      espera('⏳ Esperando que la operación la programe.');
+      pie.appendChild(boton('Cancelar solicitud', 'cancelar', '', () => abrirPanelSol(sol, 'cancelar')));
+    }
+    card.appendChild(pie);
+    return card;
   }
 
   function pintarSolicitudes(){
     if($('viewSolicitudes').hidden) return;
     if(!$('solFilas').children.length) limpiarFormSolicitud();
-    $('solFiltros').querySelectorAll('button').forEach(b => b.classList.toggle('activo', b.dataset.f === solFiltro));
-    const todas = todasLasSolicitudes();
-    const lista = todas.filter(x => solFiltro === 'todas' || x.estado === solFiltro);
-    const cont = $('solLista');
-    cont.innerHTML = '';
-    if(!lista.length){ cont.innerHTML = '<p class="chart-empty">' + (todas.length ? 'No hay solicitudes en este filtro.' : 'Todavía no hay solicitudes.') + '</p>'; return; }
     const esAdmin = !modoTransportista;
     $('solListaTitulo').textContent = esAdmin ? 'Solicitudes de la agencia' : 'Solicitudes enviadas';
     $('solFormTitulo').textContent = esAdmin ? 'Crear una solicitud' : 'Nueva solicitud';
-    const ESTADO_SOL = { pendiente: 'Pendiente', programada: 'Programada', rechazada: 'Rechazada' };
-    lista.forEach(sol => {
-      const card = document.createElement('section'); card.className = 'card sol-card';
-      const top = document.createElement('div'); top.className = 'sol-card-top';
-      const t = document.createElement('div');
-      const b = document.createElement('b'); b.textContent = 'Para el ' + fechaLarga(sol.fecha) + ' · ' + sol.despachos.length + ' despacho(s)';
-      const sm = document.createElement('small'); sm.textContent = 'Solicitada por ' + (sol.por || '—') + ' · ' + fechaCorta(sol.creadoAt);
-      t.append(b, sm);
-      const est = document.createElement('span'); est.className = 'sol-estado ' + sol.estado; est.textContent = ESTADO_SOL[sol.estado] || sol.estado;
-      top.append(t, est);
-      card.appendChild(top);
-      const ul = document.createElement('ul');
-      sol.despachos.forEach(d => {
-        const li = document.createElement('li');
-        li.appendChild(document.createTextNode(d.cliente || '(sin cliente)'));
-        const sp = document.createElement('span'); sp.textContent = ' — ' + [d.direccion, d.comuna].filter(Boolean).join(', ') + (d.productos ? ' · ' + d.productos : '') + (d.contacto ? ' · ' + d.contacto : '');
-        li.appendChild(sp);
-        ul.appendChild(li);
-      });
-      card.appendChild(ul);
-      if(sol.notas){ const n = document.createElement('div'); n.className = 'sol-nota'; n.textContent = '«' + sol.notas + '»'; card.appendChild(n); }
-      const pie = document.createElement('div'); pie.className = 'sol-admin';
-      if(sol.estado === 'programada'){
-        const txt = document.createElement('span');
-        txt.textContent = '✅ Programada en la ruta del ' + sol.rutaFecha.split('-').reverse().join('/') + ' por ' + (sol.resueltoPor || '—') + ' · ' + fechaCorta(sol.resueltoAt);
-        const ver = document.createElement('button'); ver.type = 'button'; ver.textContent = '📍 Ver seguimiento';
-        ver.addEventListener('click', () => {
-          modoRango = false; try{ localStorage.setItem('ruteka_modo', 'dia'); }catch(e){}
-          abrirHoja(sol.rutaFecha); switchView('seguimiento'); window.scrollTo(0, 0);
-        });
-        pie.append(txt, ver);
-      } else if(sol.estado === 'rechazada'){
-        const txt = document.createElement('span');
-        txt.textContent = '✕ Rechazada por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : '');
-        pie.appendChild(txt);
-      } else if(esAdmin){
-        const lab = document.createElement('label'); lab.textContent = 'Programar en la ruta del ';
-        const f = document.createElement('input'); f.type = 'date'; f.value = sol.fecha;
-        lab.appendChild(f);
-        const prog = document.createElement('button'); prog.type = 'button'; prog.className = 'primary'; prog.textContent = '🚚 Programar';
-        prog.addEventListener('click', async () => { prog.disabled = true; await programarSolicitud(sol, f.value || sol.fecha); });
-        const motivo = document.createElement('input'); motivo.type = 'text'; motivo.placeholder = 'Motivo si la rechazás';
-        const rech = document.createElement('button'); rech.type = 'button'; rech.className = 'danger'; rech.textContent = 'Rechazar';
-        rech.addEventListener('click', () => {
-          if(!motivo.value.trim()){ motivo.focus(); motivo.placeholder = 'Escribí el motivo para rechazar'; return; }
-          rechazarSolicitud(sol, motivo.value.trim());
-        });
-        pie.append(lab, prog, motivo, rech);
-      } else {
-        const txt = document.createElement('span'); txt.textContent = '⏳ Esperando que la operación la programe.';
-        pie.appendChild(txt);
-      }
-      card.appendChild(pie);
-      cont.appendChild(card);
+    const todas = todasLasSolicitudes();
+    $('solFiltros').querySelectorAll('button').forEach(b => {
+      b.classList.toggle('activo', b.dataset.f === solFiltro);
+      b.querySelector('b').textContent = todas.filter(SOL_FILTROS[b.dataset.f]).length;
     });
+    pintarOk($('solOk'));
+    // Primero lo que espera una respuesta de quien mira.
+    const mia = esAdmin ? 'pendiente' : 'propuesta';
+    const lista = todas.filter(SOL_FILTROS[solFiltro] || SOL_FILTROS.todas).sort((a, b) => (b.estado === mia) - (a.estado === mia));
+    const cont = $('solLista');
+    cont.innerHTML = '';
+    if(!lista.length){ cont.innerHTML = '<p class="chart-empty">' + (todas.length ? 'No hay solicitudes en este filtro.' : 'Todavía no hay solicitudes.') + '</p>'; return; }
+    lista.forEach(sol => cont.appendChild(tarjetaSolicitud(sol)));
+  }
+  // Entregas: la operación aprueba aquí mismo y los despachos pasan a la ruta de ese día.
+  function pintarSolAprobar(){
+    const sec = $('solAprobar');
+    const esAdmin = !modoTransportista;
+    const todas = esAdmin ? todasLasSolicitudes() : [];
+    const pend = todas.filter(s => s.estado === 'pendiente').sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
+    const esperando = todas.filter(s => s.estado === 'propuesta').length;
+    pintarOk($('solAprobarOk'));
+    sec.hidden = !esAdmin || (!pend.length && $('solAprobarOk').hidden);
+    if(sec.hidden) return;
+    $('solAprobarN').textContent = pend.length;
+    $('solAprobarN').hidden = !pend.length;
+    $('solAprobarSub').textContent = (pend.length ? 'Al aprobar, los despachos pasan a la ruta de ese día y aparecen aquí en Entregas.' : 'No quedan solicitudes por aprobar.')
+      + (esperando ? ' ' + (esperando === 1 ? '1 espera' : esperando + ' esperan') + ' que la agencia responda a la fecha propuesta.' : '');
+    const cont = $('solAprobarLista');
+    cont.innerHTML = '';
+    pend.forEach(s => cont.appendChild(tarjetaSolicitud(s, { compacta: true })));
   }
 
   /* ============================================================
