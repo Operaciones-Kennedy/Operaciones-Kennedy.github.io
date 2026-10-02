@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-01 · 7";
+const VERSION_APP = "2026-10-02 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -733,38 +733,39 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   body.sin-seguimiento [data-seguimiento]{ display:none !important; }
   body.sin-solicitudes [data-solicitudes]{ display:none !important; }
   /* Seguimiento (agencia) */
-  .seg-resumen{ display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding:16px 18px; }
+  .seg-resumen{ display:flex; flex-direction:column; gap:10px; margin-bottom:12px; padding:12px 16px; }
   .seg-top{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; align-items:center; }
   .seg-top .stat-label{ display:block; }
-  .seg-top b{ font-size:16px; }
+  .seg-top b{ font-size:15px; }
   .seg-gps{ font-size:13px; font-weight:700; padding:6px 10px; border-radius:999px; background:#eef3f2; color:#5b6b6e; }
   .seg-gps.vivo{ background:var(--ok-bg); color:var(--marca-principal-oscuro); }
   .seg-barra{ height:10px; border-radius:999px; background:#e3ecea; overflow:hidden; }
   .seg-ruta .seg-barra{ background:repeating-linear-gradient(90deg, #e3ecea 0 14px, #d2dedb 14px 22px); }
   .seg-barra span{ display:block; height:100%; width:0; background:linear-gradient(90deg, var(--marca-principal), var(--marca-principal-claro)); transition:width .4s; }
   .seg-chips{ display:flex; flex-wrap:wrap; gap:8px; font-size:13px; font-weight:700; }
-  .seg-mapa{ height:340px; border-radius:12px; background:#e9efee; }
-  @media (max-width: 820px){ .seg-mapa{ height:240px; } }
-  .seg-lista{ display:flex; flex-direction:column; gap:12px; margin-top:16px; }
-  .seg-card{ padding:14px 16px; }
+  .seg-mapa{ height:240px; border-radius:12px; background:#e9efee; }
+  @media (max-width: 820px){ .seg-mapa{ height:200px; } }
+  .seg-lista{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap:10px; align-items:start; margin-top:12px; }
+  .seg-lista > .seg-dia, .seg-lista > .chart-empty{ grid-column:1 / -1; }
+  .seg-card{ padding:10px 14px; font-size:13px; }
   .seg-card-top{ display:flex; gap:10px; align-items:flex-start; }
-  .seg-num{ flex:none; width:28px; height:28px; border-radius:50%; background:#eef3f2; display:grid; place-items:center; font-weight:800; font-size:13px; }
+  .seg-num{ flex:none; width:24px; height:24px; border-radius:50%; background:#eef3f2; display:grid; place-items:center; font-weight:800; font-size:13px; }
   .seg-card-top .seg-cli{ flex:1; min-width:0; }
   .seg-cli b{ display:block; }
-  .seg-cli span{ color:var(--muted); font-size:13px; }
+  .seg-cli span{ color:var(--muted); font-size:12px; }
   .seg-eta{ font-size:12px; font-weight:700; color:var(--marca-principal-oscuro); margin-top:2px; }
-  .seg-pasos{ list-style:none; margin:14px 0 4px; padding:0; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); }
+  .seg-pasos{ list-style:none; margin:8px 0 2px; padding:0; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); }
   .seg-paso{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; font-size:11px; color:var(--muted); }
-  .seg-paso::before{ content:''; position:absolute; top:15px; right:50%; width:100%; height:4px; background:#dbe5e3; }
+  .seg-paso::before{ content:''; position:absolute; top:11px; right:50%; width:100%; height:3px; background:#dbe5e3; }
   .seg-paso:first-child::before{ display:none; }
   .seg-paso.hecho::before{ background:var(--marca-principal-claro); }
   .seg-paso.fallo::before{ background:#E5484D; }
-  .seg-punto{ position:relative; z-index:1; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:#e3ecea; border:3px solid #fff; color:#fff; font-weight:800; font-size:14px; box-shadow:0 0 0 1px #dbe5e3; }
+  .seg-punto{ position:relative; z-index:1; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:#e3ecea; border:2px solid #fff; color:#fff; font-weight:800; font-size:12px; box-shadow:0 0 0 1px #dbe5e3; }
   .seg-paso.hecho .seg-punto{ background:var(--marca-principal-claro); box-shadow:none; }
   .seg-paso.fallo .seg-punto{ background:#E5484D; }
-  .seg-paso.actual:not(.fallo) .seg-punto{ box-shadow:0 0 0 3px #fff, 0 0 0 6px var(--marca-principal-claro); }
-  .seg-pasos{ position:relative; padding-top:30px; }
-  .seg-camion{ position:absolute; top:0; width:40px; margin-left:-20px; z-index:2; animation:segCamion 1.2s ease-in-out infinite; }
+  .seg-paso.actual:not(.fallo) .seg-punto{ box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--marca-principal-claro); }
+  .seg-pasos{ position:relative; padding-top:24px; }
+  .seg-camion{ position:absolute; top:0; width:30px; margin-left:-15px; z-index:2; animation:segCamion 1.2s ease-in-out infinite; }
   .seg-camion.avanza{ animation:segAvanza 1.6s ease-in-out, segCamion 1.2s ease-in-out 1.6s infinite; }
   @keyframes segAvanza{ from{ left:var(--desde); } }
   .seg-pasos.llego .seg-camion{ animation:none; }
@@ -772,10 +773,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .seg-pasos.fallo .seg-camion{ filter:grayscale(1); opacity:.7; }
   .seg-camion svg, .seg-ruta-camion svg{ display:block; width:100%; height:auto; }
   @keyframes segCamion{ 0%, 100%{ transform:translateY(0); } 50%{ transform:translateY(-2px); } }
-  .seg-ruta{ position:relative; padding:28px 30px 0 0; }
-  .seg-ruta .seg-barra{ height:12px; }
-  .seg-ruta-camion{ position:absolute; top:0; left:0; width:44px; margin-left:-22px; transition:left .6s ease; animation:segCamion 1.2s ease-in-out infinite; }
-  .seg-ruta-meta{ position:absolute; right:0; bottom:-6px; font-size:20px; }
+  .seg-ruta{ position:relative; padding:24px 26px 0 0; }
+  .seg-ruta .seg-barra{ height:10px; }
+  .seg-ruta-camion{ position:absolute; top:0; left:0; width:36px; margin-left:-18px; transition:left .6s ease; animation:segCamion 1.2s ease-in-out infinite; }
+  .seg-ruta-meta{ position:absolute; right:0; bottom:-5px; font-size:17px; }
   @media (prefers-reduced-motion: reduce){ .seg-camion, .seg-camion.avanza, .seg-ruta-camion{ animation:none; } }
   /* Solicitudes de ruta */
   .aviso-sol{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px 16px; margin-bottom:14px; border-radius:14px; background:#fff3d6; border:1px solid #f3d48a; color:#7a4d00; font-weight:700; }
@@ -919,11 +920,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     .chat-panel{ inset:0; width:auto; height:auto; border-radius:0; border:0; }
   }
   .side-badge{ margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--marca-acento); color:#fff; font-size:11px; font-weight:800; display:inline-grid; place-items:center; }
-  .seg-paso b{ font-size:12px; color:var(--text); line-height:1.2; margin-top:2px; }
+  .seg-paso b{ font-size:11px; color:var(--text); line-height:1.2; margin-top:2px; }
   .seg-paso:not(.hecho) b{ color:var(--muted); font-weight:600; }
-  .seg-paso small{ font-size:11px; font-weight:700; color:var(--marca-principal-oscuro); }
-  .seg-linea{ list-style:none; margin:10px 0 0 13px; padding:0 0 0 18px; border-left:2px solid #dbe5e3; display:flex; flex-direction:column; gap:6px; }
-  .seg-linea li{ position:relative; font-size:13px; }
+  .seg-paso small{ font-size:10px; font-weight:700; color:var(--marca-principal-oscuro); }
+  .seg-linea{ list-style:none; margin:6px 0 0 11px; padding:0 0 0 18px; border-left:2px solid #dbe5e3; display:flex; flex-direction:column; gap:6px; }
+  .seg-linea li{ position:relative; font-size:12px; }
   .seg-linea li::before{ content:''; position:absolute; left:-24px; top:4px; width:10px; height:10px; border-radius:50%; background:#9fb3b0; border:2px solid #fff; }
   .seg-linea li.entregado::before{ background:#14A38E; } .seg-linea li.no-entregado::before{ background:#E5484D; } .seg-linea li.en-ruta::before{ background:#3b82f6; }
   .seg-linea time{ font-weight:800; margin-right:6px; }
@@ -1332,10 +1333,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <nav class="sidebar-nav" aria-label="Menú principal">
       <div class="side-grupo">
         <div class="side-titulo">Operación</div>
+        <button class="side-item" type="button" data-view="solicitudes" data-solicitudes title="Solicitudes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span><b class="side-badge" id="solBadge" hidden></b></button>
         <button class="side-item" type="button" data-view="despachos" id="navDespachos" data-solo-admin title="Ruta del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></svg><span>Ruta del día</span></button>
         <button class="side-item" type="button" data-view="chofer" id="navChofer" data-no-agencia title="Entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6v3H9z"/><path d="M9 13.5l2.2 2.2L15.5 11"/></svg><span>Entregas</span></button>
         <button class="side-item" type="button" data-view="seguimiento" data-seguimiento title="Seguimiento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
-        <button class="side-item" type="button" data-view="solicitudes" data-solicitudes title="Solicitudes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span><b class="side-badge" id="solBadge" hidden></b></button>
       </div>
       <div class="side-grupo" data-historial>
         <div class="side-titulo">Reportes</div>
@@ -1385,8 +1386,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <span class="movil-avatar grande" id="movilMasInicial" aria-hidden="true">?</span>
         <div><div class="movil-sheet-titulo" id="movilMasTitulo">Mi cuenta</div><div class="movil-sheet-email" id="movilMasEmail"></div></div>
       </div>
-      <button class="movil-sheet-item" type="button" data-ir="seguimiento" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
       <button class="movil-sheet-item" type="button" data-ir="solicitudes" data-solicitudes data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M12.5 11v6"/><path d="M9.5 14h6"/></svg><span>Solicitudes</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="seguimiento" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
       <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
