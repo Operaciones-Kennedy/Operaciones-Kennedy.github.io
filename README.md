@@ -32,7 +32,7 @@ Se publica sola con GitHub Pages en **https://operaciones-kennedy.github.io**. C
 
 ## Cómo se guardan los datos (Firebase)
 
-Proyecto Firebase `tablero-de-trabajos`, compartido con el Panel de Operaciones.
+Proyecto Firebase propio: `ruteka-f1c53`. Hasta octubre de 2026 Ruteka usaba el proyecto `tablero-de-trabajos`, compartido con el panel de demandas; los datos se copiaron con `traspaso.html` y las fotos antiguas siguen guardadas allí (sus enlaces funcionan igual).
 
 | Dónde | Qué |
 |---|---|
@@ -51,7 +51,7 @@ En `firebase/` están las reglas recomendadas:
 - `firebase/firestore.rules` → consola de Firebase → **Firestore Database → Reglas**
 - `firebase/storage.rules` → consola de Firebase → **Storage → Reglas**
 
-⚠️ Antes de publicarlas, compáralas con las reglas actuales. El mismo proyecto lo usa el Panel de Operaciones, y hay que conservar las reglas de sus colecciones.
+En `firestore.rules`, reemplaza `correo-admin@ejemplo.cl` por los correos de administrador antes de publicar (el repositorio es público y no los guarda).
 
 ## Pruebas automáticas
 
