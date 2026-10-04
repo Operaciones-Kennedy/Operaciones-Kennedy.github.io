@@ -35,7 +35,7 @@ for (const w of [1280, 390]) {
   const p = await open(b, { setup: setup('colomba@burson.com', { transportistas: ['colomba@burson.com'], conSeguimiento: ['colomba@burson.com'], conSolicitudes: ['colomba@burson.com'] }), width: w, height: 844 });
   await p.waitForTimeout(700);
   if (w > 820) {
-    check('el menú suma Seguimiento y Solicitudes', (await menu(p)) === 'Entregas,Seguimiento,Solicitudes', await menu(p));
+    check('el menú suma Seguimiento y Solicitudes', (await menu(p)) === 'Solicitudes,Entregas,Seguimiento', await menu(p));
     await p.click('.side-item[data-view="seguimiento"]');
   } else {
     await p.click('.movil-tab[data-tab="mas"]'); await p.waitForTimeout(150);
