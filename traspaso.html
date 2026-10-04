@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Ruteka — Traspaso de datos</title>
+<link rel="icon" type="image/svg+xml" href="icons/ruteka.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+/* ============================================================
+   TRASPASO DE DATOS DE RUTEKA (una sola vez)
+   Copia la colección de Ruteka del proyecto compartido
+   (tablero-de-trabajos) al proyecto propio (ruteka-f1c53):
+   hojasDeRuta (rutas, solicitudes, chat, GPS), hojasResumen y config/app.
+   No borra nada del proyecto anterior. Se puede repetir: cada documento
+   se vuelve a escribir igual. Las fotos no se copian: sus enlaces de
+   descarga siguen funcionando desde el proyecto anterior.
+   ============================================================ */
+const PROYECTO_ANTERIOR = {
+  apiKey: "AIzaSyCjtIGUWbZMNgD2FU1zc315tt5pN7FLA8E",
+  authDomain: "tablero-de-trabajos.firebaseapp.com",
+  projectId: "tablero-de-trabajos",
+  storageBucket: "tablero-de-trabajos.firebasestorage.app",
+  messagingSenderId: "593838460928",
+  appId: "1:593838460928:web:3638c3a303e693792648e5"
+};
+const PROYECTO_NUEVO = {
+  apiKey: "AIzaSyBMzlvZlBg1FZZzx3n-GRVFm9gB6iIN1Y8",
+  authDomain: "ruteka-f1c53.firebaseapp.com",
+  projectId: "ruteka-f1c53",
+  storageBucket: "ruteka-f1c53.firebasestorage.app",
+  messagingSenderId: "207265671229",
+  appId: "1:207265671229:web:3b82d73c2389d2ba386254"
+};
+const COLECCIONES = ['hojasDeRuta', 'hojasResumen'];
+const DOCUMENTOS = [['config', 'app']];
+</script>
+<style>
+  :root{
+    --tinta:#12292D; --principal:#0B7A6B; --principal-claro:#14A38E; --acento:#FF8A3D;
+    --fondo:#F2F7F6; --borde:#d8ebe9; --muted:#5b7473; --ok:#d5f5f0; --bad:#c2333a;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100vh; background:var(--fondo); color:var(--tinta); font-family:'Figtree', -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  header{ background:linear-gradient(135deg, var(--tinta), var(--principal)); color:#fff; padding:28px 16px 70px; }
+  header div{ max-width:720px; margin:0 auto; }
+  h1{ margin:0; font-family:'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif; font-size:28px; }
+  header p{ margin:6px 0 0; opacity:.85; }
+  main{ max-width:720px; margin:-50px auto 40px; padding:0 16px; display:flex; flex-direction:column; gap:14px; }
+  .card{ background:#fff; border:1px solid var(--borde); border-radius:18px; padding:20px; box-shadow:0 10px 30px rgba(18,41,45,.08); }
+  .card h2{ margin:0 0 4px; font-size:17px; display:flex; gap:10px; align-items:center; }
+  .card h2 span{ width:26px; height:26px; border-radius:50%; background:var(--ok); color:var(--principal); display:grid; place-items:center; font-size:13px; }
+  .card p{ margin:4px 0 12px; color:var(--muted); font-size:14px; line-height:1.45; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; }
+  label{ display:flex; flex-direction:column; gap:5px; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+  input{ font:inherit; font-size:15px; font-weight:500; letter-spacing:0; text-transform:none; color:var(--tinta); padding:10px 12px; border:1px solid var(--borde); border-radius:10px; }
+  input:focus{ outline:none; border-color:var(--principal-claro); box-shadow:0 0 0 3px rgba(20,163,142,.18); }
+  button{ font:inherit; font-weight:800; font-size:15px; padding:11px 18px; border-radius:12px; border:1px solid var(--borde); background:#fff; color:var(--tinta); cursor:pointer; }
+  button.primary{ background:linear-gradient(135deg, var(--principal-claro), var(--principal)); color:#fff; border-color:transparent; }
+  button:disabled{ opacity:.55; cursor:default; }
+  .acciones{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+  .msg{ font-size:14px; font-weight:700; }
+  .msg.err{ color:var(--bad); }
+  table{ width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
+  th, td{ text-align:left; padding:8px 6px; border-bottom:1px solid var(--borde); }
+  th{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  td.n{ font-variant-numeric:tabular-nums; font-weight:800; }
+  .barra{ height:10px; border-radius:999px; background:#e3ecea; overflow:hidden; margin-top:12px; }
+  .barra i{ display:block; height:100%; width:0; background:linear-gradient(90deg, var(--principal), var(--principal-claro)); transition:width .2s; }
+  .ok{ padding:12px 14px; border-radius:12px; background:var(--ok); color:var(--principal); font-weight:800; }
+  ul.log{ margin:10px 0 0; padding-left:18px; font-size:13px; color:var(--muted); max-height:180px; overflow:auto; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+<header><div>
+  <h1>Traspaso de datos de Ruteka</h1>
+  <p>Copia las rutas, solicitudes, chat, usuarios y permisos del proyecto compartido «tablero-de-trabajos» al proyecto propio «ruteka-f1c53». No borra nada del proyecto anterior.</p>
+</div></header>
+<main>
+  <section class="card">
+    <h2><span>1</span>Entrar a los dos proyectos</h2>
+    <p>Usa tu correo de administrador. La clave del proyecto nuevo es la que pusiste al crear tu usuario en Authentication de «Ruteka».</p>
+    <div class="grid">
+      <label>Correo <input type="email" id="correo" autocomplete="username"></label>
+      <label>Clave del proyecto anterior <input type="password" id="claveAnterior" autocomplete="current-password"></label>
+      <label>Clave del proyecto nuevo <input type="password" id="claveNueva" autocomplete="new-password"></label>
+    </div>
+    <div class="acciones"><button type="button" class="primary" id="revisar">Revisar</button><span class="msg" id="msg1" role="status"></span></div>
+  </section>
+
+  <section class="card" id="paso2" hidden>
+    <h2><span>2</span>Qué se va a copiar</h2>
+    <p>Documentos en cada proyecto. Al copiar, cada documento del proyecto anterior se escribe igual en el nuevo (si ya estaba, se reemplaza).</p>
+    <table><thead><tr><th>Colección</th><th>Proyecto anterior</th><th>Proyecto nuevo</th></tr></thead><tbody id="tabla"></tbody></table>
+    <div class="acciones"><button type="button" class="primary" id="copiar">Copiar al proyecto nuevo</button><span class="msg" id="msg2" role="status"></span></div>
+    <div class="barra" id="barra" hidden><i id="barraAvance"></i></div>
+    <ul class="log" id="log"></ul>
+  </section>
+
+  <section class="card" id="paso3" hidden>
+    <h2><span>3</span>Listo</h2>
+    <div class="ok" id="resumen"></div>
+    <p>Siguiente paso: unir el cambio que conecta Ruteka al proyecto nuevo. Después, cada usuario entra con su correo; quien no tenga cuenta en el proyecto nuevo se crea en Authentication y usa «Olvidé mi clave».</p>
+  </section>
+</main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const anterior = firebase.initializeApp(PROYECTO_ANTERIOR, 'anterior');
+  const nuevo = firebase.initializeApp(PROYECTO_NUEVO, 'nuevo');
+  let origen = null; // { 'col/id': data }
+
+  function mensaje(id, texto, error){ $(id).textContent = texto; $(id).classList.toggle('err', !!error); }
+  function explicar(err, proyecto){
+    const c = (err && err.code) || '';
+    if(c.includes('wrong-password') || c.includes('invalid-credential') || c.includes('invalid-login')) return 'Correo o clave incorrectos en el proyecto ' + proyecto + '.';
+    if(c.includes('user-not-found')) return 'Ese correo no tiene usuario en el proyecto ' + proyecto + ' (Authentication → Usuarios → Agregar usuario).';
+    if(c.includes('permission-denied')) return 'Firebase no dio permiso en el proyecto ' + proyecto + ': revisa que las reglas estén publicadas y que tu correo esté en esAdmin().';
+    if(c.includes('unauthorized-domain')) return 'Falta agregar este sitio en Authentication → Configuración → Dominios autorizados del proyecto ' + proyecto + '.';
+    return 'Error en el proyecto ' + proyecto + ': ' + ((err && err.message) || err);
+  }
+  async function leerTodo(app){
+    const db = app.firestore();
+    const out = {};
+    for(const col of COLECCIONES){
+      const sn = await db.collection(col).get();
+      sn.docs.forEach(d => { out[col + '/' + d.id] = d.data(); });
+    }
+    for(const [col, id] of DOCUMENTOS){
+      const d = await db.collection(col).doc(id).get();
+      if(d.exists) out[col + '/' + id] = d.data();
+    }
+    return out;
+  }
+  async function contarNuevo(){
+    const db = nuevo.firestore();
+    const n = {};
+    for(const col of COLECCIONES){
+      try{ n[col] = (await db.collection(col).get()).docs.length; }catch(e){ n[col] = '—'; }
+    }
+    for(const [col, id] of DOCUMENTOS){
+      try{ n[col + '/' + id] = (await db.collection(col).doc(id).get()).exists ? 1 : 0; }catch(e){ n[col + '/' + id] = '—'; }
+    }
+    return n;
+  }
+  function pintarTabla(nuevos){
+    const filas = COLECCIONES.concat(DOCUMENTOS.map(([c, i]) => c + '/' + i));
+    $('tabla').innerHTML = '';
+    filas.forEach(f => {
+      const tr = document.createElement('tr');
+      const a = Object.keys(origen).filter(k => f.includes('/') ? k === f : k.startsWith(f + '/')).length;
+      [f, a, nuevos[f]].forEach((v, i) => { const td = document.createElement('td'); td.textContent = v; if(i) td.className = 'n'; tr.appendChild(td); });
+      $('tabla').appendChild(tr);
+    });
+  }
+
+  $('revisar').addEventListener('click', async () => {
+    const correo = $('correo').value.trim().toLowerCase();
+    if(!correo || !$('claveAnterior').value || !$('claveNueva').value){ mensaje('msg1', 'Completa el correo y las dos claves.', true); return; }
+    $('revisar').disabled = true;
+    mensaje('msg1', 'Entrando…');
+    try{
+      try{ await anterior.auth().signInWithEmailAndPassword(correo, $('claveAnterior').value); }
+      catch(e){ throw explicar(e, 'anterior'); }
+      try{ await nuevo.auth().signInWithEmailAndPassword(correo, $('claveNueva').value); }
+      catch(e){ throw explicar(e, 'nuevo'); }
+      mensaje('msg1', 'Leyendo…');
+      try{ origen = await leerTodo(anterior); }catch(e){ throw explicar(e, 'anterior'); }
+      pintarTabla(await contarNuevo());
+      mensaje('msg1', '✔ Entraste a los dos proyectos.');
+      $('paso2').hidden = false;
+    }catch(e){
+      mensaje('msg1', typeof e === 'string' ? e : String(e.message || e), true);
+    }finally{ $('revisar').disabled = false; }
+  });
+
+  $('copiar').addEventListener('click', async () => {
+    if(!origen) return;
+    const claves = Object.keys(origen);
+    if(!confirm('Se copiarán ' + claves.length + ' documentos al proyecto nuevo. ¿Seguir?')) return;
+    $('copiar').disabled = true; $('revisar').disabled = true;
+    $('barra').hidden = false; $('log').innerHTML = '';
+    const db = nuevo.firestore();
+    let hechos = 0;
+    const errores = [];
+    for(const k of claves){
+      const [col, ...resto] = k.split('/');
+      try{ await db.collection(col).doc(resto.join('/')).set(origen[k]); }
+      catch(e){ errores.push(k + ': ' + explicar(e, 'nuevo')); }
+      hechos++;
+      $('barraAvance').style.width = Math.round(hechos / claves.length * 100) + '%';
+      mensaje('msg2', 'Copiando ' + hechos + ' de ' + claves.length + '…');
+    }
+    errores.forEach(t => { const li = document.createElement('li'); li.textContent = t; $('log').appendChild(li); });
+    pintarTabla(await contarNuevo());
+    if(errores.length){
+      mensaje('msg2', 'Se copiaron ' + (claves.length - errores.length) + ' de ' + claves.length + '. Revisa los errores y vuelve a tocar «Copiar».', true);
+      $('copiar').disabled = false; $('revisar').disabled = false;
+      return;
+    }
+    mensaje('msg2', '');
+    $('resumen').textContent = '✅ Se copiaron los ' + claves.length + ' documentos al proyecto nuevo.';
+    $('paso3').hidden = false;
+    $('revisar').disabled = false; $('copiar').disabled = false;
+  });
+})();
+</script>
+</body>
+</html>

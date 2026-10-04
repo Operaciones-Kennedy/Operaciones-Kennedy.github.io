@@ -1,17 +1,13 @@
 rules_version = '2';
 
-// Reglas de Firestore para la Hoja de Ruta.
-//
-// ⚠️ Este proyecto de Firebase ("tablero-de-trabajos") también lo usa el Panel de
-// Operaciones (colección "tableros"). Antes de publicar, compara con las reglas
-// que ya están en la consola y conserva las de otras colecciones que no estén aquí.
+// Reglas de Firestore de Ruteka (proyecto propio "ruteka-f1c53").
 //
 // Los correos no se guardan en este archivo porque el repositorio es público:
 // en la consola, reemplaza 'correo-admin@ejemplo.cl' por los correos de los
-// administradores y conserva el bloque /tableros que ya está allí.
+// administradores (los mismos de ADMINISTRADORES_SHA256 en index.html).
 //
 // Cómo publicarlas: consola de Firebase → Firestore Database → Reglas → pegar →
-// Publicar. Probalas antes con el "Área de pruebas de reglas" de la misma página.
+// Publicar. Pruébalas antes con el "Área de pruebas de reglas" de la misma página.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -28,20 +24,29 @@ service cloud.firestore {
       ];
     }
 
-    // Una ruta por día (AAAA-MM-DD) y la hoja antigua "principal".
+    // Colección hojasDeRuta:
+    //  - AAAA-MM-DD: la ruta de cada día; "principal": la hoja antigua y las listas.
+    //  - gps_AAAA-MM-DD: ubicación del camión (Seguimiento).
+    //  - sol_AAAA-MM: solicitudes de ruta de la agencia.
+    //  - chat_indice: resumen de las conversaciones del chat.
     // Los despachos se guardan juntos en un texto JSON, por eso las reglas no pueden
     // separar campos (por ejemplo "pagado"): la app ya oculta esos controles al
     // transportista, y aquí se exige al menos que sea un usuario de la app.
     match /hojasDeRuta/{hoja} {
-      allow read: if conectado();
-      allow write: if conectado()
-        && (hoja == 'principal' || hoja.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'));
+      allow read: if esAdmin() || (conectado() && !hoja.matches('^chat_.+@.+$'));
+      allow write: if esAdmin() || conectado() && hoja.matches(
+        '^(principal|[0-9]{4}-[0-9]{2}-[0-9]{2}|gps_[0-9]{4}-[0-9]{2}-[0-9]{2}|sol_[0-9]{4}-[0-9]{2}|chat_indice)$');
+    }
+    // Chat: cada conversación (chat_<correo>) la ven solo esa persona y los administradores.
+    match /hojasDeRuta/{hoja} {
+      allow read, write: if conectado() && hoja.matches('^chat_.+@.+$')
+        && (hoja == 'chat_' + correo() || esAdmin());
     }
 
     // Resumen de cada ruta (para la lista de rutas, historial y reportes).
     match /hojasResumen/{hoja} {
       allow read: if conectado();
-      allow write: if conectado() && hoja.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+      allow write: if esAdmin() || conectado() && hoja.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
     }
 
     // Configuración: todos la leen; solo un administrador la cambia.
@@ -49,9 +54,5 @@ service cloud.firestore {
       allow read: if conectado();
       allow write: if esAdmin();
     }
-
-    // Panel de Operaciones (otra app del mismo proyecto): se mantiene igual que en
-    // la consola, con su propia lista de correos permitidos.
-    // match /tableros/{tablero} { ... }
   }
 }
