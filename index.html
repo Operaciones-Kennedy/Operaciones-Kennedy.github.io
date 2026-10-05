@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-05 · 1";
+const VERSION_APP = "2026-10-05 · 2";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -935,6 +935,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   /* Compartir ubicación (Entregas) */
   .gps-card{ display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; padding:12px 16px; margin-bottom:14px; }
   .gps-card p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  .guia-btns{ display:flex; gap:8px; flex-wrap:wrap; }
   .gps-card.activo{ border-color:var(--marca-principal-claro); background:var(--ok-bg); }
   .config-titulo2{ margin:22px 0 4px; font-size:18px; }
   .movil-sheet{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; }
@@ -1586,6 +1587,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <section class="card gps-card" id="gpsCard">
       <div><b>📍 Ubicación para la agencia</b><p id="gpsEstado">No se está compartiendo.</p></div>
       <button type="button" id="btnGps">Compartir mi ubicación</button>
+    </section>
+    <section class="card gps-card guia-card" id="guiaCard">
+      <div><b>🧾 Guía de despacho</b><p>Respaldo para el transportista: despachos, productos y firmas de entrega y recepción. Se imprime o se guarda en PDF.</p></div>
+      <div class="guia-btns"><button type="button" class="primary" id="btnGuiaRuta">Guía de la ruta</button><button type="button" id="btnGuiaClientes">Una por cliente</button></div>
     </section>
     <p class="rango-nota" id="choferRangoNota" hidden>Vista de varios días, solo para revisar. Para registrar una entrega, cambia a «Día».</p>
     <div id="choferList"></div>
@@ -3863,6 +3868,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     pintarSolAprobar();
     $('choferRangoNota').hidden = !enRango();
     $('gpsCard').hidden = enRango();
+    $('guiaCard').hidden = enRango();
     if(enRango()){ pintarListaPorDia(container, filasDelRango(), { dinero: verDinero }); return; }
     const pendientes = state.rows.filter(r => (r.estado === 'pendiente' || r.estado === 'en-ruta') && !filaVacia(r));
     const resueltos = state.rows.filter(r => r.estado === 'entregado' || r.estado === 'no-entregado');
@@ -5930,6 +5936,103 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       showDialog('No se pudo enviar el mensaje: ' + err.message);
     }finally{ $('chatEnviar').disabled = false; $('chatTexto').focus(); }
   });
+
+  /* ============================================================
+     GUÍA DE DESPACHO (respaldo imprimible para el transportista)
+     Ruta completa o una página por cliente, sin montos. Es un documento
+     interno: no reemplaza la guía de despacho electrónica del SII.
+     ============================================================ */
+  function numeroGuia(n){ return 'GD-' + hojaId.replace(/-/g, '') + (n ? '-' + String(n).padStart(2, '0') : ''); }
+  function abrirGuia(porCliente){
+    const filas = state.rows.filter(r => !filaVacia(r) && (r.cliente || r.direccion));
+    if(!filas.length){ showDialog('No hay despachos en la ruta de este día.'); return; }
+    const transportista = (state.transportista || '').replace(/^—.*—$/, '').trim();
+    const emision = new Date().toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const fechaRuta = fechaLarga(hojaId) + ' de ' + hojaId.slice(0, 4);
+    const e = escapeHtml;
+    const estadoDe = r => {
+      const en = r.entrega || {};
+      if(r.estado === 'entregado') return 'Entregado' + (en.horaEntrega ? ' ' + e(en.horaEntrega) : '') + (en.recibidoPor ? '<br><small>Recibió: ' + e(en.recibidoPor) + '</small>' : '');
+      if(r.estado === 'no-entregado') return 'No entregado' + (en.motivo ? '<br><small>' + e(en.motivo) + '</small>' : '');
+      return r.estado === 'en-ruta' ? 'En ruta' : 'Pendiente';
+    };
+    const cabecera = (titulo, numero) =>
+      '<header><div class="marca">' + e(MARCA.nombre) + '</div><div class="doc"><b>' + titulo + '</b><span>N° ' + numero + '</span></div></header>' +
+      '<div class="datos">' +
+        '<div><small>Fecha de despacho</small><b>' + e(fechaRuta) + '</b></div>' +
+        '<div><small>Transportista</small><b>' + (e(transportista) || '&nbsp;') + '</b>' + (state.transportistaEmail ? '<span>' + e(state.transportistaEmail) + '</span>' : '') + '</div>' +
+        '<div><small>Patente</small><b class="linea">&nbsp;</b></div>' +
+        '<div><small>Punto de partida</small><b>' + (e(state.puntoPartida) || '&nbsp;') + '</b></div>' +
+        '<div><small>Hoja de ruta</small><b>' + (e(state.titulo) || '&nbsp;') + '</b></div>' +
+        '<div><small>Emitida</small><b>' + e(emision) + '</b></div>' +
+      '</div>';
+    const pie = '<p class="nota">Documento interno de respaldo emitido con ' + e(MARCA.nombre) + '. No reemplaza la guía de despacho electrónica del SII.</p>';
+    let cuerpo = '';
+    if(!porCliente){
+      cuerpo = '<section class="hoja">' + cabecera('Guía de despacho', numeroGuia()) +
+        '<table><thead><tr><th>N°</th><th>Cliente</th><th>Dirección</th><th>Contacto</th><th>Productos</th><th>Estado</th><th class="firma-col">Recibí conforme<br><small>nombre y firma</small></th></tr></thead><tbody>' +
+        filas.map((r, i) => '<tr><td class="n">' + (i + 1) + '</td><td><b>' + (e(r.cliente) || '(sin cliente)') + '</b></td><td>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</td><td>' + e(r.contacto || '') + '</td><td>' + e(r.productos || '') + '</td><td>' + estadoDe(r) + '</td><td></td></tr>').join('') +
+        '</tbody></table>' +
+        '<div class="resumen">Total: <b>' + filas.length + (filas.length === 1 ? ' despacho' : ' despachos') + '</b></div>' +
+        '<div class="firmas"><div>Entrega la carga<br><small>Nombre, firma y hora</small></div><div>Recibe la carga (transportista)<br><small>Nombre, RUT y firma</small></div></div>' +
+        pie + '</section>';
+    } else {
+      cuerpo = filas.map((r, i) => {
+        const en = r.entrega || {};
+        const entregado = r.estado === 'entregado';
+        return '<section class="hoja">' + cabecera('Guía de despacho', numeroGuia(i + 1)) +
+          '<div class="cliente"><small>Destinatario · despacho ' + (i + 1) + ' de ' + filas.length + '</small><b>' + (e(r.cliente) || '(sin cliente)') + '</b>' +
+            '<span>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' + (r.contacto ? '<span>Contacto: ' + e(r.contacto) + '</span>' : '') + '</div>' +
+          '<table><thead><tr><th>Detalle de productos</th></tr></thead><tbody><tr><td class="productos">' + (e(r.productos || '') || '&nbsp;') + '</td></tr></tbody></table>' +
+          (entregado
+            ? '<div class="entregado">✔ Entregado' + (en.horaEntrega ? ' a las ' + e(en.horaEntrega) : '') + (en.recibidoPor ? ' · Recibió: <b>' + e(en.recibidoPor) + '</b>' : '') + (en.registradoPor ? ' · Registró: ' + e(en.registradoPor) : '') +
+                (en.firmaUrl ? '<div><img src="' + e(en.firmaUrl) + '" alt="Firma de recepción"></div>' : '') + '</div>'
+            : '') +
+          '<div class="firmas"><div>Transportista<br><small>Nombre y firma</small></div><div>Recibí conforme<br><small>Nombre, RUT, firma, fecha y hora</small></div></div>' +
+          pie + '</section>';
+      }).join('');
+    }
+    const win = window.open('', '_blank');
+    if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
+    win.document.write(
+      '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>Guía de despacho ' + numeroGuia() + '</title><style>' +
+      'body{ font-family:Arial, Helvetica, sans-serif; color:#12292D; margin:0; padding:24px; background:#fff; }' +
+      '.hoja{ max-width:900px; margin:0 auto 28px; }' +
+      '.hoja + .hoja{ page-break-before:always; break-before:page; }' +
+      'header{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding-bottom:12px; border-bottom:3px solid #0B7A6B; }' +
+      '.marca{ font-size:24px; font-weight:800; color:#0B7A6B; letter-spacing:-.5px; }' +
+      '.doc{ text-align:right; border:2px solid #12292D; border-radius:8px; padding:8px 14px; }' +
+      '.doc b{ display:block; font-size:15px; text-transform:uppercase; letter-spacing:.5px; }' +
+      '.doc span{ font-size:13px; font-weight:bold; color:#0B7A6B; }' +
+      '.datos{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px 18px; margin:14px 0 16px; font-size:13px; }' +
+      '.datos small, .cliente small{ display:block; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:#5b7473; }' +
+      '.datos b{ display:block; min-height:16px; } .datos span{ font-size:11px; color:#5b7473; }' +
+      '.datos .linea{ border-bottom:1px solid #999; }' +
+      'table{ width:100%; border-collapse:collapse; font-size:12px; }' +
+      'th, td{ border:1px solid #bbb; padding:7px 8px; text-align:left; vertical-align:top; }' +
+      'th{ background:#e9f3f1; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; }' +
+      'td.n{ text-align:center; font-weight:bold; width:28px; } th.firma-col{ width:150px; }' +
+      'td small, th small{ color:#5b7473; font-weight:normal; text-transform:none; }' +
+      'td.productos{ height:90px; font-size:13px; white-space:pre-wrap; }' +
+      '.cliente{ border:1px solid #bbb; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:13px; }' +
+      '.cliente b{ display:block; font-size:16px; margin:2px 0; } .cliente span{ display:block; }' +
+      '.resumen{ text-align:right; margin-top:10px; font-size:13px; }' +
+      '.entregado{ margin-top:12px; padding:10px 12px; border-radius:8px; background:#d5f5f0; font-size:12.5px; }' +
+      '.entregado img{ max-height:70px; margin-top:6px; background:#fff; border:1px solid #ccc; }' +
+      '.firmas{ display:flex; gap:40px; margin-top:56px; }' +
+      '.firmas div{ flex:1; border-top:1px solid #555; padding-top:6px; font-size:12px; text-align:center; }' +
+      '.nota{ margin-top:22px; font-size:10px; color:#777; text-align:center; }' +
+      '@media (max-width:600px){ body{ padding:12px; } .datos{ grid-template-columns:1fr 1fr; } table{ font-size:11px; } }' +
+      '@media print{ body{ padding:0; } .hoja{ margin-bottom:0; } }' +
+      '</style></head><body>' + cuerpo + '</body></html>'
+    );
+    win.document.close();
+    win.focus();
+    setTimeout(() => { try{ win.print(); }catch(err){} }, 300);
+  }
+  $('btnGuiaRuta').addEventListener('click', () => abrirGuia(false));
+  $('btnGuiaClientes').addEventListener('click', () => abrirGuia(true));
 
   /* ============================================================
      UBICACIÓN DEL CAMIÓN (GPS) Y SEGUIMIENTO PARA LA AGENCIA
