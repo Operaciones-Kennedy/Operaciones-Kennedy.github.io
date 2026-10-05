@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-05 · 2";
+const VERSION_APP = "2026-10-05 · 3";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -4096,6 +4096,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     editBtn.addEventListener('click', () => wrap.replaceWith(makeChoferForm(row)));
     details.appendChild(document.createElement('br'));
     details.appendChild(editBtn);
+    if(row.cliente || row.direccion){ details.appendChild(document.createTextNode(' ')); details.appendChild(botonGuiaCliente(row)); }
 
     wrap.appendChild(thumbs);
     wrap.appendChild(details);
@@ -4124,6 +4125,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     btnRegistrar.textContent = '📋 Registrar entrega';
     btnRegistrar.addEventListener('click', () => wrap.replaceWith(makeChoferForm(row)));
     actions.appendChild(btnRegistrar);
+    if(row.cliente || row.direccion) actions.appendChild(botonGuiaCliente(row));
 
     wrap.appendChild(actions);
     return wrap;
@@ -5943,7 +5945,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
      interno: no reemplaza la guía de despacho electrónica del SII.
      ============================================================ */
   function numeroGuia(n){ return 'GD-' + hojaId.replace(/-/g, '') + (n ? '-' + String(n).padStart(2, '0') : ''); }
-  function abrirGuia(porCliente){
+  // soloId: guía de un solo cliente (botón «🧾 Guía» de cada despacho en Entregas).
+  function abrirGuia(porCliente, soloId){
     const filas = state.rows.filter(r => !filaVacia(r) && (r.cliente || r.direccion));
     if(!filas.length){ showDialog('No hay despachos en la ruta de este día.'); return; }
     const transportista = (state.transportista || '').replace(/^—.*—$/, '').trim();
@@ -5978,6 +5981,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         pie + '</section>';
     } else {
       cuerpo = filas.map((r, i) => {
+        if(soloId && r.id !== soloId) return '';
         const en = r.entrega || {};
         const entregado = r.estado === 'entregado';
         return '<section class="hoja">' + cabecera('Guía de despacho', numeroGuia(i + 1)) +
@@ -5994,9 +5998,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }
     const win = window.open('', '_blank');
     if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
+    const nSolo = soloId ? filas.findIndex(r => r.id === soloId) + 1 : 0;
     win.document.write(
       '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
-      '<title>Guía de despacho ' + numeroGuia() + '</title><style>' +
+      '<title>Guía de despacho ' + numeroGuia(nSolo) + '</title><style>' +
       'body{ font-family:Arial, Helvetica, sans-serif; color:#12292D; margin:0; padding:24px; background:#fff; }' +
       '.hoja{ max-width:900px; margin:0 auto 28px; }' +
       '.hoja + .hoja{ page-break-before:always; break-before:page; }' +
@@ -6030,6 +6035,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     win.document.close();
     win.focus();
     setTimeout(() => { try{ win.print(); }catch(err){} }, 300);
+  }
+  function botonGuiaCliente(row){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn-guia-cliente';
+    b.textContent = '🧾 Guía';
+    b.title = 'Guía de despacho de este cliente';
+    b.addEventListener('click', () => abrirGuia(true, row.id));
+    return b;
   }
   $('btnGuiaRuta').addEventListener('click', () => abrirGuia(false));
   $('btnGuiaClientes').addEventListener('click', () => abrirGuia(true));

@@ -43,6 +43,14 @@ for (const [email, w] of [['trs@fletes.cl', 390], ['jefe@prueba.cl', 1280]]) {
   check('salto de página entre clientes', (await c.$eval('.hoja + .hoja', h => getComputedStyle(h).breakBefore)) === 'page');
   if(process.env.CAPTURA) await c.screenshot({ path: process.env.CAPTURA.replace('.png', '-cliente-' + w + '.png'), fullPage: true });
   await c.close();
+  // Guía de un solo cliente desde su tarjeta en Entregas
+  const idx = await p.$$eval('#choferList .chofer-card', cs => cs.findIndex(c => c.textContent.includes('Chilevisión')));
+  const [u] = await Promise.all([p.context().waitForEvent('page'), p.click(`#choferList .chofer-card >> nth=${idx} >> .btn-guia-cliente`)]);
+  await u.waitForLoadState(); await u.waitForTimeout(100);
+  const unica = await u.$$eval('.hoja', hs => hs.map(h => h.querySelector('.doc span').textContent + ' ' + h.querySelector('.cliente b').textContent));
+  check('«🧾 Guía» en la tarjeta saca solo la de ese cliente, con su número', unica.join(' | ') === 'N° GD-20261005-02 Chilevisión' && (await u.title()).includes('GD-20261005-02'), unica.join(' | '));
+  if(process.env.CAPTURA && w <= 820) await p.screenshot({ path: process.env.CAPTURA.replace('.png', '-entregas.png') });
+  await u.close();
   if (w <= 820) check('no se sale de la pantalla', !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
   sinErrores(p);
   await p.context().close();
