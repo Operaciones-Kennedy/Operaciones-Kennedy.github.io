@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-04 · 1";
+const VERSION_APP = "2026-10-05 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -5289,6 +5289,23 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     s.historial.push(pasoSol('cancelada', { comentario: motivo }));
     Object.assign(s, { estado: 'cancelada', motivo, resueltoPor: currentEmail(), resueltoAt: new Date().toISOString() });
   });
+  // La operación borra una solicitud cerrada (rechazada o cancelada) de la lista.
+  async function eliminarSolicitud(sol){
+    try{
+      const ok = await cambiarSolicitudes(sol.mes, lista => {
+        const i = lista.findIndex(x => x.id === sol.id);
+        if(i < 0 || !['rechazada', 'cancelada'].includes(lista[i].estado)) return false;
+        lista.splice(i, 1);
+        return true;
+      });
+      if(!ok) showDialog('Esa solicitud ya cambió: revisa la lista actualizada.');
+    }catch(err){
+      console.error(err);
+      showDialog('No se pudo eliminar: ' + err.message);
+    }
+    solPanel = null;
+    pintarTodoSolicitudes();
+  }
 
   // Aprobar (operación) o aceptar la fecha propuesta (agencia): los despachos pasan a la ruta de ese día.
   async function programarSolicitud(sol, fecha){
@@ -5508,6 +5525,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         else await contraproponerFecha(sol, f.value, texto.value.trim());
       });
       panel.append(lab, texto, enviar, volver, msg);
+    } else if(pn.modo === 'eliminar'){
+      const conf = boton('🗑 Sí, eliminar', 'confirmar', 'danger', async () => { conf.disabled = true; await eliminarSolicitud(sol); });
+      panel.append(nuevo('span', 'sol-espera', '¿Eliminar esta solicitud? No se puede deshacer.'), conf, volver);
     } else {
       const rechazo = pn.modo === 'rechazar';
       texto.placeholder = rechazo ? 'Motivo del rechazo (la agencia lo verá)' : 'Motivo (opcional)';
@@ -5596,7 +5616,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       card.appendChild(box);
     }
     // Acciones
-    if(solPanel && solPanel.id === sol.id && SOL_ACTIVAS.includes(sol.estado)){
+    if(solPanel && solPanel.id === sol.id && (SOL_ACTIVAS.includes(sol.estado) || (solPanel.modo === 'eliminar' && esAdmin))){
       card.appendChild(panelSolicitud(sol));
       return card;
     }
@@ -5605,10 +5625,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(sol.estado === 'programada'){
       espera('✅ Programada en la ruta del ' + fechaDM(sol.rutaFecha) + ' por ' + (sol.resueltoPor || '—') + ' · ' + fechaCorta(sol.resueltoAt));
       if(verSeguimiento) pie.appendChild(boton('📍 Ver seguimiento', 'seguimiento', '', () => irARuta(sol.rutaFecha, 'seguimiento')));
-    } else if(sol.estado === 'rechazada'){
-      espera('✕ Rechazada por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : ''));
-    } else if(sol.estado === 'cancelada'){
-      espera('✕ Cancelada por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : ''));
+    } else if(sol.estado === 'rechazada' || sol.estado === 'cancelada'){
+      espera('✕ ' + (sol.estado === 'rechazada' ? 'Rechazada' : 'Cancelada') + ' por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : ''));
+      if(esAdmin) pie.appendChild(boton('🗑 Eliminar', 'eliminar', '', () => abrirPanelSol(sol, 'eliminar')));
     } else if(esAdmin && sol.estado === 'pendiente'){
       pie.appendChild(boton('✅ Aprobar para el ' + fechaDM(sol.fecha), 'aprobar', 'primary', async ev => {
         ev.currentTarget.disabled = true;
