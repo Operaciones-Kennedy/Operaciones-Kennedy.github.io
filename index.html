@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-06 · 1";
+const VERSION_APP = "2026-10-06 · 2";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -5961,8 +5961,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       if(r.estado === 'no-entregado') return 'No entregado' + (en.motivo ? '<br><small>' + e(en.motivo) + '</small>' : '');
       return r.estado === 'en-ruta' ? 'En ruta' : 'Pendiente';
     };
-    const cabecera = (titulo, numero) =>
-      '<header><div class="marca">' + e(MARCA.nombre) + '</div><div class="doc"><b>' + titulo + '</b><span>N° ' + numero + '</span></div></header>' +
+    const cabecera = (titulo, numero, copia) =>
+      '<header><div class="marca">' + e(MARCA.nombre) + '</div><div class="doc"><b>' + titulo + '</b><span>N° ' + numero + '</span>' + (copia ? '<em class="copia">' + copia + '</em>' : '') + '</div></header>' +
       '<div class="datos">' +
         '<div><small>Fecha de despacho</small><b>' + e(fechaRuta) + '</b></div>' +
         '<div><small>Transportista</small><b>' + (e(transportista) || '&nbsp;') + '</b>' + (state.transportistaEmail ? '<span>' + e(state.transportistaEmail) + '</span>' : '') + '</div>' +
@@ -5986,7 +5986,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         if(soloId && r.id !== soloId) return '';
         const en = r.entrega || {};
         const entregado = r.estado === 'entregado';
-        return '<section class="hoja">' + cabecera('Guía de despacho', numeroGuia(i + 1)) +
+        // Dos copias por cliente: la original (queda con el cliente) y la cedible, con el acuse de recibo.
+        const pagina = cedible => '<section class="hoja' + (cedible ? ' cedible' : '') + '">' + cabecera('Guía de despacho', numeroGuia(i + 1), cedible ? 'Cedible con su factura' : 'Original · Cliente') +
           '<div class="cliente"><small>Destinatario · despacho ' + (i + 1) + ' de ' + filas.length + '</small><b>' + (e(r.cliente) || '(sin cliente)') + '</b>' +
             '<span>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' + (r.contacto ? '<span>Contacto: ' + e(r.contacto) + '</span>' : '') + '</div>' +
           '<table><thead><tr><th>Detalle de productos</th></tr></thead><tbody><tr><td class="productos">' + (e(r.productos || '') || '&nbsp;') + '</td></tr></tbody></table>' +
@@ -5994,8 +5995,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
             ? '<div class="entregado">✔ Entregado' + (en.horaEntrega ? ' a las ' + e(en.horaEntrega) : '') + (en.recibidoPor ? ' · Recibió: <b>' + e(en.recibidoPor) + '</b>' : '') + (en.registradoPor ? ' · Registró: ' + e(en.registradoPor) : '') +
                 (en.firmaUrl ? '<div><img src="' + e(en.firmaUrl) + '" alt="Firma de recepción"></div>' : '') + '</div>'
             : '') +
-          '<div class="firmas"><div>Transportista<br><small>Nombre y firma</small></div><div>Recibí conforme<br><small>Nombre, RUT, firma, fecha y hora</small></div></div>' +
+          (cedible
+            ? '<div class="acuse"><b>Acuse de recibo</b>' +
+                '<div class="acuse-campos"><div>Nombre</div><div>RUT</div><div>Fecha</div><div>Recinto</div><div class="ancho">Firma</div></div>' +
+                '<p>El acuse de recibo que se declara en este acto, de acuerdo a lo dispuesto en la letra b) del Art. 4°, y la letra c) del Art. 5° de la Ley 19.983, acredita que la entrega de mercaderías o servicio(s) prestado(s) ha(n) sido recibido(s).</p></div>'
+            : '<div class="firmas"><div>Transportista<br><small>Nombre y firma</small></div><div>Recibí conforme<br><small>Nombre, RUT, firma, fecha y hora</small></div></div>') +
           pie + '</section>';
+        return pagina(false) + pagina(true);
       }).join('');
     }
     const win = window.open('', '_blank');
@@ -6028,6 +6034,14 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       '.entregado{ margin-top:12px; padding:10px 12px; border-radius:8px; background:#d5f5f0; font-size:12.5px; }' +
       '.entregado img{ max-height:70px; margin-top:6px; background:#fff; border:1px solid #ccc; }' +
       '.firmas{ display:flex; gap:40px; margin-top:56px; }' +
+      '.doc .copia{ display:block; margin-top:4px; font-style:normal; font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:.06em; color:#5b7473; }' +
+      '.cedible .doc{ border-color:#c2333a; } .cedible .doc .copia{ color:#c2333a; font-size:12px; }' +
+      '.acuse{ margin-top:22px; border:2px solid #12292D; border-radius:8px; padding:12px 14px; }' +
+      '.acuse > b{ display:block; text-transform:uppercase; letter-spacing:.06em; font-size:12px; margin-bottom:10px; }' +
+      '.acuse-campos{ display:grid; grid-template-columns:repeat(2, 1fr); gap:22px 24px; }' +
+      '.acuse-campos div{ border-bottom:1px solid #555; padding-top:18px; font-size:11px; color:#5b7473; }' +
+      '.acuse-campos .ancho{ grid-column:1 / -1; padding-top:36px; }' +
+      '.acuse p{ margin:12px 0 0; font-size:10px; color:#5b7473; line-height:1.4; }' +
       '.firmas div{ flex:1; border-top:1px solid #555; padding-top:6px; font-size:12px; text-align:center; }' +
       '.nota{ margin-top:22px; font-size:10px; color:#777; text-align:center; }' +
       '@media (max-width:600px){ body{ padding:12px; } .datos{ grid-template-columns:1fr 1fr; } table{ font-size:11px; } }' +
