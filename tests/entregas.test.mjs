@@ -29,7 +29,7 @@ for (const w of [1280, 390]) {
   check('abre la sección', !(await p.$eval('#viewEntregasHist', e => e.hidden)) && await p.$eval('#hojaBar', e => e.hidden));
   await p.fill('#rDesdeE', '2026-08-01'); await p.dispatchEvent('#rDesdeE', 'change');
   await p.fill('#rHastaE', '2026-08-31'); await p.dispatchEvent('#rHastaE', 'change'); await p.waitForTimeout(500);
-  const filas = () => p.$$eval('#ehFilas tr', trs => trs.map(tr => [...tr.cells].slice(0, 7).map(td => td.textContent.trim()).join(' | ')));
+  const filas = () => p.$$eval('#ehFilas tr', trs => trs.map(tr => [...tr.cells].slice(0, 8).map(td => td.textContent.trim()).join(' | ')));
   const f = await filas();
   check('lo más reciente primero, sin pendientes', f.length === 3 && f[0].startsWith('12/08/2026 | 09:15 | Café Rojo') && f[1].startsWith('10/08/2026 | 16:30 | Las Amikas'), f.join('\n'));
   check('muestra quién recibió y quién registró', f.some(x => x.includes('Victoria Jordán') && x.includes('trs.barrientos80@gmail.com')));
