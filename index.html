@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-06 · 4";
+const VERSION_APP = "2026-10-06 · 5";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -757,7 +757,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .seg-card-top .seg-cli{ flex:1; min-width:0; }
   .seg-cli b{ display:block; }
   .seg-cli span{ color:var(--muted); font-size:12px; }
-  .seg-depto{ font-size:12px; font-weight:700; color:var(--text); margin-top:2px; }
   .seg-eta{ font-size:12px; font-weight:700; color:var(--marca-principal-oscuro); margin-top:2px; }
   .seg-pasos{ list-style:none; margin:8px 0 2px; padding:0; display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); }
   .seg-paso{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; font-size:11px; color:var(--muted); }
@@ -940,6 +939,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .gps-card p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
   .guia-btns{ display:flex; gap:8px; flex-wrap:wrap; }
   .gps-card.activo{ border-color:var(--marca-principal-claro); background:var(--ok-bg); }
+  .lp-depto-titulo{ margin:0; padding:14px 16px 0; font-size:15px; }
   .config-titulo2{ margin:22px 0 4px; font-size:18px; }
   .movil-sheet{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; }
   .movil-sheet-fondo{ position:absolute; inset:0; background:rgba(18,41,45,0.45); }
@@ -1617,7 +1617,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           <div class="sol-grid">
             <label class="sol-campo">Nombre <input type="text" id="solNombre" autocomplete="name" placeholder="Ej: Camila Rojas"></label>
             <label class="sol-campo">Empresa <input type="text" id="solEmpresa" autocomplete="organization" placeholder="Ej: Agencia Kennedy"></label>
-            <label class="sol-campo">Departamento <input type="text" id="solDepartamento" placeholder="Ej: Marketing, Trade, Eventos"></label>
             <label class="sol-campo">Teléfono <input type="tel" id="solTelefono" autocomplete="tel" placeholder="+56 9 …"></label>
           </div>
         </div>
@@ -1709,7 +1708,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     </section>
 
     <section class="card chart-card">
-      <h2>Despachos por departamento</h2>
+      <h2>Gasto por departamento</h2>
       <div class="chart-holder" id="chartDepto"></div>
     </section>
 
@@ -1756,7 +1755,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div class="chart-holder" id="hChartTransportista"></div>
       </section>
       <section class="card chart-card">
-        <h2>Despachos por departamento</h2>
+        <h2>Gasto por departamento</h2>
         <div class="chart-holder" id="hChartDepto"></div>
       </section>
     </div>
@@ -1797,7 +1796,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     </section>
     <section class="card chart-card">
       <div class="eh-filtros">
-        <input type="search" id="ehBuscar" class="hist-buscar" placeholder="Buscar cliente, departamento, dirección, quién recibió o transportista…" autocomplete="off">
+        <input type="search" id="ehBuscar" class="hist-buscar" placeholder="Buscar cliente, dirección, quién recibió o transportista…" autocomplete="off">
         <select id="ehEstado" aria-label="Filtrar por estado">
           <option value="cerradas">Entregados y no entregados</option>
           <option value="entregado">Solo entregados</option>
@@ -1808,7 +1807,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       </div>
       <div class="table-wrap">
         <table class="hist-table eh-table">
-          <thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Departamento</th><th>Dirección</th><th>Estado</th><th>Recibió / Motivo</th><th>Registrado por</th><th>Foto y firma</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>Recibió / Motivo</th><th>Registrado por</th><th>Foto y firma</th></tr></thead>
           <tbody id="ehFilas"></tbody>
         </table>
       </div>
@@ -1874,11 +1873,24 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <label class="vb-email" for="lpTransportista"><span>Transportista</span>
         <select id="lpTransportista"><option value="">Todos</option></select>
       </label>
+      <label class="vb-email" for="lpDepartamento"><span>Departamento</span>
+        <select id="lpDepartamento"><option value="">Todos</option></select>
+      </label>
+      <button id="lpExcel">📊 Exportar Excel</button>
     </div>
+    <section class="card table-card">
+      <h2 class="lp-depto-titulo">Gasto por departamento</h2>
+      <div class="table-wrap">
+        <table class="hist-table">
+          <thead><tr><th>Departamento</th><th>Despachos</th><th>Total</th><th>Pagado</th><th>Pendiente</th></tr></thead>
+          <tbody id="lpDeptos"></tbody>
+        </table>
+      </div>
+    </section>
     <section class="card table-card">
       <div class="table-wrap">
         <table class="hist-table">
-          <thead><tr><th>Fecha</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Cliente</th><th>Departamento</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno</th></tr></thead>
           <tbody id="lpFilas"></tbody>
         </table>
       </div>
@@ -3423,7 +3435,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const est = $('ehEstado').value;
     return periodo.rows
       .filter(r => est === 'todas' ? true : est === 'cerradas' ? (r.estado === 'entregado' || r.estado === 'no-entregado') : r.estado === est)
-      .filter(r => !q || normalizeHeaderText([r.cliente, r.departamento, r.direccion, r.comuna, r.contacto, r.entrega && r.entrega.recibidoPor, r.entrega && r.entrega.registradoPor, r._transportista].join(' ')).includes(q))
+      .filter(r => !q || normalizeHeaderText([r.cliente, r.direccion, r.comuna, r.contacto, r.entrega && r.entrega.recibidoPor, r.entrega && r.entrega.registradoPor, r._transportista].join(' ')).includes(q))
       .map((r, i) => [r, i])
       .sort((a, b) => (b[0]._fecha + (horaEntregaDe(b[0]) || '')).localeCompare(a[0]._fecha + (horaEntregaDe(a[0]) || '')) || b[1] - a[1]) // lo más reciente primero
       .map(x => x[0]);
@@ -3455,7 +3467,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       td(enlaceFecha(r._fecha));
       td(horaEntregaDe(r) || '—', 'eh-hora');
       td(r.cliente || '(sin cliente)');
-      td(r.departamento || '—');
       td([r.direccion, r.comuna].filter(Boolean).join(', '));
       const info = ESTADOS.find(x => x.value === r.estado) || ESTADOS[0];
       const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label; td(pill);
@@ -3481,7 +3492,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         'Fecha': r._fecha.split('-').reverse().join('/'),
         'Hora': horaEntregaDe(r) || '',
         'Cliente': r.cliente || '',
-        'Departamento': r.departamento || '',
         'Dirección': r.direccion || '',
         'Comuna': r.comuna || '',
         'Estado': estadoLabel(r.estado),
@@ -3530,7 +3540,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const trans = new Map();
     rows.forEach(r => { const k = r._transportista || r._transportistaEmail || 'Sin nombre'; trans.set(k, (trans.get(k) || 0) + 1); });
     renderBarChart($('hChartTransportista'), [...trans.entries()].sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label, value })));
-    renderBarChart($('hChartDepto'), conteoPorDepartamento(rows));
+    renderBarChart($('hChartDepto'), graficoGastoDepto(rows), { formatValue: formatMoney });
     pintarBusqueda();
   }
 
@@ -3564,9 +3574,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       : (lista.length > MAX ? 'Se muestran las ' + MAX + ' más recientes de ' + lista.length + '. Afina la búsqueda para ver otras.' : lista.length + ' entrega(s).');
   }
 
+  const deptoDe = r => (r.departamento || '').trim() || 'Sin departamento';
   function filasLiqPeriodo(){
     const t = $('lpTransportista').value;
-    return periodo.rows.filter(r => !t || (r._transportista || r._transportistaEmail || 'Sin nombre') === t);
+    const d = $('lpDepartamento').value;
+    return periodo.rows.filter(r => (!t || (r._transportista || r._transportistaEmail || 'Sin nombre') === t) && (!d || deptoDe(r) === d));
   }
 
   function pintarLiqPeriodo(){
@@ -3575,7 +3587,20 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const nombres = [...new Set(periodo.rows.map(r => r._transportista || r._transportistaEmail || 'Sin nombre'))].sort();
     sel.innerHTML = '<option value="">Todos</option>' + nombres.map(n => '<option>' + escapeHtml(n) + '</option>').join('');
     sel.value = nombres.includes(actual) ? actual : '';
+    const selD = $('lpDepartamento');
+    const actualD = selD.value;
+    const deptos = [...new Set(periodo.rows.map(deptoDe))].sort();
+    selD.innerHTML = '<option value="">Todos</option>' + deptos.map(n => '<option>' + escapeHtml(n) + '</option>').join('');
+    selD.value = deptos.includes(actualD) ? actualD : '';
     const rows = filasLiqPeriodo();
+    const tbD = $('lpDeptos');
+    tbD.innerHTML = '';
+    gastoPorDepartamento(rows).forEach(([nombre, x]) => {
+      const tr = document.createElement('tr');
+      [nombre, x.despachos, formatMoney(x.total), formatMoney(x.pagado), formatMoney(x.total - x.pagado)].forEach((v, i) => { const c = document.createElement('td'); c.textContent = v; if(i === 2) c.style.fontWeight = '800'; tr.appendChild(c); });
+      tbD.appendChild(tr);
+    });
+    if(!rows.length) tbD.innerHTML = '<tr><td colspan="5" class="chart-empty">No hay despachos en este período.</td></tr>';
     let total = 0, pagado = 0, ok = 0, obs = 0;
     const tb = $('lpFilas');
     tb.innerHTML = '';
@@ -3589,6 +3614,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const td = (content) => { const c = document.createElement('td'); if(content instanceof Node) c.appendChild(content); else c.textContent = content; tr.appendChild(c); return c; };
       td(enlaceFecha(r._fecha));
       td(r.cliente || '(sin cliente)');
+      td(r.departamento || '—');
       td([r.direccion, r.comuna].filter(Boolean).join(', '));
       const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
       const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label; td(pill);
@@ -3600,7 +3626,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
     if(!rows.length){
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td colspan="8" class="chart-empty">No hay despachos en este período.</td>';
+      tr.innerHTML = '<td colspan="9" class="chart-empty">No hay despachos en este período.</td>';
       tb.appendChild(tr);
     }
     $('lpTotal').textContent = formatMoney(total);
@@ -3628,6 +3654,28 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   });
   $('hBuscar').addEventListener('input', pintarBusqueda);
   $('lpTransportista').addEventListener('change', pintarLiqPeriodo);
+  $('lpDepartamento').addEventListener('change', pintarLiqPeriodo);
+  $('lpExcel').addEventListener('click', () => {
+    if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisa tu conexión e intenta de nuevo en unos segundos.'); return; }
+    const estadoLabel = v => (ESTADOS.find(x => x.value === v) || {}).label || v;
+    const rows = filasLiqPeriodo();
+    const detalle = rows.map(r => ({
+      'Fecha': r._fecha.split('-').reverse().join('/'),
+      'Departamento': r.departamento || '',
+      'Cliente': r.cliente || '',
+      'Dirección': [r.direccion, r.comuna].filter(Boolean).join(', '),
+      'Transportista': r._transportista || '',
+      'Estado': estadoLabel(r.estado),
+      'N° Factura': r.numeroFactura || '',
+      'Tarifa': Number(r.tarifa) || 0,
+      'Pagado': r.pagado ? 'Sí' : 'No'
+    }));
+    const resumen = gastoPorDepartamento(rows).map(([nombre, x]) => ({ 'Departamento': nombre, 'Despachos': x.despachos, 'Total': x.total, 'Pagado': x.pagado, 'Pendiente': x.total - x.pagado }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Por departamento');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detalle), 'Detalle');
+    XLSX.writeFile(wb, 'gasto-por-departamento-' + periodo.desde + '-al-' + periodo.hasta + '.xlsx');
+  });
   $('btnImprimirLiqPeriodo').addEventListener('click', () => {
     const t = $('lpTransportista').value;
     const rows = filasLiqPeriodo();
@@ -3709,11 +3757,20 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
   document.querySelectorAll('.side-item[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
 
-  // Despachos por departamento solicitante (los que no lo tienen van a «Sin departamento»).
-  function conteoPorDepartamento(rows){
+  // Gasto (suma de tarifas) por departamento: clasificación interna, solo para administradores.
+  function gastoPorDepartamento(rows){
     const m = new Map();
-    rows.filter(r => !filaVacia(r)).forEach(r => { const k = (r.departamento || '').trim() || 'Sin departamento'; m.set(k, (m.get(k) || 0) + 1); });
-    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([label, value]) => ({ label, value }));
+    rows.filter(r => !filaVacia(r)).forEach(r => {
+      const k = (r.departamento || '').trim() || 'Sin departamento';
+      const x = m.get(k) || { despachos: 0, total: 0, pagado: 0 };
+      const tarifa = Number(r.tarifa) || 0;
+      x.despachos++; x.total += tarifa; if(r.pagado) x.pagado += tarifa;
+      m.set(k, x);
+    });
+    return [...m.entries()].sort((a, b) => b[1].total - a[1].total || b[1].despachos - a[1].despachos);
+  }
+  function graficoGastoDepto(rows){
+    return gastoPorDepartamento(rows).filter(([, x]) => x.total > 0).slice(0, 12).map(([label, x]) => ({ label, value: x.total }));
   }
   function renderBarChart(container, items, opts){
     opts = opts || {};
@@ -3820,7 +3877,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       .sort((a, b) => b[1] - a[1])
       .map(([label, value]) => ({ label, value }));
     renderBarChart($('chartComuna'), comunaItems);
-    renderBarChart($('chartDepto'), conteoPorDepartamento(fuente));
+    renderBarChart($('chartDepto'), graficoGastoDepto(fuente), { formatValue: formatMoney });
 
     const tarifaItems = rows
       .filter(r => Number(r.tarifa) > 0)
@@ -4044,7 +4101,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
     const metaChips = [];
     if(row.eta && (row.estado === 'pendiente' || row.estado === 'en-ruta')) metaChips.push(['🕒', 'Llega aprox. ' + row.eta]);
-    if(row.departamento) metaChips.push(['🏢', row.departamento]);
     if(row.contacto) metaChips.push(['📞', row.contacto]);
     if(row.productos) metaChips.push(['📦', row.productos]);
     if(row.tarifa && verDinero) metaChips.push(['💰', formatMoney(row.tarifa)]);
@@ -5373,7 +5429,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           transportista: state.transportista || '', transportistaEmail: state.transportistaEmail || '', transportistas: state.transportistas || [], fecha, rows: []
         };
         st.rows = (st.rows || []).concat(sol.despachos.map(d => Object.assign(defaultRow(), {
-          cliente: d.cliente || '', departamento: (sol.solicitante && sol.solicitante.departamento) || '', direccion: d.direccion || '', comuna: d.comuna || '', contacto: d.contacto || '', productos: d.productos || '',
+          cliente: d.cliente || '', direccion: d.direccion || '', comuna: d.comuna || '', contacto: d.contacto || '', productos: d.productos || '',
           creadoAt: sol.creadoAt, solicitudId: sol.id,
           eventos: [{ tipo: 'solicitado', at: sol.creadoAt, por: sol.por || '' }, { tipo: 'programado', at: ahora, por: programadoPor }]
         })));
@@ -5427,7 +5483,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('solFilas').innerHTML = '';
     $('solNotas').value = '';
     const g = solicitanteGuardado();
-    [['solNombre', 'nombre'], ['solEmpresa', 'empresa'], ['solDepartamento', 'departamento'], ['solTelefono', 'telefono']].forEach(([id, k]) => { if(!$(id).value) $(id).value = g[k] || ''; });
+    [['solNombre', 'nombre'], ['solEmpresa', 'empresa'], ['solTelefono', 'telefono']].forEach(([id, k]) => { if(!$(id).value) $(id).value = g[k] || ''; });
     filaSolicitud();
   }
   $('avisoSolBtn').addEventListener('click', () => { solFiltro = 'activas'; switchView('solicitudes'); window.scrollTo(0, 0); });
@@ -5436,7 +5492,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('solAgregar').addEventListener('click', () => filaSolicitud().querySelector('input').focus());
   $('solEnviar').addEventListener('click', async () => {
     const fecha = $('solFecha').value;
-    const solicitante = { nombre: $('solNombre').value.trim(), empresa: $('solEmpresa').value.trim(), departamento: $('solDepartamento').value.trim(), telefono: $('solTelefono').value.trim() };
+    const solicitante = { nombre: $('solNombre').value.trim(), empresa: $('solEmpresa').value.trim(), telefono: $('solTelefono').value.trim() };
     const despachos = [...$('solFilas').children].map(f => {
       const o = {};
       f.querySelectorAll('input[data-k]').forEach(i => { o[i.dataset.k] = i.value.trim(); });
@@ -5592,7 +5648,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const q = nuevo('div', 'sol-quien');
     q.appendChild(nuevo('b', '', titulo));
     const sm = nuevo('small');
-    const partes = [quien.departamento ? '🏢 ' + quien.departamento : '', quien.empresa ? quien.nombre : '', sol.por].filter(Boolean);
+    const partes = [quien.empresa ? quien.nombre : '', sol.por].filter(Boolean);
     sm.textContent = partes.join(' · ');
     if(quien.telefono){
       if(partes.length) sm.appendChild(document.createTextNode(' · '));
@@ -6001,8 +6057,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     let cuerpo = '';
     if(!porCliente){
       cuerpo = '<section class="hoja">' + cabecera('Guía de despacho', numeroGuia()) +
-        '<table><thead><tr><th>N°</th><th>Cliente</th><th>Departamento</th><th>Dirección</th><th>Contacto</th><th>Productos</th><th>Estado</th><th class="firma-col">Recibí conforme<br><small>nombre y firma</small></th></tr></thead><tbody>' +
-        filas.map((r, i) => '<tr><td class="n">' + (i + 1) + '</td><td><b>' + (e(r.cliente) || '(sin cliente)') + '</b></td><td>' + e(r.departamento || '') + '</td><td>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</td><td>' + e(r.contacto || '') + '</td><td>' + e(r.productos || '') + '</td><td>' + estadoDe(r) + '</td><td></td></tr>').join('') +
+        '<table><thead><tr><th>N°</th><th>Cliente</th><th>Dirección</th><th>Contacto</th><th>Productos</th><th>Estado</th><th class="firma-col">Recibí conforme<br><small>nombre y firma</small></th></tr></thead><tbody>' +
+        filas.map((r, i) => '<tr><td class="n">' + (i + 1) + '</td><td><b>' + (e(r.cliente) || '(sin cliente)') + '</b></td><td>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</td><td>' + e(r.contacto || '') + '</td><td>' + e(r.productos || '') + '</td><td>' + estadoDe(r) + '</td><td></td></tr>').join('') +
         '</tbody></table>' +
         '<div class="resumen">Total: <b>' + filas.length + (filas.length === 1 ? ' despacho' : ' despachos') + '</b></div>' +
         '<div class="firmas"><div>Entrega la carga<br><small>Nombre, firma y hora</small></div><div>Recibe la carga (transportista)<br><small>Nombre, RUT y firma</small></div></div>' +
@@ -6015,7 +6071,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         // Dos copias por cliente: la del cliente y la que vuelve firmada con el transportista (respaldo del traslado).
         const pagina = respaldo => '<section class="hoja' + (respaldo ? ' respaldo' : '') + '">' + cabecera('Guía de despacho', numeroGuia(i + 1), respaldo ? 'Copia transportista · Respaldo' : 'Copia cliente') +
           '<div class="cliente"><small>Destinatario · despacho ' + (i + 1) + ' de ' + filas.length + '</small><b>' + (e(r.cliente) || '(sin cliente)') + '</b>' +
-            (r.departamento ? '<span>Departamento: ' + e(r.departamento) + '</span>' : '') + '<span>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' + (r.contacto ? '<span>Contacto: ' + e(r.contacto) + '</span>' : '') + '</div>' +
+            '<span>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' + (r.contacto ? '<span>Contacto: ' + e(r.contacto) + '</span>' : '') + '</div>' +
           '<table><thead><tr><th>Detalle de productos</th></tr></thead><tbody><tr><td class="productos">' + (e(r.productos || '') || '&nbsp;') + '</td></tr></tbody></table>' +
           (entregado
             ? '<div class="entregado">✔ Entregado' + (en.horaEntrega ? ' a las ' + e(en.horaEntrega) : '') + (en.recibidoPor ? ' · Recibió: <b>' + e(en.recibidoPor) + '</b>' : '') + (en.registradoPor ? ' · Registró: ' + e(en.registradoPor) : '') +
@@ -6111,7 +6167,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         '<header><div class="marca">' + e(MARCA.nombre) + '</div><div class="doc"><b>Comprobante de entrega</b><span>N° ' + numero(r, n) + '</span></div></header>' +
         '<div class="sello">✔ ENTREGADO' + (en.horaEntrega ? ' · ' + e(en.horaEntrega) : '') + ' · ' + e(fechaLarga(fecha) + ' de ' + fecha.slice(0, 4)) + '</div>' +
         '<div class="datos">' +
-          '<div><small>Destinatario</small><b>' + (e(r.cliente) || '(sin cliente)') + '</b>' + (r.departamento ? '<span>Departamento: ' + e(r.departamento) + '</span>' : '') + '<span>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' + (r.contacto ? '<span>Contacto: ' + e(r.contacto) + '</span>' : '') + '</div>' +
+          '<div><small>Destinatario</small><b>' + (e(r.cliente) || '(sin cliente)') + '</b><span>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' + (r.contacto ? '<span>Contacto: ' + e(r.contacto) + '</span>' : '') + '</div>' +
           '<div><small>Recibió</small><b>' + (e(en.recibidoPor) || '—') + '</b><span>Hora: ' + (e(en.horaEntrega) || '—') + '</span>' + (en.registradoPor ? '<span>Registró: ' + e(en.registradoPor) + '</span>' : '') + '</div>' +
           '<div><small>Transportista</small><b>' + (e(transportista) || '—') + '</b><span>Despacho N° ' + n + ' de la ruta</span></div>' +
         '</div>' +
@@ -6338,7 +6394,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const b = document.createElement('b'); b.textContent = r.cliente || '(sin cliente)';
     const dir = document.createElement('span'); dir.textContent = [r.direccion, r.comuna].filter(Boolean).join(', ') + (opciones && opciones.dinero && Number(r.tarifa) ? ' · ' + formatMoney(r.tarifa) : '');
     cli.append(b, dir);
-    if(r.departamento){ const dep = document.createElement('div'); dep.className = 'seg-depto'; dep.textContent = '🏢 ' + r.departamento; cli.appendChild(dep); }
     if(r.eta && (r.estado === 'pendiente' || r.estado === 'en-ruta')){ const eta = document.createElement('div'); eta.className = 'seg-eta'; eta.textContent = '🕒 Llegada estimada ' + r.eta; cli.appendChild(eta); }
     const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
     const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label;

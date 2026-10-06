@@ -1,4 +1,5 @@
-// Departamento que hizo la solicitud: columna en la Ruta del día, Excel, Solicitudes, Entregas, Seguimiento, historial y gráficos.
+// Departamento: dato interno del administrador para clasificar el gasto. Columna en la Ruta del día, Excel,
+// gráficos «Gasto por departamento» y Liquidación del período. No sale en guías, comprobantes ni vistas del transportista.
 import { launch, open, rowsOf, check, sinErrores, DIR } from './harness.mjs';
 import fs from 'fs';
 import path from 'path';
@@ -34,7 +35,7 @@ console.log('Ruta del día: columna Departamento e importar Excel');
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#btnExportExcel')]);
   check('exporta Excel', /hoja-de-ruta-2026-10-06\.xlsx/.test(dl.suggestedFilename()));
   await p.click('.side-item[data-view="reportes"]'); await p.waitForTimeout(300);
-  check('KPIs: gráfico «Despachos por departamento»', (await p.textContent('#chartDepto')).includes('Marketing') && (await p.textContent('#chartDepto')).includes('Trade Norte'));
+  check('KPIs: gráfico «Gasto por departamento» (sin tarifas, vacío)', (await p.textContent('#viewReportes')).includes('Gasto por departamento'));
   sinErrores(p);
   await p.context().close();
 }
@@ -44,59 +45,60 @@ const rows = [
     entrega: { recibidoPor: 'Carol Riquelme', horaEntrega: '16:50', registradoPor: 'trs@fletes.cl' } },
   { id: 'b', cliente: 'Chilevisión', departamento: 'Trade', direccion: 'Pedro Montt 2354', comuna: 'Santiago', contacto: '', productos: '4x', estado: 'pendiente', tarifa: 10000 }
 ];
-console.log('Entregas, Seguimiento e Historial de entregas');
+console.log('Entregas, Seguimiento, guías y comprobantes no muestran el departamento');
 {
   const p = await open(b, { setup: setup('jefe@prueba.cl', rows), width: 1280 });
   await p.waitForTimeout(600);
+  await p.click('.side-item[data-view="reportes"]'); await p.waitForTimeout(300);
+  const graf = await p.textContent('#chartDepto');
+  check('KPIs: el gráfico suma el gasto por departamento', graf.includes('Marketing') && graf.includes('70.000') && graf.includes('Trade') && graf.includes('10.000'), graf);
   await p.click('.side-item[data-view="chofer"]'); await p.waitForTimeout(200);
-  check('Entregas muestra el departamento', (await p.textContent('#choferList')).includes('🏢Trade') || (await p.textContent('#choferList')).includes('Trade'));
+  check('Entregas no lo muestra', !(await p.textContent('#choferList')).includes('Marketing'));
   await p.click('.side-item[data-view="seguimiento"]'); await p.waitForTimeout(200);
-  check('Seguimiento muestra el departamento', (await p.$$eval('#segLista .seg-depto', d => d.map(x => x.textContent).join(','))) === '🏢 Marketing,🏢 Trade');
+  check('Seguimiento no lo muestra', !(await p.textContent('#segLista')).includes('Marketing'));
   const [c] = await Promise.all([p.context().waitForEvent('page'), p.click('#segLista .seg-comprobante')]);
   await c.waitForLoadState();
-  check('el comprobante de entrega lo incluye', (await c.textContent('body')).includes('Departamento: Marketing'));
+  check('el comprobante de entrega no lo incluye', !/Departamento|Marketing/.test(await c.textContent('body')));
   await c.close();
   await p.click('.side-item[data-view="chofer"]'); await p.waitForTimeout(200);
   const [g] = await Promise.all([p.context().waitForEvent('page'), p.click('#btnGuiaRuta')]);
   await g.waitForLoadState();
-  check('la guía de la ruta tiene la columna Departamento', (await g.$$eval('thead th', t => t.map(x => x.textContent))).includes('Departamento') && (await g.textContent('tbody')).includes('Marketing'));
+  check('la guía de despacho no lo incluye', !/Departamento|Marketing/.test(await g.textContent('body')));
   await g.close();
   await p.click('.side-item[data-view="entregashist"]'); await p.waitForTimeout(200);
   await p.fill('#rDesdeE', '2026-10-01'); await p.dispatchEvent('#rDesdeE', 'change');
   await p.fill('#rHastaE', '2026-10-31'); await p.dispatchEvent('#rHastaE', 'change'); await p.waitForTimeout(600);
-  const ths = await p.$$eval('#viewEntregasHist thead th', t => t.map(x => x.textContent));
-  check('Historial de entregas: columna Departamento', ths[3] === 'Departamento' && (await p.textContent('#ehFilas')).includes('Marketing'), ths.join(','));
-  await p.selectOption('#ehEstado', 'todas');
-  await p.fill('#ehBuscar', 'trade'); await p.waitForTimeout(100);
-  check('se puede buscar por departamento', (await p.$$('#ehFilas tr')).length === 1 && (await p.textContent('#ehFilas')).includes('Chilevisión'));
+  check('Historial de entregas no tiene la columna', !(await p.textContent('#viewEntregasHist')).includes('Departamento'));
   sinErrores(p);
   await p.context().close();
 }
 
-console.log('Solicitudes: el departamento pasa a los despachos');
+console.log('Liquidación del período: gasto por departamento');
+{
+  const p = await open(b, { setup: setup('jefe@prueba.cl', rows.concat([{ id: 'c', cliente: 'Café Rojo', departamento: 'Marketing', direccion: 'Lastarria 90', comuna: 'Santiago', productos: '1x', estado: 'entregado', tarifa: 15000, pagado: true }, { id: 'd', cliente: 'Sin área', direccion: 'Merced 10', comuna: 'Santiago', estado: 'pendiente', tarifa: 5000 }])), width: 1280 });
+  await p.waitForTimeout(600);
+  await p.click('.side-item[data-view="liqperiodo"]'); await p.waitForTimeout(300);
+  await p.fill('#rDesdeL', '2026-10-01'); await p.dispatchEvent('#rDesdeL', 'change');
+  await p.fill('#rHastaL', '2026-10-31'); await p.dispatchEvent('#rHastaL', 'change'); await p.waitForTimeout(600);
+  const resumen = await p.$$eval('#lpDeptos tr', trs => trs.map(t => [...t.cells].map(c => c.textContent).join(' | ')));
+  check('resumen por departamento, ordenado por gasto', resumen.join(' / ') === 'Marketing | 2 | $85.000 | $15.000 | $70.000 / Trade | 1 | $10.000 | $0 | $10.000 / Sin departamento | 1 | $5.000 | $0 | $5.000', resumen.join(' / '));
+  check('la tabla de detalle tiene la columna', (await p.$$eval('#viewLiqPeriodo thead th', t => t.map(x => x.textContent))).filter(x => x === 'Departamento').length === 2);
+  await p.selectOption('#lpDepartamento', 'Marketing'); await p.waitForTimeout(150);
+  check('filtrar por departamento', (await p.textContent('#lpTotal')) === '$85.000' && (await p.$$('#lpFilas tr')).length === 2, await p.textContent('#lpTotal'));
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#lpExcel')]);
+  check('exporta Excel del gasto por departamento', dl.suggestedFilename() === 'gasto-por-departamento-2026-10-01-al-2026-10-31.xlsx', dl.suggestedFilename());
+  sinErrores(p);
+  await p.context().close();
+}
+
+console.log('Solicitudes no piden departamento');
 {
   const p = await open(b, { setup: setup('ops@agencia.cl'), width: 1280 });
   await p.waitForTimeout(600);
   await p.click('.side-item[data-view="solicitudes"]'); await p.waitForTimeout(200);
-  await p.fill('#solNombre', 'Camila'); await p.fill('#solEmpresa', 'Agencia Kennedy'); await p.fill('#solDepartamento', 'Eventos');
-  await p.fill('#solFecha', '2026-10-07');
-  await p.fill('#solFilas .sol-desp:nth-child(1) input[data-k="cliente"]', 'Radio Infinita');
-  await p.click('#solEnviar'); await p.waitForTimeout(500);
-  const sol = await p.evaluate(() => { const k = Object.keys(window.__fs.docs).find(x => x.startsWith('hojasDeRuta/sol_')); return JSON.parse(window.__fs.docs[k].json).solicitudes[0]; });
-  check('la solicitud guarda el departamento', sol.solicitante.departamento === 'Eventos');
-  check('la tarjeta lo muestra', (await p.textContent('#solLista .sol-quien')).includes('🏢 Eventos'));
-  const docs = await p.evaluate(() => Object.fromEntries(Object.entries(window.__fs.docs).filter(([k]) => k.startsWith('hojasDeRuta/sol_'))));
+  check('el formulario no tiene el campo', !(await p.$('#solDepartamento')) && !(await p.textContent('#viewSolicitudes')).includes('Departamento'));
+  sinErrores(p);
   await p.context().close();
-  const q = await open(b, { setup: `(() => {
-    localStorage.setItem('hojaDeRuta_actual', '${DIA}');
-    window.__fakeParams = { email: 'jefe@prueba.cl', admins: ['jefe@prueba.cl'], seed: [['config/app', { agencias: ['ops@agencia.cl'] }]].concat(${JSON.stringify(Object.entries(docs))}) };
-  })()`, width: 1280 });
-  await q.waitForTimeout(600);
-  await q.click('.side-item[data-view="solicitudes"]'); await q.waitForTimeout(200);
-  await q.click('#solLista [data-acc="aprobar"]'); await q.waitForTimeout(800);
-  check('al aprobar, el despacho queda con el departamento', (await rowsOf(q, 'hojasDeRuta', '2026-10-07')).rows[0].departamento === 'Eventos');
-  sinErrores(q);
-  await q.context().close();
 }
 fs.unlinkSync(csv);
 await b.close();
