@@ -37,8 +37,10 @@ for (const [email, w] of [['trs@fletes.cl', 390], ['jefe@prueba.cl', 1280]]) {
   await g.close();
   const [c] = await Promise.all([p.context().waitForEvent('page'), p.click('#btnGuiaClientes')]);
   await c.waitForLoadState(); await c.waitForTimeout(100);
-  const hojas = await c.$$eval('.hoja', hs => hs.map(h => h.querySelector('.doc span').textContent + ' ' + h.querySelector('.cliente b').textContent));
-  check('una página por cliente con su número', hojas.join(' | ') === 'N° GD-20261005-01 Radio Infinita | N° GD-20261005-02 Chilevisión', hojas.join(' | '));
+  const hojas = await c.$$eval('.hoja', hs => hs.map(h => h.querySelector('.doc span').textContent + ' ' + h.querySelector('.cliente b').textContent + ' ' + h.querySelector('.copia').textContent));
+  check('por cliente: original y copia cedible, con su número', hojas.join(' | ') === 'N° GD-20261005-01 Radio Infinita Original · Cliente | N° GD-20261005-01 Radio Infinita Cedible con su factura | N° GD-20261005-02 Chilevisión Original · Cliente | N° GD-20261005-02 Chilevisión Cedible con su factura', hojas.join(' | '));
+  const ced = await c.textContent('.hoja.cedible');
+  check('la cedible trae el acuse de recibo (nombre, RUT, fecha, recinto, firma) y la Ley 19.983', ['Acuse de recibo', 'Nombre', 'RUT', 'Fecha', 'Recinto', 'Firma', 'Ley 19.983'].every(x => ced.includes(x)) && !(await c.$('.hoja:not(.cedible) .acuse')));
   check('la entregada lleva quién recibió y la firma', (await c.textContent('.hoja:first-child .entregado')).includes('Ana Pérez') && !!(await c.$('.hoja:first-child .entregado img')));
   check('salto de página entre clientes', (await c.$eval('.hoja + .hoja', h => getComputedStyle(h).breakBefore)) === 'page');
   if(process.env.CAPTURA) await c.screenshot({ path: process.env.CAPTURA.replace('.png', '-cliente-' + w + '.png'), fullPage: true });
@@ -48,7 +50,7 @@ for (const [email, w] of [['trs@fletes.cl', 390], ['jefe@prueba.cl', 1280]]) {
   const [u] = await Promise.all([p.context().waitForEvent('page'), p.click(`#choferList .chofer-card >> nth=${idx} >> .btn-guia-cliente`)]);
   await u.waitForLoadState(); await u.waitForTimeout(100);
   const unica = await u.$$eval('.hoja', hs => hs.map(h => h.querySelector('.doc span').textContent + ' ' + h.querySelector('.cliente b').textContent));
-  check('«🧾 Guía» en la tarjeta saca solo la de ese cliente, con su número', unica.join(' | ') === 'N° GD-20261005-02 Chilevisión' && (await u.title()).includes('GD-20261005-02'), unica.join(' | '));
+  check('«🧾 Guía» en la tarjeta saca solo la de ese cliente (original y cedible)', unica.join(' | ') === 'N° GD-20261005-02 Chilevisión | N° GD-20261005-02 Chilevisión' && (await u.title()).includes('GD-20261005-02'), unica.join(' | '));
   if(process.env.CAPTURA && w <= 820) await p.screenshot({ path: process.env.CAPTURA.replace('.png', '-entregas.png') });
   await u.close();
   if (w <= 820) check('no se sale de la pantalla', !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
