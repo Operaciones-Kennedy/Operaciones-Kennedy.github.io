@@ -1,4 +1,4 @@
-// «Día / Rango» en Seguimiento, Entregas, KPIs y Liquidación: ver y trabajar varios días juntos.
+// «Día / Rango» en Ruta del día, Seguimiento, Entregas, KPIs y Liquidación: ver y trabajar varios días juntos.
 import { launch, open, rowsOf, check, sinErrores } from './harness.mjs';
 const b = await launch();
 const setup = (email, extra) => `(() => {
@@ -27,9 +27,9 @@ console.log('Administrador: Liquidación y KPIs por rango');
 {
   const p = await open(b, { setup: setup('jefe@prueba.cl'), width: 1280 });
   await p.waitForTimeout(600);
-  check('en la Ruta del día no aparece el selector Día/Rango', !(await p.isVisible('#hojaModo')));
+  check('en la Ruta del día aparece el selector Día/Rango', await p.isVisible('#hojaModo'));
   await p.click('.side-item[data-view="liquidaciones"]'); await p.waitForTimeout(200);
-  check('en Liquidación sí aparece', await p.isVisible('#hojaModo'));
+  check('en Liquidación también', await p.isVisible('#hojaModo'));
   await rango(p);
   check('muestra Desde/Hasta en vez del día', await p.isVisible('#rDesdeR') && !(await p.isVisible('#hojaFecha')));
   if(process.env.CAPTURA) await p.screenshot({ path: process.env.CAPTURA.replace('.png', '-liq.png') });
@@ -48,7 +48,46 @@ console.log('Administrador: Liquidación y KPIs por rango');
   await p.click('#hojaModo [data-modo="dia"]'); await p.waitForTimeout(200);
   check('al volver a «Día» muestra solo el día abierto', (await p.textContent('#statTotalDespachos')) === '2');
   await p.click('.side-item[data-view="despachos"]'); await p.waitForTimeout(150);
-  check('la Ruta del día sigue por día', await p.isVisible('#hojaFecha'));
+  check('la Ruta del día sigue por día', await p.isVisible('#hojaFecha') && await p.isVisible('#tabla') && !(await p.isVisible('#despRango')));
+  sinErrores(p);
+  await p.context().close();
+}
+
+console.log('Administrador: Ruta del día por rango');
+{
+  const p = await open(b, { setup: setup('jefe@prueba.cl'), width: 1280 });
+  await p.waitForTimeout(600);
+  await rango(p);
+  check('cambia la tabla editable por la del período', await p.isVisible('#despRango') && !(await p.isVisible('#tabla')) && !(await p.isVisible('#btnAddRow')));
+  const filas = () => p.$$eval('#drFilas tr', trs => trs.map(t => [...t.cells].slice(0, 3).map(c => c.textContent.trim()).join(' | ')));
+  const f = await filas();
+  check('junta los días del rango, con fecha y N° por día', f.join(' / ') === '22/09/2026 | 1 | Céline / 22/09/2026 | 2 | Gino Costa / 23/09/2026 | 1 | Radio Infinita / 23/09/2026 | 2 | Chilevisión', f.join(' / '));
+  check('total tarifa del período $36.000', (await p.textContent('#drTotal')) === '$36.000');
+  check('el progreso cuenta el período', (await p.textContent('#countEntregado')) === '2' && (await p.textContent('#countNoEntregado')) === '1' && (await p.textContent('#progressPct')) === '50%');
+  await p.selectOption('#drEstado', 'entregado'); await p.waitForTimeout(100);
+  check('filtra por estado', (await filas()).length === 2);
+  await p.selectOption('#drEstado', '');
+  await p.fill('#drBuscar', 'gino'); await p.waitForTimeout(100);
+  check('busca', (await filas()).join() === '22/09/2026 | 2 | Gino Costa' && (await p.textContent('#drTotal')) === '$8.000');
+  await p.fill('#drBuscar', '');
+  await p.dispatchEvent('#drBuscar', 'input');
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#drExcel')]);
+  check('exporta Excel del período', dl.suggestedFilename() === 'rutas-2026-09-20-al-2026-09-30.xlsx', dl.suggestedFilename());
+  if(process.env.CAPTURA) await p.screenshot({ path: process.env.CAPTURA.replace('.png', '-ruta.png') });
+  await p.click('#drFilas tr:first-child a.hist-fecha'); await p.waitForTimeout(500);
+  check('el enlace de la fecha abre ese día para editar', (await p.inputValue('#hojaFecha')) === '2026-09-22' && await p.isVisible('#tabla') && !(await p.isVisible('#despRango')));
+  check('y vuelve al modo «Día»', await p.$eval('#hojaModo [data-modo="dia"]', e => e.classList.contains('activo')));
+  sinErrores(p);
+  await p.context().close();
+}
+
+console.log('Ruta del día por rango en el teléfono');
+{
+  const p = await open(b, { setup: setup('jefe@prueba.cl'), width: 390, height: 844 });
+  await p.waitForTimeout(600);
+  await rango(p);
+  check('muestra la tabla del período', await p.isVisible('#drFilas') && (await p.$$('#drFilas tr')).length === 4);
+  check('no se sale de la pantalla', !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
   sinErrores(p);
   await p.context().close();
 }

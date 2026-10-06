@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-06 · 5";
+const VERSION_APP = "2026-10-06 · 6";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -995,6 +995,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .hist-buscar:focus{ outline:none; border-color:var(--accent); }
   table.hist-table{ min-width:760px; }
   .hist-table td{ font-size:13px; }
+  .dr-buscar{ flex:1 1 240px; min-width:0; border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; }
+  #drEstado{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; }
+  #despRango.sin-dinero .dr-dinero{ display:none; }
   .hist-table a.hist-fecha{ color:var(--accent-dark); font-weight:800; text-decoration:none; white-space:nowrap; }
   .hist-table a.hist-fecha:hover{ text-decoration:underline; }
   .eh-filtros{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
@@ -1476,6 +1479,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       </div>
     </section>
 
+    <div id="despDia">
     <section class="card summary-card">
       <div class="field grow">
         <label>Título de la hoja</label>
@@ -1573,6 +1577,26 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <p class="footer-note">
       Los cambios se sincronizan automáticamente entre todos los que tengan sesión abierta (tú y el transportista), usando el proyecto Firebase de Ruteka. Si no hay conexión, se guarda solo en este dispositivo y se sincroniza al reconectar. El mapa se muestra con Google Maps y cada dirección se ubica automáticamente (geocodificación gratuita) — puede tardar unos segundos por despacho. Usa <strong>Exportar Excel</strong> para descargar la hoja como planilla, o las opciones avanzadas para respaldos técnicos (JSON/CSV).
     </p>
+    </div>
+
+    <div id="despRango" hidden>
+      <div class="toolbar">
+        <input type="search" id="drBuscar" class="dr-buscar" placeholder="Buscar cliente, dirección, comuna o departamento…" aria-label="Buscar en el período">
+        <select id="drEstado" aria-label="Filtrar por estado"><option value="">Todos los estados</option></select>
+        <span class="spacer"></span>
+        <button class="excel" id="drExcel">📤 Exportar Excel</button>
+      </div>
+      <section class="card table-card">
+        <div class="table-wrap">
+          <table class="hist-table" id="tablaRango">
+            <thead><tr><th>Fecha</th><th class="col-num">N°</th><th>Cliente</th><th>Departamento</th><th>Dirección</th><th>Comuna</th><th>Productos</th><th>Estado</th><th>Hora entrega</th><th class="dr-dinero">Tarifa</th></tr></thead>
+            <tbody id="drFilas"></tbody>
+            <tfoot class="dr-dinero"><tr><td colspan="9" style="text-align:right;">Total tarifa</td><td id="drTotal">$0</td></tr></tfoot>
+          </table>
+        </div>
+      </section>
+      <p class="footer-note" id="drNota">Para agregar o editar despachos, abre su ruta con el enlace de la fecha (o vuelve a «Día»).</p>
+    </div>
   </div>
 
   <div id="viewChofer" hidden>
@@ -3331,6 +3355,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     periodo.rutas = [...porDia.values()].filter(st => st.rows.some(r => r.cliente || r.direccion)).length;
     periodo.cargando = false;
     periodo.clave = clave;
+    // Si mientras cargaba cambiaron las fechas (o el día abierto), carga de nuevo con las actuales.
+    if(periodo.desde + '|' + periodo.hasta + '|' + hojaId !== clave) return cargarPeriodo();
     pintarPeriodo();
   }
 
@@ -3345,7 +3371,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     a.className = 'hist-fecha';
     a.textContent = fecha.split('-').reverse().join('/');
     a.title = 'Abrir la ruta de ese día';
-    a.addEventListener('click', e => { e.preventDefault(); abrirHoja(fecha); switchView('despachos'); });
+    a.addEventListener('click', e => { e.preventDefault(); irARuta(fecha, 'despachos'); });
     return a;
   }
 
@@ -3357,8 +3383,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(enRango()) renderVistaActual();
   }
 
-  /* ---------- Día o rango en Seguimiento, Entregas, KPIs y Liquidación ---------- */
-  const VISTAS_RANGO = ['seguimiento', 'chofer', 'reportes', 'liquidaciones'];
+  /* ---------- Día o rango en Ruta del día, Seguimiento, Entregas, KPIs y Liquidación ---------- */
+  const VISTAS_RANGO = ['despachos', 'seguimiento', 'chofer', 'reportes', 'liquidaciones'];
   let modoRango = (() => { try{ return localStorage.getItem('ruteka_modo') === 'rango'; }catch(e){ return false; } })();
   function enRango(){ return modoRango && VISTAS_RANGO.includes(currentView); }
   function fechaDe(r){ return r._fecha || hojaId; }
@@ -3375,6 +3401,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return n;
   }
   function renderVistaActual(){
+    if(currentView === 'despachos') renderDespachosRango();
     if(currentView === 'seguimiento') renderSeguimiento();
     if(currentView === 'chofer') renderChofer();
     if(currentView === 'reportes') renderReportes();
@@ -3386,6 +3413,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('hojaDia').hidden = r;
     $('hojaRango').hidden = !r;
     $('hojaInfo').hidden = r;
+    if(currentView === 'despachos') renderDespachosRango();
     $('hojaModo').querySelectorAll('button').forEach(b => {
       const activo = (b.dataset.modo === 'rango') === modoRango;
       b.classList.toggle('activo', activo);
@@ -3689,9 +3717,82 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
   });
 
+  // Ruta del día en modo «Rango»: todos los despachos del período, de solo lectura, con enlace a su día.
+  const ESTADO_LABEL = v => (ESTADOS.find(e => e.value === v) || {}).label || v;
+  function filasDespRango(){
+    const q = $('drBuscar').value.trim().toLowerCase();
+    const est = $('drEstado').value;
+    return filasDelRango().filter(r => (!est || r.estado === est) &&
+      (!q || [r.cliente, r.direccion, r.comuna, r.departamento, r.productos, r.contacto].some(v => String(v || '').toLowerCase().includes(q))));
+  }
+  function renderDespachosRango(){
+    const r = enRango() && currentView === 'despachos';
+    $('despDia').hidden = r;
+    $('despRango').hidden = !r;
+    updateKpis();
+    if(!r){ window.dispatchEvent(new Event('resize')); return; }
+    const sel = $('drEstado');
+    if(sel.options.length === 1) ESTADOS.forEach(e => sel.appendChild(new Option(e.label, e.value)));
+    $('despRango').classList.toggle('sin-dinero', !verDinero);
+    const todas = filasDelRango();
+    const numeros = numerar(todas);
+    const rows = filasDespRango();
+    const tb = $('drFilas');
+    tb.innerHTML = '';
+    let total = 0;
+    rows.forEach(row => {
+      total += Number(row.tarifa) || 0;
+      const tr = document.createElement('tr');
+      const td = (content, cls) => { const c = document.createElement('td'); if(cls) c.className = cls; if(content instanceof Node) c.appendChild(content); else c.textContent = content; tr.appendChild(c); return c; };
+      td(enlaceFecha(fechaDe(row)));
+      td(String(numeros.get(row)), 'col-num');
+      td(row.cliente || '(sin cliente)');
+      td(row.departamento || '—');
+      td(row.direccion || '');
+      td(row.comuna || '');
+      td(row.productos || '');
+      const info = ESTADOS.find(e => e.value === row.estado) || ESTADOS[0];
+      const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label; td(pill);
+      td(horaEntregaDe(row) || '—');
+      td(formatMoney(row.tarifa), 'dr-dinero');
+      tb.appendChild(tr);
+    });
+    if(!rows.length){
+      const vacio = periodo.cargando ? 'Cargando…' : (todas.length ? 'No hay despachos que coincidan con la búsqueda.' : 'No hay despachos en este período.');
+      tb.innerHTML = '<tr><td colspan="10" class="chart-empty">' + vacio + '</td></tr>';
+    }
+    $('drTotal').textContent = formatMoney(total);
+  }
+  $('drBuscar').addEventListener('input', renderDespachosRango);
+  $('drEstado').addEventListener('change', renderDespachosRango);
+  $('drExcel').addEventListener('click', () => {
+    if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisa tu conexión e intenta de nuevo en unos segundos.'); return; }
+    const numeros = numerar(filasDelRango());
+    const data = filasDespRango().map(r => {
+      const o = {
+        'Fecha': fechaDe(r).split('-').reverse().join('/'),
+        'N°': numeros.get(r),
+        'Cliente': r.cliente || '',
+        'Departamento': r.departamento || '',
+        'Dirección': r.direccion || '',
+        'Comuna': r.comuna || '',
+        'Contacto': r.contacto || '',
+        'Productos': r.productos || '',
+        'Estado': ESTADO_LABEL(r.estado),
+        'Hora entrega': horaEntregaDe(r)
+      };
+      if(verDinero) o['Tarifa'] = Number(r.tarifa) || 0;
+      return o;
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Despachos');
+    XLSX.writeFile(wb, 'rutas-' + periodo.desde + '-al-' + periodo.hasta + '.xlsx');
+  });
+
   function updateKpis(){
     const counts = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
-    const conDatos = state.rows.filter(r => !filaVacia(r));
+    const conDatos = enRango() && currentView === 'despachos' ? filasDelRango() : state.rows.filter(r => !filaVacia(r));
     conDatos.forEach(r => { counts[r.estado] = (counts[r.estado] || 0) + 1; });
     const total = conDatos.length || 1;
     const pct = Math.round((counts.entregado / total) * 100);
@@ -3756,6 +3857,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
   }
   document.querySelectorAll('.side-item[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+  // La Ruta del día también tiene «Día / Rango»: al abrir, pinta el selector y, si quedó en Rango, carga el período.
+  pintarModoBarra();
+  if(enRango()) cargarPeriodo();
 
   // Gasto (suma de tarifas) por departamento: clasificación interna, solo para administradores.
   function gastoPorDepartamento(rows){
