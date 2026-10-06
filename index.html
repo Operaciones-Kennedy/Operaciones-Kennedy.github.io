@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-05 · 3";
+const VERSION_APP = "2026-10-06 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -744,6 +744,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .seg-barra{ height:10px; border-radius:999px; background:#e3ecea; overflow:hidden; }
   .seg-ruta .seg-barra{ background:repeating-linear-gradient(90deg, #e3ecea 0 14px, #d2dedb 14px 22px); }
   .seg-barra span{ display:block; height:100%; width:0; background:linear-gradient(90deg, var(--marca-principal), var(--marca-principal-claro)); transition:width .4s; }
+  .seg-pie{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  .seg-comprobante{ margin-left:auto; }
   .seg-chips{ display:flex; flex-wrap:wrap; gap:8px; font-size:13px; font-weight:700; }
   .seg-mapa{ height:240px; border-radius:12px; background:#e9efee; }
   @media (max-width: 820px){ .seg-mapa{ height:200px; } }
@@ -1659,7 +1661,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <span class="seg-gps" id="segGps">Ubicación del camión: no se está compartiendo</span>
       </div>
       <div class="seg-ruta" aria-hidden="true"><div class="seg-barra"><span id="segBarra"></span></div><span class="seg-ruta-camion" id="segBarraCamion"></span><span class="seg-ruta-meta">🏁</span></div>
-      <div class="seg-chips" id="segChips"></div>
+      <div class="seg-pie"><div class="seg-chips" id="segChips"></div><button type="button" id="btnComprobantes" hidden>📄 Comprobantes de entrega</button></div>
     </section>
     <section class="card chart-card">
       <div class="seg-mapa" id="segMapa"></div>
@@ -6048,6 +6050,81 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('btnGuiaClientes').addEventListener('click', () => abrirGuia(true));
 
   /* ============================================================
+     COMPROBANTE DE ENTREGA (Seguimiento)
+     Prueba de entrega imprimible / PDF de cada despacho entregado: productos,
+     quién recibió, hora, trazabilidad, foto y firma. Sin montos.
+     ============================================================ */
+  function abrirComprobantesEntrega(lista){
+    // lista: [{ r, n }] con el despacho y su número en la ruta de su día.
+    const filas = lista.filter(x => x.r.estado === 'entregado');
+    if(!filas.length){ showDialog('No hay despachos entregados para generar el comprobante.'); return; }
+    const e = escapeHtml;
+    const emision = new Date().toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const numero = (r, n) => 'CE-' + fechaDe(r).replace(/-/g, '') + '-' + String(n).padStart(2, '0');
+    const paginas = filas.map(({ r, n }) => {
+      const en = r.entrega || {};
+      const fecha = fechaDe(r);
+      const transportista = (r._fecha ? r._transportista : (state.transportista || '').replace(/^—.*—$/, '').trim()) || '';
+      const pasos = eventosDe(r).map(x => '<li><b>' + e(horaCorta(x.at, fecha) || '—') + '</b> ' + e(NOMBRE_EVENTO[x.tipo] || x.tipo) + (x.por ? ' <span>· ' + e(x.por) + '</span>' : '') + '</li>').join('');
+      const img = (url, alt, clase) => url && !String(url).startsWith('pendiente') ? '<figure class="' + clase + '"><img src="' + e(url) + '" alt="' + alt + '"><figcaption>' + alt + '</figcaption></figure>' : '';
+      return '<section class="hoja">' +
+        '<header><div class="marca">' + e(MARCA.nombre) + '</div><div class="doc"><b>Comprobante de entrega</b><span>N° ' + numero(r, n) + '</span></div></header>' +
+        '<div class="sello">✔ ENTREGADO' + (en.horaEntrega ? ' · ' + e(en.horaEntrega) : '') + ' · ' + e(fechaLarga(fecha) + ' de ' + fecha.slice(0, 4)) + '</div>' +
+        '<div class="datos">' +
+          '<div><small>Destinatario</small><b>' + (e(r.cliente) || '(sin cliente)') + '</b><span>' + e([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' + (r.contacto ? '<span>Contacto: ' + e(r.contacto) + '</span>' : '') + '</div>' +
+          '<div><small>Recibió</small><b>' + (e(en.recibidoPor) || '—') + '</b><span>Hora: ' + (e(en.horaEntrega) || '—') + '</span>' + (en.registradoPor ? '<span>Registró: ' + e(en.registradoPor) + '</span>' : '') + '</div>' +
+          '<div><small>Transportista</small><b>' + (e(transportista) || '—') + '</b><span>Despacho N° ' + n + ' de la ruta</span></div>' +
+        '</div>' +
+        '<table><thead><tr><th>Productos entregados</th></tr></thead><tbody><tr><td class="productos">' + (e(r.productos || '') || '—') + '</td></tr></tbody></table>' +
+        (pasos ? '<h3>Trazabilidad</h3><ol class="pasos">' + pasos + '</ol>' : '') +
+        '<div class="respaldo">' + img(en.fotoUrl, 'Foto de entrega', 'foto') + img(en.firmaUrl, 'Firma de quien recibió', 'firma') + '</div>' +
+        '<p class="nota">Comprobante emitido con ' + e(MARCA.nombre) + ' el ' + e(emision) + '. La foto y la firma fueron registradas por el transportista al momento de la entrega.</p>' +
+        '</section>';
+    }).join('');
+    const win = window.open('', '_blank');
+    if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
+    win.document.write(
+      '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>Comprobante de entrega ' + (filas.length === 1 ? numero(filas[0].r, filas[0].n) : '(' + filas.length + ')') + '</title><style>' +
+      'body{ font-family:Arial, Helvetica, sans-serif; color:#12292D; margin:0; padding:24px; background:#fff; }' +
+      '.hoja{ max-width:820px; margin:0 auto 28px; }' +
+      '.hoja + .hoja{ page-break-before:always; break-before:page; }' +
+      'header{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding-bottom:12px; border-bottom:3px solid #0B7A6B; }' +
+      '.marca{ font-size:24px; font-weight:800; color:#0B7A6B; }' +
+      '.doc{ text-align:right; border:2px solid #12292D; border-radius:8px; padding:8px 14px; }' +
+      '.doc b{ display:block; font-size:15px; text-transform:uppercase; letter-spacing:.5px; } .doc span{ font-size:13px; font-weight:bold; color:#0B7A6B; }' +
+      '.sello{ margin:14px 0; padding:10px 14px; border-radius:8px; background:#d5f5f0; color:#08594E; font-weight:bold; font-size:14px; }' +
+      '.datos{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px 18px; margin-bottom:14px; font-size:13px; }' +
+      '.datos small{ display:block; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:#5b7473; }' +
+      '.datos b{ display:block; font-size:14px; margin:2px 0; } .datos span{ display:block; font-size:12px; color:#3d5250; }' +
+      'table{ width:100%; border-collapse:collapse; font-size:13px; } th, td{ border:1px solid #bbb; padding:8px 9px; text-align:left; }' +
+      'th{ background:#e9f3f1; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; } td.productos{ white-space:pre-wrap; }' +
+      'h3{ font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:#5b7473; margin:16px 0 6px; }' +
+      '.pasos{ margin:0; padding-left:20px; font-size:12.5px; line-height:1.7; } .pasos span{ color:#5b7473; }' +
+      '.respaldo{ display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; }' +
+      'figure{ margin:0; border:1px solid #ccc; border-radius:8px; padding:8px; text-align:center; }' +
+      'figure img{ display:block; max-width:100%; } .foto img{ max-height:320px; } .firma img{ max-height:140px; background:#fff; }' +
+      '.foto{ flex:1 1 300px; } .firma{ flex:0 1 260px; }' +
+      'figcaption{ font-size:11px; color:#5b7473; margin-top:6px; }' +
+      '.nota{ margin-top:18px; font-size:10px; color:#777; text-align:center; }' +
+      '@media (max-width:600px){ body{ padding:12px; } .datos{ grid-template-columns:1fr; } }' +
+      '@media print{ body{ padding:0; } .hoja{ margin-bottom:0; } }' +
+      '</style></head><body>' + paginas + '</body></html>'
+    );
+    win.document.close();
+    win.focus();
+    // Espera a que carguen la foto y la firma antes de abrir la impresión.
+    const imgs = [...win.document.images];
+    Promise.all(imgs.map(i => i.complete ? null : new Promise(ok => { i.onload = i.onerror = ok; setTimeout(ok, 4000); })))
+      .then(() => { try{ win.print(); }catch(err){} });
+  }
+  $('btnComprobantes').addEventListener('click', () => {
+    const rows = enRango() ? filasDelRango() : state.rows.filter(r => !filaVacia(r));
+    const n = numerar(rows);
+    abrirComprobantesEntrega(rows.map(r => ({ r, n: n.get(r) })));
+  });
+
+  /* ============================================================
      UBICACIÓN DEL CAMIÓN (GPS) Y SEGUIMIENTO PARA LA AGENCIA
      La posición va en hojasDeRuta/gps_AAAA-MM-DD (aparte de la ruta, para no
      reescribir los despachos cada 30 s). Solo se envía con Ruteka abierta.
@@ -6246,6 +6323,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       txt.textContent = r.estado === 'entregado' ? 'Recibió: ' + (e.recibidoPor || '—') + (e.horaEntrega ? ' · ' + e.horaEntrega : '') : 'Motivo: ' + (e.motivo || '—');
       pr.appendChild(txt);
       [miniaturaEh(e.fotoUrl, 'Foto de entrega'), miniaturaEh(e.firmaUrl, 'Firma', 'eh-firma')].forEach(x => { if(x instanceof Node) pr.appendChild(x); });
+      if(r.estado === 'entregado'){
+        const comp = document.createElement('button'); comp.type = 'button'; comp.className = 'seg-comprobante';
+        comp.textContent = '📄 Comprobante de entrega';
+        comp.addEventListener('click', () => abrirComprobantesEntrega([{ r, n }]));
+        pr.appendChild(comp);
+      }
       card.appendChild(pr);
     }
     return card;
@@ -6285,6 +6368,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const c = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
     rows.forEach(r => { c[r.estado] = (c[r.estado] || 0) + 1; });
     const cerrados = c.entregado + c['no-entregado'];
+    $('btnComprobantes').hidden = !c.entregado;
+    $('btnComprobantes').textContent = '📄 Comprobantes de entrega (' + c.entregado + ')';
     const pctRuta = rows.length ? Math.round(cerrados / rows.length * 100) : 0;
     $('segBarra').style.width = pctRuta + '%';
     if(!$('segBarraCamion').firstChild) $('segBarraCamion').innerHTML = CAMION_SVG;
