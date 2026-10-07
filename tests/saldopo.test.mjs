@@ -143,6 +143,28 @@ console.log('Saldo PO en el teléfono');
   await p.context().close();
 }
 
+console.log('Despachos de días anteriores a la fecha de la PO también descuentan');
+{
+  const po = { id: 'p1', numero: '88003875749', area: 'Trade', monto: 150000, fecha: '2026-10-07', cerrada: false, facturas: [] };
+  const r = (id, tarifa) => ({ id, cliente: 'Envío ' + id, direccion: 'Calle ' + id, comuna: 'Santiago', estado: 'entregado', tarifa, po: '88003875749' });
+  const seed = [
+    ['hojasDeRuta/po_indice', { json: JSON.stringify({ pos: [po] }) }],
+    ['hojasDeRuta/2026-10-03', { json: JSON.stringify({ titulo: 't', fecha: '2026-10-03', rows: [r('x1', 70000), r('x2', 50000)] }) }],
+    ['hojasDeRuta/2026-10-04', { json: JSON.stringify({ titulo: 't', fecha: '2026-10-04', rows: [r('x3', 30000), r('x4', '')] }) }],
+    ['hojasResumen/2026-10-03', { fecha: '2026-10-03', despachos: 2 }],
+    ['hojasResumen/2026-10-04', { fecha: '2026-10-04' }]
+  ];
+  const p = await open(b, { setup: `(() => { localStorage.setItem('hojaDeRuta_actual', '2026-10-08'); window.__fakeParams = { email: 'jefe@prueba.cl', admins: ['jefe@prueba.cl'], seed: ${JSON.stringify(seed)} }; })()`, width: 1280 });
+  await p.waitForTimeout(700);
+  await p.click('.side-item[data-view="saldopo"]'); await p.waitForTimeout(700);
+  const ley = (await p.textContent('.po-card[data-po="88003875749"] .po-leyenda')).replace(/\s+/g, ' ');
+  check('suma los 3 envíos aunque sean anteriores a la fecha de la PO (y aunque el resumen no traiga el conteo)', ley.includes('Por facturar $150.000') && ley.includes('Disponible $0'), ley);
+  check('avisa el despacho asignado sin tarifa', ley.includes('1 despacho(s) sin tarifa'), ley);
+  check('la PO queda al 100%', (await p.textContent('.po-card[data-po="88003875749"] .po-pct')) === '100%');
+  sinErrores(p);
+  await p.context().close();
+}
+
 console.log('El transportista no ve Saldo PO');
 {
   const p = await open(b, { setup: setup('trs@fletes.cl'), width: 1280 });
