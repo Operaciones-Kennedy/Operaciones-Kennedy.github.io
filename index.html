@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-07 · 1";
+const VERSION_APP = "2026-10-07 · 2";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -940,39 +940,97 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .guia-btns{ display:flex; gap:8px; flex-wrap:wrap; }
   .gps-card.activo{ border-color:var(--marca-principal-claro); background:var(--ok-bg); }
   .lp-depto-titulo{ margin:0; padding:14px 16px 0; font-size:15px; }
-  .po-form-card{ padding:16px; margin-bottom:18px; }
+  .po-header{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:10px 16px; }
+  .po-header > div{ flex:1 1 300px; }
+  .po-form-card{ padding:16px; margin-bottom:12px; }
   .po-form-card h2{ margin:0 0 12px; font-size:16px; }
   .po-form{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px 12px; align-items:end; }
   .po-form label{ display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:700; color:var(--muted); min-width:0; }
   .po-form input{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; font-weight:600; color:var(--text); background:#fff; min-width:0; }
   .po-form .po-ancho{ grid-column:span 2; }
   .po-form-btns{ display:flex; gap:8px; }
-  .po-msg{ margin:8px 0 0; font-size:13px; font-weight:700; color:var(--accent-dark); min-height:1em; }
+  .po-msg{ margin:0 0 10px; font-size:13px; font-weight:700; color:var(--accent-dark); }
+  .po-msg:empty{ display:none; }
   .po-msg.error{ color:#c2353a; }
-  .po-lista{ display:flex; flex-direction:column; gap:14px; margin-bottom:12px; }
-  .po-card{ padding:16px; }
-  .po-card.cerrada{ opacity:.72; }
+  .po-avisos{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .po-avisos:empty{ display:none; }
+  .po-aviso{ display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; font-size:13.5px; font-weight:600; background:#fff6e5; color:#8a5a00; border:1px solid #f3d9a4; cursor:pointer; text-align:left; font-family:inherit; }
+  .po-aviso.rojo{ background:#fdecec; color:#a32b30; border-color:#f4c2c4; }
+  .po-subtitulo{ font-size:15px; margin:18px 0 10px; }
+  .po-areas{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:12px; }
+  .po-area{ display:flex; align-items:center; gap:14px; padding:14px; border-radius:16px; border:2px solid transparent; background:var(--card, #fff); box-shadow:0 2px 10px rgba(15,76,92,.08); cursor:pointer; text-align:left; font-family:inherit; color:var(--text); }
+  .po-area:hover{ box-shadow:0 6px 18px rgba(15,76,92,.14); }
+  .po-area.activa{ border-color:var(--accent, #0B7A6B); }
+  .po-area h3{ margin:0 0 2px; font-size:15px; }
+  .po-area p{ margin:0; font-size:12.5px; color:var(--muted); line-height:1.45; }
+  .po-area p b{ color:var(--text); font-size:14px; }
+  .po-anillo{ flex:0 0 auto; position:relative; width:64px; height:64px; }
+  .po-anillo svg{ width:64px; height:64px; transform:rotate(-90deg); }
+  .po-anillo span{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; }
+  .sem-verde{ --sem:#14A38E; } .sem-ambar{ --sem:#E8A317; } .sem-rojo{ --sem:#E5484D; }
+  .po-lista-head{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .po-ver-cerradas{ font-size:13px; font-weight:700; color:var(--muted); display:flex; gap:6px; align-items:center; }
+  .po-lista{ display:flex; flex-direction:column; gap:12px; margin-bottom:12px; }
+  .po-card{ padding:16px; cursor:pointer; border-left:5px solid var(--sem, #14A38E); }
+  .po-card:hover{ box-shadow:0 6px 18px rgba(15,76,92,.14); }
+  .po-card.cerrada{ opacity:.7; border-left-color:#9aa5ad; }
   .po-head{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 12px; align-items:flex-start; }
-  .po-head h3{ margin:0; font-size:17px; }
-  .po-head p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
-  .po-chip{ font-size:11px; font-weight:800; border-radius:999px; padding:3px 9px; background:#dff5ef; color:#0B7A6B; text-transform:uppercase; letter-spacing:.04em; margin-left:6px; vertical-align:middle; }
-  .po-card.cerrada .po-chip{ background:#eceff1; color:#5b6670; }
-  .po-card.excedida .po-chip{ background:#fde4e4; color:#c2353a; }
-  .po-barra{ height:10px; border-radius:999px; background:#e6efee; margin:12px 0 10px; overflow:hidden; }
-  .po-barra div{ height:100%; background:linear-gradient(90deg, #14A38E, #3b82f6); border-radius:999px; }
-  .po-card.excedida .po-barra div{ background:#E5484D; }
-  .po-cifras{ display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:8px; }
-  .po-cifras div{ background:var(--bg, #f6f8f8); border-radius:10px; padding:8px 10px; }
-  .po-cifras small{ display:block; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
-  .po-cifras b{ font-size:16px; }
-  .po-cifras .po-saldo b{ color:#0B7A6B; }
-  .po-card.excedida .po-cifras .po-saldo b{ color:#c2353a; }
+  .po-head h3{ margin:0; font-size:17px; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+  .po-head p{ margin:3px 0 0; font-size:13px; color:var(--muted); }
+  .po-chip{ font-size:11px; font-weight:800; border-radius:999px; padding:3px 9px; background:#e8f2f1; color:#0B7A6B; text-transform:uppercase; letter-spacing:.04em; }
+  .po-chip.area{ background:#eef0fb; color:#3b4aa8; }
+  .po-chip.sem{ background:color-mix(in srgb, var(--sem) 16%, #fff); color:color-mix(in srgb, var(--sem) 80%, #000); }
+  .po-card.cerrada .po-chip.sem{ background:#eceff1; color:#5b6670; }
+  .po-pct{ font-size:22px; font-weight:800; color:var(--sem); line-height:1; }
+  .po-barra{ display:flex; height:14px; border-radius:999px; background:#e6efee; margin:12px 0 8px; overflow:hidden; }
+  .po-barra i{ display:block; height:100%; }
+  .po-barra .fac{ background:#0B7A6B; } .po-barra .pf{ background:#7cc7b9; } .po-barra .exc{ background:#E5484D; }
+  .po-leyenda{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted); }
+  .po-leyenda span{ display:inline-flex; align-items:center; gap:6px; }
+  .po-leyenda b{ color:var(--text); }
+  .po-leyenda i{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .po-leyenda .disp b{ color:var(--sem); font-size:14px; }
   .po-acciones{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-  .po-card details{ margin-top:12px; }
-  .po-card summary{ cursor:pointer; font-weight:700; font-size:13px; color:var(--accent-dark); }
-  .po-card .table-wrap{ margin-top:8px; }
-  .po-celda select{ border:1px solid var(--border); border-radius:6px; padding:4px 6px; font:inherit; font-size:12.5px; max-width:140px; background:#fff; }
-  @media (max-width: 520px){ .po-form .po-ancho{ grid-column:auto; } }
+  .po-acciones button{ font-size:13px; }
+  .po-velo{ position:fixed; inset:0; background:rgba(10,30,36,.38); z-index:60; }
+  .po-panel{ position:fixed; top:0; right:0; bottom:0; width:min(620px, 100vw); background:var(--bg, #f4f7f7); z-index:61; display:flex; flex-direction:column; box-shadow:-12px 0 40px rgba(10,30,36,.25); }
+  .po-panel-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:18px 20px 10px; background:#fff; border-bottom:1px solid var(--border); }
+  .po-panel-head h2{ margin:0; font-size:19px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .po-panel-head p{ margin:4px 0 0; font-size:13px; color:var(--muted); }
+  .po-panel-resumen{ padding:12px 20px; background:#fff; }
+  .po-panel-resumen .po-barra{ margin-top:4px; }
+  .po-tabs{ display:flex; gap:4px; padding:0 14px; background:#fff; border-bottom:1px solid var(--border); overflow-x:auto; }
+  .po-tabs button{ border:none; background:none; border-bottom:3px solid transparent; border-radius:0; padding:10px 12px; font-weight:700; color:var(--muted); white-space:nowrap; box-shadow:none; }
+  .po-tabs button.activo{ color:var(--accent-dark); border-bottom-color:var(--accent, #0B7A6B); }
+  .po-panel-cuerpo{ flex:1; overflow:auto; padding:16px 20px 28px; }
+  .po-visor{ width:100%; height:62vh; border:1px solid var(--border); border-radius:12px; background:#fff; }
+  img.po-visor{ height:auto; max-height:62vh; object-fit:contain; }
+  .po-subir{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:34px 16px; border:2px dashed var(--border); border-radius:14px; background:#fff; text-align:center; color:var(--muted); font-size:13.5px; cursor:pointer; }
+  .po-subir b{ color:var(--text); font-size:15px; }
+  .po-subir input{ display:none; }
+  .po-datos{ display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:13.5px; margin:14px 0; }
+  .po-datos dt{ color:var(--muted); font-weight:700; }
+  .po-datos dd{ margin:0; }
+  .po-fila-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .po-facturas{ display:flex; flex-direction:column; gap:8px; }
+  .po-factura{ display:flex; align-items:center; gap:12px; padding:10px 12px; background:#fff; border-radius:12px; border:1px solid var(--border); }
+  .po-factura .ico{ font-size:22px; }
+  .po-factura div{ flex:1; min-width:0; }
+  .po-factura b{ display:block; }
+  .po-factura small{ color:var(--muted); font-size:12px; }
+  .po-factura .monto{ font-weight:800; white-space:nowrap; }
+  .po-factura.detectada{ border-style:dashed; background:#fffdf5; }
+  .po-factura a, .po-factura button{ font-size:12.5px; }
+  .po-fac-form{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px 10px; align-items:end; margin-top:14px; padding:12px; background:#fff; border-radius:12px; border:1px solid var(--border); }
+  .po-fac-form label{ display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:700; color:var(--muted); }
+  .po-fac-form input{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; min-width:0; }
+  .po-fac-form .po-ancho{ grid-column:1 / -1; }
+  .po-total-fac{ display:flex; justify-content:space-between; font-weight:800; padding:10px 4px 0; }
+  .po-celda select{ border:1px solid var(--border); border-radius:6px; padding:4px 6px; font:inherit; font-size:12.5px; max-width:170px; background:#fff; }
+  .aviso-po{ margin:0 0 14px; padding:10px 14px; border-radius:12px; background:#fff6e5; color:#8a5a00; border:1px solid #f3d9a4; font-size:13.5px; font-weight:600; }
+  .aviso-po.rojo{ background:#fdecec; color:#a32b30; border-color:#f4c2c4; }
+  @media (max-width: 520px){ .po-form .po-ancho{ grid-column:auto; } .po-panel-head, .po-panel-resumen, .po-panel-cuerpo{ padding-left:14px; padding-right:14px; } }
+  .po-fila-btns .btn-link{ display:inline-flex; align-items:center; gap:4px; padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; font-weight:700; font-size:13px; color:var(--accent-dark); text-decoration:none; cursor:pointer; }
   .config-titulo2{ margin:22px 0 4px; font-size:18px; }
   .movil-sheet{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; }
   .movil-sheet-fondo{ position:absolute; inset:0; background:rgba(18,41,45,0.45); }
@@ -1495,6 +1553,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <h1>Despachos</h1>
       <p>Coordina las entregas del día con tu transportista — se actualiza en vivo para los dos.</p>
     </div>
+    <div class="aviso-po" id="avisoPO" role="status" hidden></div>
     <div class="aviso-sol" id="avisoSol" role="status" hidden>
       <span id="avisoSolTexto"></span>
       <button type="button" class="primary" id="avisoSolBtn">Revisar solicitudes</button>
@@ -1908,30 +1967,58 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   </div>
 
   <div id="viewSaldoPO" hidden>
-    <div class="content-header">
-      <h1>Saldo PO</h1>
-      <p>Tus órdenes de compra: cuánto se ha usado en despachos, cuánto facturó el proveedor y cuánto queda disponible.</p>
+    <div class="content-header po-header">
+      <div>
+        <h1>Saldo PO</h1>
+        <p>Tus órdenes de compra por área: cuánto se ha usado, qué facturó el proveedor y cuánto queda.</p>
+      </div>
+      <button type="button" class="primary" id="poNueva">＋ Nueva PO</button>
     </div>
-    <section class="card po-form-card">
+    <section class="card po-form-card" id="poFormCard" hidden>
       <h2 id="poFormTitulo">Nueva orden de compra</h2>
       <form id="poForm" class="po-form" autocomplete="off">
         <label><span>N° PO</span><input id="poNumero" required placeholder="Ej: 4500123456"></label>
+        <label><span>Área</span><input id="poArea" list="poAreasLista" placeholder="Ej: Trade"></label>
         <label><span>Proveedor</span><input id="poProveedor" placeholder="Ej: Transportes y Logística Barrientos"></label>
         <label><span>Monto (CLP)</span><input id="poMonto" type="number" min="1" step="1" required placeholder="250000"></label>
         <label><span>Fecha</span><input id="poFecha" type="date"></label>
         <label class="po-ancho"><span>Descripción</span><input id="poDescripcion" placeholder="Ej: Despachos eventos Halloween"></label>
-        <div class="po-form-btns"><button type="submit" class="primary" id="poGuardar">Guardar PO</button><button type="button" id="poCancelar" hidden>Cancelar</button></div>
+        <label class="po-ancho"><span>Documento de la PO (PDF o foto, opcional)</span><input id="poArchivo" type="file" accept="application/pdf,image/*"></label>
+        <div class="po-form-btns"><button type="submit" class="primary" id="poGuardar">Guardar PO</button><button type="button" id="poCancelar">Cancelar</button></div>
       </form>
-      <p class="po-msg" id="poMsg" role="status"></p>
+      <datalist id="poAreasLista"></datalist>
     </section>
+    <p class="po-msg" id="poMsg" role="status"></p>
+    <div class="po-avisos" id="poAvisos"></div>
     <section class="stat-grid">
       <div class="card stat-tile"><span class="stat-label">Monto PO abiertas</span><span class="stat-value" id="poTotal">$0</span><span class="stat-note" id="poAbiertas"></span></div>
       <div class="card stat-tile"><span class="stat-label">Usado en despachos</span><span class="stat-value" id="poUsado">$0</span></div>
       <div class="card stat-tile"><span class="stat-label">Saldo disponible</span><span class="stat-value" id="poSaldo">$0</span></div>
       <div class="card stat-tile"><span class="stat-label">Despachos sin PO</span><span class="stat-value" id="poSinPO">0</span><span class="stat-note" id="poSinPONota"></span></div>
     </section>
+    <h2 class="po-subtitulo">Por área</h2>
+    <div class="po-areas" id="poAreas"></div>
+    <div class="po-lista-head">
+      <h2 class="po-subtitulo" id="poListaTitulo">Órdenes de compra</h2>
+      <label class="po-ver-cerradas"><input type="checkbox" id="poVerCerradas"> Ver cerradas</label>
+    </div>
     <div class="po-lista" id="poLista"></div>
-    <p class="footer-note">Cada despacho se asigna a su PO en la columna <strong>PO</strong> de la Ruta del día (o con una columna «PO» en el Excel). <strong>Usado</strong> suma las tarifas de esos despachos; <strong>Facturado</strong>, las que ya tienen N° de factura (se anota en la Liquidación). El botón <strong>📄 Saldo PO</strong> arma el documento para imprimir o guardar en PDF.</p>
+    <p class="footer-note">Cada despacho se asigna a su PO en la columna <strong>PO</strong> de la Ruta del día (o con una columna «PO» en el Excel). <strong>Usado</strong> suma las tarifas de esos despachos; <strong>Facturado</strong> suma las facturas registradas en la PO (y las que aparecen anotadas en sus despachos). <strong>Saldo</strong> = monto de la PO − lo usado o facturado (lo que sea mayor).</p>
+
+    <div class="po-velo" id="poVelo" hidden></div>
+    <aside class="po-panel" id="poPanel" hidden aria-labelledby="poPanelTitulo">
+      <header class="po-panel-head">
+        <div><h2 id="poPanelTitulo"></h2><p id="poPanelSub"></p></div>
+        <button type="button" class="icon-btn" id="poPanelCerrar" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="po-panel-resumen" id="poPanelResumen"></div>
+      <nav class="po-tabs" role="tablist">
+        <button type="button" role="tab" data-tab="documento">📄 Documento</button>
+        <button type="button" role="tab" data-tab="facturas">🧾 Facturas</button>
+        <button type="button" role="tab" data-tab="despachos">🚚 Despachos</button>
+      </nav>
+      <div class="po-panel-cuerpo" id="poPanelCuerpo"></div>
+    </aside>
   </div>
 
   <div id="viewLiqPeriodo" hidden>
@@ -2108,6 +2195,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   let poUnsub = null;
   let poDespachos = { rows: [], cargando: false, cargado: false };
   let poEditando = null;
+  let poFiltroArea = '';
+  let poAbierta = null, poTab = 'documento';
   function makePOCell(row){
     const td = document.createElement('td');
     td.className = 'po-celda';
@@ -2115,10 +2204,24 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     sel.setAttribute('aria-label', 'Orden de compra');
     sel.appendChild(new Option('—', ''));
     const actual = row.po || '';
-    poLista.filter(po => !po.cerrada || po.numero === actual).forEach(po => sel.appendChild(new Option(po.numero + (po.cerrada ? ' (cerrada)' : ''), po.numero)));
+    const todas = poDespachos.cargado ? despachosParaPO() : null;
+    poLista.filter(po => !po.cerrada || po.numero === actual).forEach(po => {
+      let txt = po.numero + (po.area ? ' · ' + po.area : '');
+      if(po.cerrada) txt += ' (cerrada)';
+      else if(todas) txt += ' · queda ' + formatMoney(resumenPO(po, todas).saldo);
+      sel.appendChild(new Option(txt, po.numero));
+    });
     if(actual && !poLista.some(po => po.numero === actual)) sel.appendChild(new Option(actual + ' (no registrada)', actual));
     sel.value = actual;
-    sel.addEventListener('change', () => { row.po = sel.value; commit(); });
+    sel.addEventListener('change', () => {
+      row.po = sel.value;
+      commit();
+      if(!row.departamento && sel.value){
+        const po = poLista.find(p => p.numero === sel.value);
+        if(po && po.area){ row.departamento = po.area; commit(); renderRows(); }
+      }
+      avisoAsignarPO(sel.value);
+    });
     td.appendChild(sel);
     return td;
   }
@@ -3878,20 +3981,29 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     XLSX.writeFile(wb, 'rutas-' + periodo.desde + '-al-' + periodo.hasta + '.xlsx');
   });
 
-  /* ---------- Saldo PO: órdenes de compra y cuánto queda de cada una ---------- */
+  /* ---------- Saldo PO: órdenes de compra por área, su documento, facturas y saldo ---------- */
   function poAjustarRol(){
     const debe = !!db && !sinSesion() && !modoTransportista;
     if(debe && !poUnsub){
       poUnsub = db.collection('hojasDeRuta').doc(PO_DOC).onSnapshot(sn => {
         const d = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : null;
         poLista = (d && d.pos) || [];
-        if(currentView === 'saldopo') renderSaldoPO();
-        if(currentView === 'despachos' && !isEditingNow()) renderRows();
+        // Con PO registradas se cargan los despachos de fondo, para mostrar el saldo al asignar.
+        if(poLista.length && !poDespachos.cargado && !poDespachos.cargando) cargarDespachosPO();
+        pintarTodoPO();
       }, err => { poUnsub = null; if(!sinSesion()) console.warn('No se pudieron leer las órdenes de compra', err); });
     } else if(!debe && poUnsub){
       try{ poUnsub(); }catch(e){}
       poUnsub = null; poLista = []; poDespachos = { rows: [], cargando: false, cargado: false };
+      cerrarPanelPO();
     }
+  }
+  // Las PO cambiaron: se repinta lo visible; la tabla de la Ruta del día, al volver a ella.
+  let poTablaVieja = false;
+  function pintarTodoPO(){
+    if(currentView === 'saldopo') renderSaldoPO();
+    if(currentView === 'despachos' && !isEditingNow()){ renderRows(); poTablaVieja = false; }
+    else poTablaVieja = true;
   }
   // Cambia la lista de PO en una transacción (por si dos administradores editan a la vez).
   async function guardarPOs(cambiar){
@@ -3906,8 +4018,18 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       return { pos, res };
     });
     poLista = final.pos;
-    renderSaldoPO();
+    pintarTodoPO();
     return final.res;
+  }
+  // Sube el PDF o la foto de una PO o de una factura (Storage: hojasDeRuta/po/…).
+  async function subirArchivoPO(poId, file){
+    if(!file) return null;
+    if(file.size > 15 * 1024 * 1024) throw new Error('El archivo pesa más de 15 MB.');
+    const tipo = file.type || 'application/pdf';
+    if(!/^image\//.test(tipo) && tipo !== 'application/pdf') throw new Error('Sube un PDF o una foto.');
+    const nombre = (file.name || 'archivo').replace(/[^\w.-]+/g, '_').slice(-60);
+    const r = await uploadBlob('hojasDeRuta/po/' + poId + '/' + Date.now() + '-' + nombre, file, tipo);
+    return { url: r.url, path: r.path, nombre: file.name || nombre, tipo, subidoAt: new Date().toISOString() };
   }
   // Todos los despachos guardados (desde la fecha de la PO más antigua), para sumar lo usado.
   async function cargarDespachosPO(){
@@ -3930,10 +4052,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }catch(err){
       console.error(err);
       poDespachos.cargando = false;
-      $('poMsg').className = 'po-msg error';
-      $('poMsg').textContent = 'No se pudieron cargar los despachos (revisa la conexión).';
+      mensajePO('No se pudieron cargar los despachos (revisa la conexión).', true);
     }
-    renderSaldoPO();
+    pintarTodoPO();
+    if(poAbierta) pintarPanelPO();
   }
   // Despachos de todas las rutas; el día abierto se toma de este dispositivo (lo más nuevo).
   function despachosParaPO(){
@@ -3941,129 +4063,384 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return poDespachos.rows.filter(r => r._fecha !== hojaId).concat(abiertos)
       .sort((a, b) => a._fecha.localeCompare(b._fecha));
   }
+  // Usado = tarifas de sus despachos. Facturado = facturas registradas en la PO + las que solo
+  // aparecen anotadas en sus despachos. Saldo = monto − lo mayor entre usado y facturado.
   function resumenPO(po, todas){
     const rows = todas.filter(r => (r.po || '') === po.numero);
     const usado = rows.reduce((t, r) => t + (Number(r.tarifa) || 0), 0);
-    const facturado = rows.filter(r => r.numeroFactura).reduce((t, r) => t + (Number(r.tarifa) || 0), 0);
-    const monto = Number(po.monto) || 0;
-    const facturas = new Map();
-    rows.filter(r => r.numeroFactura).forEach(r => {
-      const f = facturas.get(r.numeroFactura) || { numero: r.numeroFactura, despachos: 0, monto: 0 };
-      f.despachos++; f.monto += Number(r.tarifa) || 0;
-      facturas.set(r.numeroFactura, f);
+    const registradas = (po.facturas || []).map(f => Object.assign({}, f, { registrada: true, despachos: rows.filter(r => r.numeroFactura === f.numero).length }));
+    const conocidas = new Set(registradas.map(f => f.numero.toLowerCase()));
+    const detectadas = new Map();
+    rows.filter(r => r.numeroFactura && !conocidas.has(String(r.numeroFactura).toLowerCase())).forEach(r => {
+      const f = detectadas.get(r.numeroFactura) || { numero: r.numeroFactura, monto: 0, despachos: 0, fecha: r._fecha, registrada: false };
+      f.monto += Number(r.tarifa) || 0; f.despachos++;
+      detectadas.set(r.numeroFactura, f);
     });
-    return { rows, usado, facturado, porFacturar: usado - facturado, saldo: monto - usado, monto, facturas: [...facturas.values()] };
+    const facturas = registradas.concat([...detectadas.values()]);
+    const facturado = facturas.reduce((t, f) => t + (Number(f.monto) || 0), 0);
+    const monto = Number(po.monto) || 0;
+    const comprometido = Math.max(usado, facturado);
+    const pct = monto ? Math.round(comprometido / monto * 100) : 0;
+    return { rows, usado, facturado, porFacturar: Math.max(0, usado - facturado), saldo: monto - comprometido, monto, pct, facturas, sem: semaforoPO(pct) };
   }
+  const semaforoPO = pct => pct >= 90 ? 'rojo' : pct >= 70 ? 'ambar' : 'verde';
   const fechaDMA = f => (f || '').split('-').reverse().join('/');
+  const areaDe = po => (po.area || '').trim() || 'Sin área';
+  function mensajePO(txt, error){
+    const m = $('poMsg');
+    m.className = 'po-msg' + (error ? ' error' : '');
+    m.textContent = txt || '';
+  }
+  // Anillo SVG con el porcentaje usado (colores del semáforo).
+  function anilloPO(pct, sem){
+    const C = 2 * Math.PI * 26, p = Math.min(100, Math.max(0, pct)) / 100;
+    const d = document.createElement('div');
+    d.className = 'po-anillo sem-' + sem;
+    d.innerHTML = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="26" fill="none" stroke="#e6efee" stroke-width="8"/>' +
+      (p > 0 ? '<circle cx="32" cy="32" r="26" fill="none" stroke="var(--sem)" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + (C * p).toFixed(1) + ' ' + C.toFixed(1) + '"/>' : '') + '</svg><span>' + pct + '%</span>';
+    return d;
+  }
+  // Barra en tres partes: facturado, usado por facturar y disponible (o excedido).
+  function barraPO(r){
+    const b = document.createElement('div'); b.className = 'po-barra';
+    const base = Math.max(r.monto, r.usado, r.facturado) || 1;
+    const parte = (cls, v, t) => { if(v <= 0) return; const i = document.createElement('i'); i.className = cls; i.style.width = (v / base * 100) + '%'; i.title = t + ': ' + formatMoney(v); b.appendChild(i); };
+    parte('fac', Math.min(r.facturado, r.monto), 'Facturado');
+    parte('pf', Math.min(r.porFacturar, Math.max(0, r.monto - r.facturado)), 'Por facturar');
+    parte('exc', Math.max(0, -r.saldo), 'Excedido');
+    return b;
+  }
+  function leyendaPO(r){
+    const l = document.createElement('div'); l.className = 'po-leyenda';
+    l.innerHTML = '<span><i style="background:#0B7A6B"></i>Facturado <b>' + formatMoney(r.facturado) + '</b></span>' +
+      '<span><i style="background:#7cc7b9"></i>Por facturar <b>' + formatMoney(r.porFacturar) + '</b></span>' +
+      '<span class="disp"><i style="background:' + (r.saldo < 0 ? '#E5484D' : '#e6efee') + '"></i>' + (r.saldo < 0 ? 'Excedida en' : 'Disponible') + ' <b>' + formatMoney(Math.abs(r.saldo)) + '</b></span>' +
+      '<span>de <b>' + formatMoney(r.monto) + '</b></span>';
+    return l;
+  }
   function renderSaldoPO(){
     if($('viewSaldoPO').hidden) return;
     const todas = despachosParaPO();
+    const resumenes = new Map(poLista.map(po => [po.id, resumenPO(po, todas)]));
     const abiertas = poLista.filter(po => !po.cerrada);
-    let total = 0, usado = 0;
-    abiertas.forEach(po => { const r = resumenPO(po, todas); total += r.monto; usado += r.usado; });
+    let total = 0, comprometido = 0, usado = 0;
+    abiertas.forEach(po => { const r = resumenes.get(po.id); total += r.monto; usado += r.usado; comprometido += r.monto - r.saldo; });
     $('poTotal').textContent = formatMoney(total);
     $('poAbiertas').textContent = abiertas.length + ' abierta(s) de ' + poLista.length;
     $('poUsado').textContent = formatMoney(usado);
-    $('poSaldo').textContent = formatMoney(total - usado);
+    $('poSaldo').textContent = formatMoney(total - comprometido);
     const sinPO = todas.filter(r => !r.po && Number(r.tarifa));
     $('poSinPO').textContent = sinPO.length;
     $('poSinPONota').textContent = poDespachos.cargando ? 'Cargando…' : (sinPO.length ? formatMoney(sinPO.reduce((t, r) => t + (Number(r.tarifa) || 0), 0)) + ' sin asignar' + (poDespachos.desde ? ' desde el ' + fechaDMA(poDespachos.desde) : '') : 'Todo asignado');
+    // Sugerencias de área: las de las PO y los departamentos de los despachos.
+    const areas = [...new Set(poLista.map(po => (po.area || '').trim()).concat(todas.map(r => (r.departamento || '').trim())).filter(Boolean))].sort();
+    $('poAreasLista').innerHTML = areas.map(a => '<option value="' + escapeHtml(a) + '">').join('');
+    // Avisos: PO abiertas que van en 85% o más.
+    const avisos = $('poAvisos');
+    avisos.innerHTML = '';
+    abiertas.map(po => [po, resumenes.get(po.id)]).filter(([, r]) => r.pct >= 85).sort((a, b) => b[1].pct - a[1].pct).forEach(([po, r]) => {
+      const a = document.createElement('button'); a.type = 'button';
+      a.className = 'po-aviso' + (r.saldo < 0 ? ' rojo' : '');
+      a.textContent = r.saldo < 0
+        ? '⛔ La PO ' + po.numero + ' (' + areaDe(po) + ') se excedió en ' + formatMoney(-r.saldo) + '.'
+        : '⚠️ La PO ' + po.numero + ' (' + areaDe(po) + ') va en ' + r.pct + '%: quedan ' + formatMoney(r.saldo) + '.';
+      a.addEventListener('click', () => abrirPanelPO(po.id, 'despachos'));
+      avisos.appendChild(a);
+    });
+    // Tarjetas por área (de las PO abiertas).
+    const porArea = new Map();
+    abiertas.forEach(po => {
+      const k = areaDe(po), r = resumenes.get(po.id);
+      const x = porArea.get(k) || { monto: 0, comprometido: 0, n: 0 };
+      x.monto += r.monto; x.comprometido += r.monto - r.saldo; x.n++;
+      porArea.set(k, x);
+    });
+    if(poFiltroArea && !porArea.has(poFiltroArea) && !poLista.some(po => areaDe(po) === poFiltroArea)) poFiltroArea = '';
+    const cont = $('poAreas');
+    cont.innerHTML = '';
+    const tarjetaArea = (nombre, x, valor) => {
+      const pct = x.monto ? Math.round(x.comprometido / x.monto * 100) : 0;
+      const saldo = x.monto - x.comprometido;
+      const b = document.createElement('button'); b.type = 'button';
+      b.className = 'po-area' + (poFiltroArea === valor ? ' activa' : '');
+      b.dataset.area = valor;
+      b.appendChild(anilloPO(pct, semaforoPO(pct)));
+      const t = document.createElement('div');
+      t.innerHTML = '<h3>' + escapeHtml(nombre) + '</h3><p>' + (saldo < 0 ? '⛔ Excedida <b>' + formatMoney(-saldo) + '</b>' : 'Saldo <b>' + formatMoney(saldo) + '</b>') + '<br>' + x.n + ' PO abierta(s) · ' + formatMoney(x.monto) + '</p>';
+      b.appendChild(t);
+      b.addEventListener('click', () => { poFiltroArea = poFiltroArea === valor ? '' : valor; renderSaldoPO(); });
+      cont.appendChild(b);
+    };
+    if(porArea.size){
+      tarjetaArea('Todas las áreas', { monto: total, comprometido, n: abiertas.length }, '');
+      [...porArea.entries()].sort((a, b) => b[1].monto - a[1].monto).forEach(([k, x]) => tarjetaArea(k, x, k));
+    } else cont.innerHTML = '<p class="chart-empty card" style="padding:16px;margin:0">Sin PO abiertas.</p>';
+    // Lista de PO (filtrada por área; las cerradas solo si se pide).
+    const verCerradas = $('poVerCerradas').checked;
+    $('poListaTitulo').textContent = poFiltroArea ? 'Órdenes de compra · ' + poFiltroArea : 'Órdenes de compra';
     const lista = $('poLista');
     lista.innerHTML = '';
     if(!poLista.length){
-      lista.innerHTML = '<p class="chart-empty card" style="padding:18px">Aún no hay órdenes de compra. Registra la primera arriba.</p>';
+      lista.innerHTML = '<p class="chart-empty card" style="padding:18px">Aún no hay órdenes de compra. Usa «＋ Nueva PO» para registrar la primera.</p>';
       return;
     }
-    const orden = poLista.slice().sort((a, b) => (a.cerrada - b.cerrada) || (b.fecha || '').localeCompare(a.fecha || ''));
-    orden.forEach(po => lista.appendChild(tarjetaPO(po, resumenPO(po, todas))));
+    const visibles = poLista.filter(po => (verCerradas || !po.cerrada) && (!poFiltroArea || areaDe(po) === poFiltroArea))
+      .sort((a, b) => (a.cerrada - b.cerrada) || resumenes.get(b.id).pct - resumenes.get(a.id).pct);
+    if(!visibles.length) lista.innerHTML = '<p class="chart-empty card" style="padding:18px">No hay PO ' + (verCerradas ? '' : 'abiertas ') + 'en esta área.</p>';
+    visibles.forEach(po => lista.appendChild(tarjetaPO(po, resumenes.get(po.id))));
+    if(poAbierta) pintarPanelPO();
+  }
+  function chipsPO(po, r){
+    return '<span class="po-chip area">' + escapeHtml(areaDe(po)) + '</span>' +
+      '<span class="po-chip sem">' + (po.cerrada ? 'Cerrada' : r.saldo < 0 ? 'Excedida' : r.pct >= 90 ? 'Por agotarse' : r.pct >= 70 ? 'Atención' : 'Con saldo') + '</span>';
   }
   function tarjetaPO(po, r){
     const card = document.createElement('section');
-    const excedida = r.saldo < 0;
-    card.className = 'card po-card' + (po.cerrada ? ' cerrada' : '') + (excedida ? ' excedida' : '');
+    card.className = 'card po-card sem-' + r.sem + (po.cerrada ? ' cerrada' : '');
     card.dataset.po = po.numero;
     const head = document.createElement('div'); head.className = 'po-head';
     const izq = document.createElement('div');
-    const h = document.createElement('h3'); h.textContent = 'PO ' + po.numero;
-    const chip = document.createElement('span'); chip.className = 'po-chip'; chip.textContent = po.cerrada ? 'Cerrada' : (excedida ? 'Excedida' : 'Abierta');
-    h.appendChild(chip); izq.appendChild(h);
-    const sub = document.createElement('p');
-    sub.textContent = [po.proveedor, po.descripcion, po.fecha ? 'Emitida el ' + fechaDMA(po.fecha) : ''].filter(Boolean).join(' · ');
-    izq.appendChild(sub);
-    head.appendChild(izq);
-    card.appendChild(head);
-    const barra = document.createElement('div'); barra.className = 'po-barra';
-    const fill = document.createElement('div'); fill.style.width = Math.min(100, r.monto ? Math.round(r.usado / r.monto * 100) : 0) + '%';
-    barra.appendChild(fill); card.appendChild(barra);
-    const cifras = document.createElement('div'); cifras.className = 'po-cifras';
-    [['Monto PO', formatMoney(r.monto), ''], ['Usado', formatMoney(r.usado) + ' · ' + r.rows.length + ' desp.', ''], ['Facturado', formatMoney(r.facturado), ''], ['Por facturar', formatMoney(r.porFacturar), ''], [excedida ? 'Excedida en' : 'Saldo', formatMoney(Math.abs(r.saldo)), 'po-saldo']].forEach(([t, v, cls]) => {
-      const d = document.createElement('div'); if(cls) d.className = cls;
-      const sm = document.createElement('small'); sm.textContent = t;
-      const b = document.createElement('b'); b.textContent = v;
-      d.append(sm, b); cifras.appendChild(d);
-    });
-    card.appendChild(cifras);
+    izq.innerHTML = '<h3>PO ' + escapeHtml(po.numero) + ' ' + chipsPO(po, r) + '</h3><p>' + escapeHtml([po.proveedor, po.descripcion, po.fecha ? 'Emitida el ' + fechaDMA(po.fecha) : ''].filter(Boolean).join(' · ')) + '</p>';
+    const pct = document.createElement('div'); pct.className = 'po-pct'; pct.textContent = r.pct + '%'; pct.title = 'Usado o facturado';
+    head.append(izq, pct);
+    card.append(head, barraPO(r), leyendaPO(r));
     const acc = document.createElement('div'); acc.className = 'po-acciones';
-    const btn = (txt, accion, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; b.dataset.acc = accion; if(cls) b.className = cls; b.addEventListener('click', fn); acc.appendChild(b); return b; };
-    btn('📄 Saldo PO', 'documento', 'primary', () => abrirDocumentoPO(po, r));
-    btn('📊 Excel', 'excel', 'excel', () => excelPO(po, r));
-    btn('✏️ Editar', 'editar', '', () => editarPO(po));
-    btn(po.cerrada ? '↩️ Reabrir' : '🔒 Cerrar PO', 'cerrar', '', async () => {
-      try{ await guardarPOs(pos => { const x = pos.find(p => p.id === po.id); if(x) x.cerrada = !x.cerrada; }); renderRows(); }
-      catch(err){ console.error(err); showDialog('No se pudo guardar el cambio (revisa la conexión).'); }
-    });
-    btn('🗑 Eliminar', 'eliminar', 'danger', async () => {
-      if(r.rows.length){ showDialog('Esta PO tiene ' + r.rows.length + ' despacho(s) asignado(s). Quítale la PO a esos despachos o ciérrala en vez de eliminarla.'); return; }
-      if(!confirm('¿Eliminar la PO ' + po.numero + '?')) return;
-      try{ await guardarPOs(pos => { const i = pos.findIndex(p => p.id === po.id); if(i >= 0) pos.splice(i, 1); }); renderRows(); }
-      catch(err){ console.error(err); showDialog('No se pudo eliminar (revisa la conexión).'); }
+    [['📄 Ver PO' + (po.archivo ? '' : ' (sin archivo)'), 'documento'], ['🧾 Facturas (' + r.facturas.length + ')', 'facturas'], ['🚚 Despachos (' + r.rows.length + ')', 'despachos']].forEach(([txt, tab]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; b.dataset.acc = tab;
+      b.addEventListener('click', e => { e.stopPropagation(); abrirPanelPO(po.id, tab); });
+      acc.appendChild(b);
     });
     card.appendChild(acc);
-    if(r.rows.length){
-      const det = document.createElement('details');
-      const sm = document.createElement('summary'); sm.textContent = 'Ver despachos (' + r.rows.length + ')' + (r.facturas.length ? ' y facturas (' + r.facturas.length + ')' : '');
-      det.appendChild(sm);
-      const wrap = document.createElement('div'); wrap.className = 'table-wrap';
-      const t = document.createElement('table'); t.className = 'hist-table';
-      t.innerHTML = '<thead><tr><th>Fecha</th><th>Cliente</th><th>Departamento</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th></tr></thead>';
-      const tb = document.createElement('tbody');
-      r.rows.forEach(x => {
-        const tr = document.createElement('tr');
-        const td = c => { const e = document.createElement('td'); if(c instanceof Node) e.appendChild(c); else e.textContent = c; tr.appendChild(e); };
-        td(enlaceFecha(x._fecha)); td(x.cliente || '(sin cliente)'); td(x.departamento || '—');
-        td((ESTADOS.find(e => e.value === x.estado) || ESTADOS[0]).label); td(x.numeroFactura || '—'); td(formatMoney(x.tarifa));
-        tb.appendChild(tr);
-      });
-      t.appendChild(tb); wrap.appendChild(t); det.appendChild(wrap);
-      card.appendChild(det);
-    }
+    card.addEventListener('click', () => abrirPanelPO(po.id, 'documento'));
     return card;
   }
+  /* ----- Panel lateral de la PO: Documento, Facturas y Despachos ----- */
+  function abrirPanelPO(id, tab){
+    poAbierta = id; poTab = tab || 'documento';
+    $('poPanel').hidden = false; $('poVelo').hidden = false;
+    document.body.classList.add('po-panel-abierto');
+    pintarPanelPO();
+  }
+  function cerrarPanelPO(){
+    poAbierta = null;
+    $('poPanel').hidden = true; $('poVelo').hidden = true;
+    document.body.classList.remove('po-panel-abierto');
+  }
+  $('poPanelCerrar').addEventListener('click', cerrarPanelPO);
+  $('poVelo').addEventListener('click', cerrarPanelPO);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && poAbierta) cerrarPanelPO(); });
+  $('poPanel').querySelectorAll('.po-tabs button').forEach(b => b.addEventListener('click', () => { poTab = b.dataset.tab; pintarPanelPO(); }));
+  function pintarPanelPO(){
+    const po = poLista.find(p => p.id === poAbierta);
+    if(!po){ cerrarPanelPO(); return; }
+    const r = resumenPO(po, despachosParaPO());
+    $('poPanelTitulo').innerHTML = 'PO ' + escapeHtml(po.numero) + ' ' + chipsPO(po, r);
+    $('poPanelTitulo').className = 'sem-' + r.sem;
+    $('poPanelSub').textContent = [po.proveedor, po.descripcion].filter(Boolean).join(' · ');
+    const res = $('poPanelResumen');
+    res.className = 'po-panel-resumen sem-' + r.sem;
+    res.innerHTML = '';
+    res.append(barraPO(r), leyendaPO(r));
+    $('poPanel').querySelectorAll('.po-tabs button').forEach(b => {
+      b.classList.toggle('activo', b.dataset.tab === poTab);
+      b.setAttribute('aria-selected', b.dataset.tab === poTab ? 'true' : 'false');
+      if(b.dataset.tab === 'facturas') b.textContent = '🧾 Facturas (' + r.facturas.length + ')';
+      if(b.dataset.tab === 'despachos') b.textContent = '🚚 Despachos (' + r.rows.length + ')';
+    });
+    const c = $('poPanelCuerpo');
+    c.innerHTML = '';
+    if(poTab === 'documento') panelDocumento(c, po, r);
+    if(poTab === 'facturas') panelFacturas(c, po, r);
+    if(poTab === 'despachos') panelDespachos(c, po, r);
+  }
+  function botonPO(txt, acc, cls, fn){
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; if(acc) b.dataset.acc = acc; if(cls) b.className = cls;
+    b.addEventListener('click', fn); return b;
+  }
+  function zonaSubir(texto, alElegir){
+    const z = document.createElement('label'); z.className = 'po-subir';
+    z.innerHTML = '<span style="font-size:30px">📎</span><b>' + escapeHtml(texto) + '</b><span>PDF o foto · hasta 15 MB</span>';
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/pdf,image/*';
+    inp.addEventListener('change', () => { if(inp.files[0]) alElegir(inp.files[0]); });
+    z.appendChild(inp);
+    return z;
+  }
+  function visorArchivo(a){
+    if(/^image\//.test(a.tipo || '')){ const img = document.createElement('img'); img.className = 'po-visor'; img.src = a.url; img.alt = a.nombre || 'Documento'; return img; }
+    const f = document.createElement('iframe'); f.className = 'po-visor'; f.src = a.url; f.title = a.nombre || 'Documento de la PO'; return f;
+  }
+  async function cambiarArchivoPO(po, file){
+    mensajePO('Subiendo el documento…');
+    try{
+      const archivo = await subirArchivoPO(po.id, file);
+      await guardarPOs(pos => { const x = pos.find(p => p.id === po.id); if(x) x.archivo = archivo; });
+      mensajePO('✅ Documento de la PO ' + po.numero + ' guardado.');
+    }catch(err){ console.error(err); mensajePO('No se pudo subir el documento: ' + (err.message || 'revisa la conexión') , true); showDialog('No se pudo subir el documento. ' + (err.message || '')); }
+  }
+  function panelDocumento(c, po, r){
+    if(po.archivo){
+      c.appendChild(visorArchivo(po.archivo));
+      const fila = document.createElement('div'); fila.className = 'po-fila-btns';
+      const a = document.createElement('a'); a.href = po.archivo.url; a.target = '_blank'; a.rel = 'noopener'; a.className = 'btn-link'; a.textContent = '↗ Abrir en otra pestaña';
+      fila.appendChild(a);
+      const reemplazar = document.createElement('label'); reemplazar.className = 'btn-link po-reemplazar'; reemplazar.textContent = '🔁 Reemplazar archivo';
+      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/pdf,image/*'; inp.hidden = true;
+      inp.addEventListener('change', () => { if(inp.files[0]) cambiarArchivoPO(po, inp.files[0]); });
+      reemplazar.appendChild(inp); fila.appendChild(reemplazar);
+      c.appendChild(fila);
+    } else c.appendChild(zonaSubir('Sube el documento de la PO', f => cambiarArchivoPO(po, f)));
+    const dl = document.createElement('dl'); dl.className = 'po-datos';
+    [['N° PO', po.numero], ['Área', areaDe(po)], ['Proveedor', po.proveedor || '—'], ['Monto', formatMoney(r.monto)], ['Fecha', po.fecha ? fechaDMA(po.fecha) : '—'], ['Descripción', po.descripcion || '—'], ['Estado', po.cerrada ? 'Cerrada' : 'Abierta']].forEach(([k, v]) => {
+      const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; dl.append(dt, dd);
+    });
+    c.appendChild(dl);
+    const acc = document.createElement('div'); acc.className = 'po-fila-btns';
+    acc.append(
+      botonPO('📄 Saldo PO', 'documento', 'primary', () => abrirDocumentoPO(po, r)),
+      botonPO('📊 Excel', 'excel', 'excel', () => excelPO(po, r)),
+      botonPO('✏️ Editar', 'editar', '', () => { cerrarPanelPO(); editarPO(po); }),
+      botonPO(po.cerrada ? '↩️ Reabrir' : '🔒 Cerrar PO', 'cerrar', '', async () => {
+        try{ await guardarPOs(pos => { const x = pos.find(p => p.id === po.id); if(x) x.cerrada = !x.cerrada; }); }
+        catch(err){ console.error(err); showDialog('No se pudo guardar el cambio (revisa la conexión).'); }
+      }),
+      botonPO('🗑 Eliminar', 'eliminar', 'danger', async () => {
+        if(r.rows.length){ showDialog('Esta PO tiene ' + r.rows.length + ' despacho(s) asignado(s). Quítale la PO a esos despachos o ciérrala en vez de eliminarla.'); return; }
+        if(!confirm('¿Eliminar la PO ' + po.numero + '?')) return;
+        try{ await guardarPOs(pos => { const i = pos.findIndex(p => p.id === po.id); if(i >= 0) pos.splice(i, 1); }); cerrarPanelPO(); }
+        catch(err){ console.error(err); showDialog('No se pudo eliminar (revisa la conexión).'); }
+      })
+    );
+    c.appendChild(acc);
+  }
+  function panelFacturas(c, po, r, prellenar){
+    const lista = document.createElement('div'); lista.className = 'po-facturas';
+    if(!r.facturas.length) lista.innerHTML = '<p class="chart-empty">Aún no hay facturas asociadas a esta PO.</p>';
+    r.facturas.forEach(f => {
+      const d = document.createElement('div'); d.className = 'po-factura' + (f.registrada ? '' : ' detectada');
+      d.dataset.factura = f.numero;
+      const info = document.createElement('div');
+      info.innerHTML = '<b>Factura ' + escapeHtml(f.numero) + '</b><small>' + escapeHtml([f.fecha ? fechaDMA(f.fecha) : '', f.despachos ? f.despachos + ' despacho(s)' : '', f.registrada ? '' : 'anotada en los despachos, sin registrar'].filter(Boolean).join(' · ')) + '</small>';
+      const ico = document.createElement('span'); ico.className = 'ico'; ico.textContent = f.registrada ? '🧾' : '📝';
+      const monto = document.createElement('span'); monto.className = 'monto'; monto.textContent = formatMoney(f.monto);
+      d.append(ico, info, monto);
+      if(f.archivo){ const a = document.createElement('a'); a.href = f.archivo.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = '📎 Ver'; d.appendChild(a); }
+      if(f.registrada){
+        d.appendChild(botonPO('✕', 'quitar-factura', 'icon-btn', async () => {
+          if(!confirm('¿Quitar la factura ' + f.numero + ' de la PO?')) return;
+          try{ await guardarPOs(pos => { const x = pos.find(p => p.id === po.id); if(x) x.facturas = (x.facturas || []).filter(y => y.id !== f.id); }); }
+          catch(err){ console.error(err); showDialog('No se pudo quitar la factura (revisa la conexión).'); }
+        }));
+      } else d.appendChild(botonPO('Registrar', 'registrar-factura', '', () => { panelFacturasCon(po, { numero: f.numero, monto: f.monto, fecha: '' }); }));
+      lista.appendChild(d);
+    });
+    c.appendChild(lista);
+    if(r.facturas.length){
+      const t = document.createElement('div'); t.className = 'po-total-fac';
+      t.innerHTML = '<span>Total facturado</span><span>' + formatMoney(r.facturado) + '</span>';
+      c.appendChild(t);
+    }
+    const f = document.createElement('form'); f.className = 'po-fac-form'; f.id = 'poFacForm';
+    f.innerHTML = '<label><span>N° factura</span><input name="numero" required></label>' +
+      '<label><span>Fecha</span><input name="fecha" type="date"></label>' +
+      '<label><span>Monto (CLP)</span><input name="monto" type="number" min="1" step="1" required></label>' +
+      '<label class="po-ancho"><span>PDF o foto de la factura (opcional)</span><input name="archivo" type="file" accept="application/pdf,image/*"></label>' +
+      '<div><button type="submit" class="primary">＋ Agregar factura</button></div>';
+    if(prellenar){ f.numero.value = prellenar.numero || ''; f.monto.value = prellenar.monto || ''; f.fecha.value = prellenar.fecha || ''; }
+    f.addEventListener('submit', async e => {
+      e.preventDefault();
+      const numero = f.numero.value.trim(), monto = Math.round(Number(f.monto.value) || 0);
+      if(!numero || monto <= 0) return;
+      if((po.facturas || []).some(x => x.numero.toLowerCase() === numero.toLowerCase())){ showDialog('La factura ' + numero + ' ya está registrada en esta PO.'); return; }
+      const btn = f.querySelector('button[type="submit"]'); btn.disabled = true; btn.textContent = 'Guardando…';
+      try{
+        const archivo = f.archivo.files[0] ? await subirArchivoPO(po.id, f.archivo.files[0]) : null;
+        const fac = { id: uid(), numero, fecha: f.fecha.value, monto, por: currentEmail(), at: new Date().toISOString() };
+        if(archivo) fac.archivo = archivo;
+        await guardarPOs(pos => { const x = pos.find(p => p.id === po.id); if(x) x.facturas = (x.facturas || []).concat([fac]); });
+        mensajePO('✅ Factura ' + numero + ' asociada a la PO ' + po.numero + '.');
+      }catch(err){
+        console.error(err); btn.disabled = false; btn.textContent = '＋ Agregar factura';
+        showDialog('No se pudo guardar la factura. ' + (err.message || ''));
+      }
+    });
+    c.appendChild(f);
+  }
+  function panelFacturasCon(po, prellenar){
+    poTab = 'facturas'; pintarPanelPO();
+    const c = $('poPanelCuerpo'); c.innerHTML = '';
+    panelFacturas(c, po, resumenPO(po, despachosParaPO()), prellenar);
+    const form = $('poFacForm'); if(form){ form.scrollIntoView({ block: 'center' }); form.fecha.focus(); }
+  }
+  function panelDespachos(c, po, r){
+    if(!r.rows.length){
+      c.innerHTML = '<p class="chart-empty">' + (poDespachos.cargando ? 'Cargando…' : 'Aún no hay despachos con cargo a esta PO. Asígnalos en la columna «PO» de la Ruta del día.') + '</p>';
+      return;
+    }
+    const wrap = document.createElement('div'); wrap.className = 'table-wrap';
+    const t = document.createElement('table'); t.className = 'hist-table';
+    t.innerHTML = '<thead><tr><th>Fecha</th><th>Cliente</th><th>Departamento</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th></tr></thead>';
+    const tb = document.createElement('tbody');
+    r.rows.forEach(x => {
+      const tr = document.createElement('tr');
+      const td = v => { const e = document.createElement('td'); if(v instanceof Node) e.appendChild(v); else e.textContent = v; tr.appendChild(e); };
+      const enlace = enlaceFecha(x._fecha); enlace.addEventListener('click', cerrarPanelPO);
+      td(enlace); td(x.cliente || '(sin cliente)'); td(x.departamento || '—');
+      td((ESTADOS.find(e => e.value === x.estado) || ESTADOS[0]).label); td(x.numeroFactura || '—'); td(formatMoney(x.tarifa));
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+    const tf = document.createElement('tfoot'); tf.innerHTML = '<tr><td colspan="5" style="text-align:right">Total usado</td><td>' + formatMoney(r.usado) + '</td></tr>';
+    t.appendChild(tf);
+    wrap.appendChild(t); c.appendChild(wrap);
+  }
+  // Aviso en la Ruta del día al asignar un despacho a una PO casi agotada.
+  function avisoAsignarPO(numero){
+    const box = $('avisoPO');
+    const po = numero && poLista.find(p => p.numero === numero);
+    if(!po || !poDespachos.cargado){ box.hidden = true; return; }
+    const r = resumenPO(po, despachosParaPO());
+    if(r.pct < 85){ box.hidden = true; return; }
+    box.hidden = false;
+    box.className = 'aviso-po' + (r.saldo < 0 ? ' rojo' : '');
+    box.textContent = r.saldo < 0
+      ? '⛔ Con este despacho la PO ' + po.numero + ' (' + areaDe(po) + ') queda excedida en ' + formatMoney(-r.saldo) + '.'
+      : '⚠️ La PO ' + po.numero + ' (' + areaDe(po) + ') va en ' + r.pct + '%: quedan ' + formatMoney(r.saldo) + '.';
+  }
+  /* ----- Formulario de PO ----- */
+  function mostrarFormPO(){ $('poFormCard').hidden = false; $('poNueva').hidden = true; }
   function editarPO(po){
     poEditando = po.id;
+    mostrarFormPO();
     $('poFormTitulo').textContent = 'Editar PO ' + po.numero;
-    $('poNumero').value = po.numero; $('poProveedor').value = po.proveedor || ''; $('poMonto').value = po.monto || '';
-    $('poFecha').value = po.fecha || ''; $('poDescripcion').value = po.descripcion || '';
-    $('poGuardar').textContent = 'Guardar cambios'; $('poCancelar').hidden = false;
-    $('poMsg').textContent = '';
+    $('poNumero').value = po.numero; $('poArea').value = po.area || ''; $('poProveedor').value = po.proveedor || ''; $('poMonto').value = po.monto || '';
+    $('poFecha').value = po.fecha || ''; $('poDescripcion').value = po.descripcion || ''; $('poArchivo').value = '';
+    $('poGuardar').textContent = 'Guardar cambios';
+    mensajePO('');
     $('poForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   function limpiarFormPO(){
     poEditando = null;
     $('poForm').reset();
     $('poFormTitulo').textContent = 'Nueva orden de compra';
-    $('poGuardar').textContent = 'Guardar PO'; $('poCancelar').hidden = true;
+    $('poGuardar').textContent = 'Guardar PO';
+    $('poFormCard').hidden = true; $('poNueva').hidden = false;
   }
-  $('poCancelar').addEventListener('click', () => { limpiarFormPO(); $('poMsg').textContent = ''; });
+  $('poNueva').addEventListener('click', () => { limpiarFormPO(); mostrarFormPO(); mensajePO(''); $('poNumero').focus(); });
+  $('poCancelar').addEventListener('click', () => { limpiarFormPO(); mensajePO(''); });
+  $('poVerCerradas').addEventListener('change', renderSaldoPO);
   $('poForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const msg = $('poMsg');
     const numero = $('poNumero').value.trim().replace(/\s+/g, ' ');
     const monto = Math.round(Number($('poMonto').value) || 0);
-    if(!numero || monto <= 0){ msg.className = 'po-msg error'; msg.textContent = 'Indica el N° de la PO y un monto mayor a cero.'; return; }
-    const datos = { numero, proveedor: $('poProveedor').value.trim(), monto, fecha: $('poFecha').value, descripcion: $('poDescripcion').value.trim() };
+    if(!numero || monto <= 0){ mensajePO('Indica el N° de la PO y un monto mayor a cero.', true); return; }
+    const datos = { numero, area: $('poArea').value.trim(), proveedor: $('poProveedor').value.trim(), monto, fecha: $('poFecha').value, descripcion: $('poDescripcion').value.trim() };
     const editando = poEditando;
+    const file = $('poArchivo').files[0];
+    const id = editando || uid();
+    $('poGuardar').disabled = true;
     try{
+      if(poLista.some(p => p.numero.toLowerCase() === numero.toLowerCase() && p.id !== editando)){ mensajePO('Ya existe una PO con el N° ' + numero + '.', true); return; }
+      if(file){ mensajePO('Subiendo el documento…'); datos.archivo = await subirArchivoPO(id, file); }
       const res = await guardarPOs(pos => {
         if(pos.some(p => p.numero.toLowerCase() === numero.toLowerCase() && p.id !== editando)) return 'repetida';
         if(editando){
@@ -4071,32 +4448,30 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           if(!x) return 'no-existe';
           if(x.numero !== numero && despachosParaPO().some(r => r.po === x.numero)) return 'en-uso';
           Object.assign(x, datos);
-        } else pos.push(Object.assign({ id: uid(), creadoAt: new Date().toISOString(), por: currentEmail(), cerrada: false }, datos));
+        } else pos.push(Object.assign({ id, creadoAt: new Date().toISOString(), por: currentEmail(), cerrada: false, facturas: [] }, datos));
         return 'ok';
       });
-      if(res === 'repetida'){ msg.className = 'po-msg error'; msg.textContent = 'Ya existe una PO con el N° ' + numero + '.'; return; }
-      if(res === 'en-uso'){ msg.className = 'po-msg error'; msg.textContent = 'Esta PO ya tiene despachos asignados: no se puede cambiar su número.'; return; }
-      if(res === 'no-existe'){ msg.className = 'po-msg error'; msg.textContent = 'Esa PO ya no existe (otra persona la eliminó).'; limpiarFormPO(); return; }
-      msg.className = 'po-msg';
-      msg.textContent = editando ? '✅ PO ' + numero + ' actualizada.' : '✅ PO ' + numero + ' registrada. Asígnala a los despachos en la columna «PO» de la Ruta del día.';
+      if(res === 'repetida'){ mensajePO('Ya existe una PO con el N° ' + numero + '.', true); return; }
+      if(res === 'en-uso'){ mensajePO('Esta PO ya tiene despachos asignados: no se puede cambiar su número.', true); return; }
+      if(res === 'no-existe'){ mensajePO('Esa PO ya no existe (otra persona la eliminó).', true); limpiarFormPO(); return; }
+      mensajePO(editando ? '✅ PO ' + numero + ' actualizada.' : '✅ PO ' + numero + ' registrada. Asígnala a los despachos en la columna «PO» de la Ruta del día.');
       limpiarFormPO();
-      renderRows();
     }catch(err){
       console.error(err);
-      msg.className = 'po-msg error'; msg.textContent = 'No se pudo guardar la PO (revisa la conexión).';
-    }
+      mensajePO('No se pudo guardar la PO: ' + (err.message || 'revisa la conexión') + '.', true);
+    }finally{ $('poGuardar').disabled = false; }
   });
   function excelPO(po, r){
     if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisa tu conexión e intenta de nuevo en unos segundos.'); return; }
     const resumen = [
-      { 'Concepto': 'N° PO', 'Valor': po.numero }, { 'Concepto': 'Proveedor', 'Valor': po.proveedor || '' },
+      { 'Concepto': 'N° PO', 'Valor': po.numero }, { 'Concepto': 'Área', 'Valor': areaDe(po) }, { 'Concepto': 'Proveedor', 'Valor': po.proveedor || '' },
       { 'Concepto': 'Descripción', 'Valor': po.descripcion || '' }, { 'Concepto': 'Fecha PO', 'Valor': fechaDMA(po.fecha) },
       { 'Concepto': 'Monto PO', 'Valor': r.monto }, { 'Concepto': 'Usado en despachos', 'Valor': r.usado },
       { 'Concepto': 'Facturado', 'Valor': r.facturado }, { 'Concepto': 'Por facturar', 'Valor': r.porFacturar },
       { 'Concepto': 'Saldo disponible', 'Valor': r.saldo }
     ];
     const detalle = r.rows.map(x => ({ 'Fecha': fechaDMA(x._fecha), 'Cliente': x.cliente || '', 'Departamento': x.departamento || '', 'Dirección': [x.direccion, x.comuna].filter(Boolean).join(', '), 'Estado': (ESTADOS.find(e => e.value === x.estado) || ESTADOS[0]).label, 'N° Factura': x.numeroFactura || '', 'Tarifa': Number(x.tarifa) || 0 }));
-    const facturas = r.facturas.map(f => ({ 'N° Factura': f.numero, 'Despachos': f.despachos, 'Monto': f.monto }));
+    const facturas = r.facturas.map(f => ({ 'N° Factura': f.numero, 'Fecha': fechaDMA(f.fecha), 'Monto': Number(f.monto) || 0, 'Despachos': f.despachos || 0, 'Registrada': f.registrada ? 'Sí' : 'Solo en despachos', 'Archivo': f.archivo ? f.archivo.url : '' }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Saldo');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detalle.length ? detalle : [{ 'Fecha': '', 'Cliente': 'Sin despachos' }]), 'Despachos');
@@ -4108,7 +4483,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
     const emision = new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const filas = r.rows.map((x, i) => '<tr><td>' + (i + 1) + '</td><td style="white-space:nowrap">' + fechaDMA(x._fecha) + '</td><td>' + (escapeHtml(x.cliente) || '(sin cliente)') + '</td><td>' + escapeHtml([x.direccion, x.comuna].filter(Boolean).join(', ')) + '</td><td>' + escapeHtml((ESTADOS.find(e => e.value === x.estado) || ESTADOS[0]).label) + '</td><td>' + escapeHtml(x.numeroFactura || '—') + '</td><td style="text-align:right">' + formatMoney(x.tarifa) + '</td></tr>').join('');
-    const facturas = r.facturas.map(f => '<tr><td>' + escapeHtml(f.numero) + '</td><td style="text-align:center">' + f.despachos + '</td><td style="text-align:right">' + formatMoney(f.monto) + '</td></tr>').join('');
+    const facturas = r.facturas.map(f => '<tr><td>' + escapeHtml(f.numero) + (f.registrada ? '' : ' <small>(anotada en despachos)</small>') + '</td><td>' + (f.fecha ? fechaDMA(f.fecha) : '—') + '</td><td style="text-align:center">' + (f.despachos || 0) + '</td><td style="text-align:right">' + formatMoney(f.monto) + '</td></tr>').join('');
     win.document.write(
       '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Saldo PO ' + escapeHtml(po.numero) + '</title><style>' +
       'body{ font-family:Arial, Helvetica, sans-serif; color:#1b1a2e; padding:36px; }' +
@@ -4126,6 +4501,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       '<div style="font-size:12px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:#0B7A6B;margin-bottom:6px">' + escapeHtml(MARCA.nombre) + '</div>' +
       '<h1>Saldo de orden de compra N° ' + escapeHtml(po.numero) + '</h1>' +
       '<div class="meta">' +
+        'Área: <b>' + escapeHtml(areaDe(po)) + '</b><br>' +
         (po.proveedor ? 'Proveedor: <b>' + escapeHtml(po.proveedor) + '</b><br>' : '') +
         (po.descripcion ? 'Descripción: ' + escapeHtml(po.descripcion) + '<br>' : '') +
         (po.fecha ? 'Fecha de la PO: ' + fechaDMA(po.fecha) + '<br>' : '') +
@@ -4143,9 +4519,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       (r.rows.length ? '<table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th></tr></thead><tbody>' + filas + '</tbody>' +
         '<tfoot><tr><td colspan="6" style="text-align:right"><b>Total usado</b></td><td style="text-align:right"><b>' + formatMoney(r.usado) + '</b></td></tr></tfoot></table>' : '<p>Aún no hay despachos con cargo a esta PO.</p>') +
       '<h2>Facturas del proveedor con mención a la PO (' + r.facturas.length + ')</h2>' +
-      (r.facturas.length ? '<table><thead><tr><th>N° Factura</th><th>Despachos</th><th>Monto</th></tr></thead><tbody>' + facturas + '</tbody>' +
-        '<tfoot><tr><td colspan="2" style="text-align:right"><b>Total facturado</b></td><td style="text-align:right"><b>' + formatMoney(r.facturado) + '</b></td></tr></tfoot></table>' : '<p>Aún no hay facturas registradas para esta PO.</p>') +
-      '<p class="nota">Usado: suma de las tarifas de los despachos asignados a la PO. Facturado: despachos que ya tienen N° de factura del proveedor. Saldo disponible = Monto PO − Usado.</p>' +
+      (r.facturas.length ? '<table><thead><tr><th>N° Factura</th><th>Fecha</th><th>Despachos</th><th>Monto</th></tr></thead><tbody>' + facturas + '</tbody>' +
+        '<tfoot><tr><td colspan="3" style="text-align:right"><b>Total facturado</b></td><td style="text-align:right"><b>' + formatMoney(r.facturado) + '</b></td></tr></tfoot></table>' : '<p>Aún no hay facturas registradas para esta PO.</p>') +
+      '<p class="nota">Usado: suma de las tarifas de los despachos asignados a la PO. Facturado: facturas del proveedor registradas en la PO (y las anotadas en sus despachos). Saldo disponible = Monto PO − lo mayor entre usado y facturado.</p>' +
       '<div class="firma"><div>Firma responsable</div><div>Firma proveedor</div></div>' +
       '</body></html>'
     );
@@ -4212,6 +4588,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(view === 'liquidaciones') renderLiquidaciones();
     if(view === 'historial' || view === 'liqperiodo' || view === 'entregashist') cargarPeriodo();
     if(view === 'saldopo') cargarDespachosPO();
+    if(view === 'despachos' && poTablaVieja){ poTablaVieja = false; renderRows(); }
     marcarTabMovil(view);
   }
 
