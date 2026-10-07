@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-08 · 1";
+const VERSION_APP = "2026-10-08 · 2";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -993,6 +993,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .po-leyenda b{ color:var(--text); }
   .po-leyenda i{ width:10px; height:10px; border-radius:3px; display:inline-block; }
   .po-leyenda .disp b{ color:var(--sem); font-size:14px; }
+  .po-leyenda .po-sin-tarifa{ flex-basis:100%; color:#8a5a00; font-weight:700; }
   .po-acciones{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
   .po-acciones button{ font-size:13px; }
   .po-velo{ position:fixed; inset:0; background:rgba(10,30,36,.38); z-index:60; }
@@ -4055,16 +4056,17 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const r = await uploadBlob('hojasDeRuta/po/' + poId + '/' + Date.now() + '-' + nombre, file, tipo);
     return { url: r.url, path: r.path, nombre: file.name || nombre, tipo, subidoAt: new Date().toISOString() };
   }
-  // Todos los despachos guardados (desde la fecha de la PO más antigua), para sumar lo usado.
+  // Todos los despachos guardados, para sumar lo usado. No se filtra por la fecha de la PO:
+  // un despacho de cualquier día cuenta si tiene asignada la PO.
   async function cargarDespachosPO(){
     renderSaldoPO();
     if(!db || poDespachos.cargando) return;
     poDespachos.cargando = true;
     try{
-      const fechas = poLista.map(po => po.fecha).filter(Boolean).sort();
-      const desde = poLista.length && fechas.length === poLista.length ? fechas[0] : '';
+      const desde = '';
       const qs = await db.collection('hojasResumen').orderBy('fecha', 'desc').limit(800).get();
-      const ids = qs.docs.map(d => d.data()).filter(r => r.fecha && r.fecha >= desde && r.despachos).map(r => r.fecha);
+      // Solo se saltan los días que el resumen marca sin despachos (0); un resumen antiguo sin el dato se lee igual.
+      const ids = qs.docs.map(d => d.data()).filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.fecha || '') && r.despachos !== 0).map(r => r.fecha);
       const snaps = await Promise.all(ids.map(id => db.collection('hojasDeRuta').doc(id).get()));
       const rows = [];
       snaps.forEach((sn, k) => {
@@ -4105,7 +4107,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const monto = Number(po.monto) || 0;
     const comprometido = Math.max(usado, facturado);
     const pct = monto ? Math.round(comprometido / monto * 100) : 0;
-    return { rows, usado, facturado, porFacturar: Math.max(0, usado - facturado), saldo: monto - comprometido, monto, pct, facturas, sem: semaforoPO(pct) };
+    const sinTarifa = rows.filter(r => !Number(r.tarifa)).length;
+    return { rows, usado, facturado, porFacturar: Math.max(0, usado - facturado), saldo: monto - comprometido, monto, pct, facturas, sinTarifa, sem: semaforoPO(pct) };
   }
   const semaforoPO = pct => pct >= 90 ? 'rojo' : pct >= 70 ? 'ambar' : 'verde';
   const fechaDMA = f => (f || '').split('-').reverse().join('/');
@@ -4139,7 +4142,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     l.innerHTML = '<span><i style="background:#0B7A6B"></i>Facturado <b>' + formatMoney(r.facturado) + '</b></span>' +
       '<span><i style="background:#7cc7b9"></i>Por facturar <b>' + formatMoney(r.porFacturar) + '</b></span>' +
       '<span class="disp"><i style="background:' + (r.saldo < 0 ? '#E5484D' : '#e6efee') + '"></i>' + (r.saldo < 0 ? 'Excedida en' : 'Disponible') + ' <b>' + formatMoney(Math.abs(r.saldo)) + '</b></span>' +
-      '<span>de <b>' + formatMoney(r.monto) + '</b></span>';
+      '<span>de <b>' + formatMoney(r.monto) + '</b></span>' +
+      (r.sinTarifa ? '<span class="po-sin-tarifa">⚠️ ' + r.sinTarifa + ' despacho(s) sin tarifa: no descuentan hasta que la elijas en la Ruta del día</span>' : '');
     return l;
   }
   function renderSaldoPO(){
