@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-07 · 2";
+const VERSION_APP = "2026-10-08 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -595,14 +595,17 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   select.estado.en-ruta{ background:var(--warn-bg); color:var(--warn); }
   select.estado.entregado{ background:var(--ok-bg); color:var(--ok); }
   select.estado.no-entregado{ background:var(--bad-bg); color:var(--bad); }
-  input.tarifa{
+  select.tarifa{
     border:1px solid var(--border);
     border-radius:6px;
     padding:5px 6px;
-    font-size:13px;
-    width:90px;
-    text-align:right;
+    font-size:12.5px;
+    font-weight:700;
+    min-width:150px;
+    background:#fff;
+    color:var(--text);
   }
+  select.tarifa.vacia{ color:var(--muted); font-weight:600; border-style:dashed; }
   input.prueba{
     border:1px solid var(--border);
     border-radius:6px;
@@ -2224,6 +2227,27 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
     td.appendChild(sel);
     return td;
+  }
+
+  // Tarifario de despachos: la tarifa de cada despacho se elige de esta lista.
+  const TARIFARIO = [
+    { nombre: 'Punto simple', monto: 8000 },
+    { nombre: '1/4 de camión', monto: 35000 },
+    { nombre: '1/2 camión', monto: 50000 },
+    { nombre: 'Camión completo', monto: 70000 },
+    { nombre: 'Servicio especial', monto: 100000 }
+  ];
+  const servicioDeTarifa = monto => TARIFARIO.find(t => t.monto === Number(monto)) || null;
+  // Del Excel: «1/2 camión», «medio camión», «camion completo»… → su tarifa.
+  function tarifaDeServicio(texto){
+    const n = String(texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+    if(!n) return null;
+    if(/especial/.test(n)) return TARIFARIO[4];
+    if(/completo/.test(n)) return TARIFARIO[3];
+    if(/1\/2|medio/.test(n)) return TARIFARIO[2];
+    if(/1\/4|cuarto/.test(n)) return TARIFARIO[1];
+    if(/simple|punto/.test(n)) return TARIFARIO[0];
+    return null;
   }
 
   function defaultRow(){
@@ -5311,19 +5335,29 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return td;
   }
 
+  // La tarifa se elige del tarifario (no se escribe a mano). Un monto antiguo que no está
+  // en la lista se conserva y se muestra como «fuera de tarifario» hasta que se cambie.
   function makeTarifaCell(row){
     const td = document.createElement('td');
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.className = 'tarifa';
-    input.placeholder = '0';
-    input.value = row.tarifa || '';
-    input.addEventListener('input', () => {
-      row.tarifa = input.value;
+    const sel = document.createElement('select');
+    sel.className = 'tarifa';
+    sel.setAttribute('aria-label', 'Tarifa');
+    sel.appendChild(new Option('Elegir…', ''));
+    TARIFARIO.forEach(t => sel.appendChild(new Option(t.nombre + ' · ' + formatMoney(t.monto), String(t.monto))));
+    const actual = Number(row.tarifa) || 0;
+    if(actual && !servicioDeTarifa(actual)) sel.appendChild(new Option(formatMoney(actual) + ' (fuera de tarifario)', String(actual)));
+    sel.value = actual ? String(actual) : '';
+    sel.classList.toggle('vacia', !actual);
+    sel.addEventListener('change', () => {
+      const monto = Number(sel.value) || 0;
+      row.tarifa = monto || '';
+      const t = servicioDeTarifa(monto);
+      row.servicio = t ? t.nombre : '';
+      sel.classList.toggle('vacia', !monto);
       recalcTotal();
       commit();
     });
-    td.appendChild(input);
+    td.appendChild(sel);
     return td;
   }
 
@@ -5468,10 +5502,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       'Estado': estadoLabel(r.estado),
       'Hora entrega': horaEntregaDe(r),
       'Prueba de Entrega': pruebaResumenDe(r),
+      'Servicio': (servicioDeTarifa(r.tarifa) || {}).nombre || '',
       'Tarifa': r.tarifa || ''
     }));
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{wch:4},{wch:24},{wch:18},{wch:14},{wch:28},{wch:16},{wch:16},{wch:26},{wch:14},{wch:10},{wch:20},{wch:10}];
+    ws['!cols'] = [{wch:4},{wch:24},{wch:18},{wch:14},{wch:28},{wch:16},{wch:16},{wch:26},{wch:14},{wch:10},{wch:20},{wch:16},{wch:10}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Despachos');
     const fecha = state.fecha || hojaId;
@@ -5509,6 +5544,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     contacto: ['contacto', 'telefono', 'fono', 'celular', 'whatsapp'],
     productos: ['productos', 'producto', 'detalle', 'items', 'articulo', 'descripcion'],
     tarifa: ['tarifa', 'precio', 'valor', 'monto', 'costo flete', 'flete', 'costo'],
+    servicio: ['tipo de servicio', 'servicio', 'tipo de carga', 'tipo camion'],
     estado: ['estado'],
     horaEntrega: ['hora entrega', 'hora de entrega', 'hora'],
     po: ['orden de compra', 'orden compra', 'numero po', 'nro po', 'n° po', 'n po', 'po']
@@ -5564,6 +5600,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const raw = record[header];
       row._campos.add(field);
       if(field === 'tarifa') row.tarifa = parseTarifaValue(raw);
+      else if(field === 'servicio'){
+        const t = tarifaDeServicio(raw);
+        if(t){ row.servicio = t.nombre; if(!row._campos.has('tarifa') || !Number(row.tarifa)){ row.tarifa = t.monto; row._campos.add('tarifa'); } }
+        else row._campos.delete('servicio');
+      }
       else if(field === 'estado') row.estado = estadoFromText(raw);
       else if(field === 'horaEntrega'){
         const hora = horaFromExcel(raw);

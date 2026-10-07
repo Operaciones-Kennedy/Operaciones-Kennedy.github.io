@@ -52,11 +52,10 @@ console.log('T3 cambios simultáneos de dos personas');
     // Se escribe sin avisar a esta pestaña (como si el aviso aún no llegara)
     window.__fs.docs['hojasDeRuta/2026-09-25'] = { json: JSON.stringify(st) };
   });
-  await p.fill('#tbody tr:first-child input.tarifa', '12000');
-  await p.dispatchEvent('#tbody tr:first-child input.tarifa', 'change');
+  await p.selectOption('#tbody tr:first-child select.tarifa', '35000');
   await p.click('#hojaInfo'); await p.waitForTimeout(1000);
   const fin = await rowsOf(p, 'hojasDeRuta', '2026-09-25');
-  check('se conserva mi cambio (tarifa 12000 en el 1)', fin.rows.find(r => r.id === 'r0').tarifa == 12000);
+  check('se conserva mi cambio (tarifa 35000 en el 1)', fin.rows.find(r => r.id === 'r0').tarifa == 35000);
   check('se conserva el cambio del otro (2 entregado)', fin.rows.find(r => r.id === 'r1').estado === 'entregado');
   check('el despacho que borró el otro no reaparece', !fin.rows.some(r => r.id === 'r3'), fin.rows.map(r => r.id).join(','));
   await p.waitForTimeout(300);
@@ -78,8 +77,7 @@ console.log('T4 pestaña vieja con 30 despachos no pisa la lista de 15');
     window.__fs.docs['hojasDeRuta/2026-09-26'] = { json: JSON.stringify(st) }; // la importación hecha en otra pestaña
   });
   // Esta pestaña vieja guarda coordenadas de un despacho que ya no existe
-  await p.fill('#tbody tr:nth-child(20) input.tarifa', '9000');
-  await p.dispatchEvent('#tbody tr:nth-child(20) input.tarifa', 'change');
+  await p.selectOption('#tbody tr:nth-child(20) select.tarifa', '50000');
   await p.click('#hojaInfo'); await p.waitForTimeout(1000);
   const fin = await rowsOf(p, 'hojasDeRuta', '2026-09-26');
   check('siguen 15 despachos en línea', fin.rows.length === 15, String(fin.rows.length));
