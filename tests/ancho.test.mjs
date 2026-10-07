@@ -1,6 +1,6 @@
 // Ninguna vista debe salirse del ancho de la pantalla (celular, tablet y computador).
 import { launch, open, check, sinErrores } from './harness.mjs';
-const VISTAS = ['despachos', 'chofer', 'reportes', 'liquidaciones', 'historial', 'liqperiodo'];
+const VISTAS = ['despachos', 'chofer', 'reportes', 'liquidaciones', 'historial', 'liqperiodo', 'saldopo'];
 const b = await launch();
 for (const w of [360, 390, 520, 768, 1440]) {
   const p = await open(b, { width: w, height: 800, setup: `(() => {

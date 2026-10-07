@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-06 · 6";
+const VERSION_APP = "2026-10-07 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -940,6 +940,39 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .guia-btns{ display:flex; gap:8px; flex-wrap:wrap; }
   .gps-card.activo{ border-color:var(--marca-principal-claro); background:var(--ok-bg); }
   .lp-depto-titulo{ margin:0; padding:14px 16px 0; font-size:15px; }
+  .po-form-card{ padding:16px; margin-bottom:18px; }
+  .po-form-card h2{ margin:0 0 12px; font-size:16px; }
+  .po-form{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px 12px; align-items:end; }
+  .po-form label{ display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:700; color:var(--muted); min-width:0; }
+  .po-form input{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; font-weight:600; color:var(--text); background:#fff; min-width:0; }
+  .po-form .po-ancho{ grid-column:span 2; }
+  .po-form-btns{ display:flex; gap:8px; }
+  .po-msg{ margin:8px 0 0; font-size:13px; font-weight:700; color:var(--accent-dark); min-height:1em; }
+  .po-msg.error{ color:#c2353a; }
+  .po-lista{ display:flex; flex-direction:column; gap:14px; margin-bottom:12px; }
+  .po-card{ padding:16px; }
+  .po-card.cerrada{ opacity:.72; }
+  .po-head{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 12px; align-items:flex-start; }
+  .po-head h3{ margin:0; font-size:17px; }
+  .po-head p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  .po-chip{ font-size:11px; font-weight:800; border-radius:999px; padding:3px 9px; background:#dff5ef; color:#0B7A6B; text-transform:uppercase; letter-spacing:.04em; margin-left:6px; vertical-align:middle; }
+  .po-card.cerrada .po-chip{ background:#eceff1; color:#5b6670; }
+  .po-card.excedida .po-chip{ background:#fde4e4; color:#c2353a; }
+  .po-barra{ height:10px; border-radius:999px; background:#e6efee; margin:12px 0 10px; overflow:hidden; }
+  .po-barra div{ height:100%; background:linear-gradient(90deg, #14A38E, #3b82f6); border-radius:999px; }
+  .po-card.excedida .po-barra div{ background:#E5484D; }
+  .po-cifras{ display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:8px; }
+  .po-cifras div{ background:var(--bg, #f6f8f8); border-radius:10px; padding:8px 10px; }
+  .po-cifras small{ display:block; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+  .po-cifras b{ font-size:16px; }
+  .po-cifras .po-saldo b{ color:#0B7A6B; }
+  .po-card.excedida .po-cifras .po-saldo b{ color:#c2353a; }
+  .po-acciones{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .po-card details{ margin-top:12px; }
+  .po-card summary{ cursor:pointer; font-weight:700; font-size:13px; color:var(--accent-dark); }
+  .po-card .table-wrap{ margin-top:8px; }
+  .po-celda select{ border:1px solid var(--border); border-radius:6px; padding:4px 6px; font:inherit; font-size:12.5px; max-width:140px; background:#fff; }
+  @media (max-width: 520px){ .po-form .po-ancho{ grid-column:auto; } }
   .config-titulo2{ margin:22px 0 4px; font-size:18px; }
   .movil-sheet{ position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; }
   .movil-sheet-fondo{ position:absolute; inset:0; background:rgba(18,41,45,0.45); }
@@ -1357,6 +1390,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <div class="side-titulo">Pagos</div>
         <button class="side-item" type="button" data-view="liquidaciones" id="navFlota" title="Liquidación del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M15.5 15h2.5"/></svg><span>Liquidación del día</span></button>
         <button class="side-item" type="button" data-view="liqperiodo" data-solo-admin title="Liquidación del período"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
+        <button class="side-item" type="button" data-view="saldopo" data-solo-admin title="Saldo PO"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7.5L19 8v12.5H7z"/><path d="M14 3.5V8h5"/><path d="M10 12.5h6"/><path d="M10 16.5h4"/></svg><span>Saldo PO</span></button>
       </div>
       <div class="side-grupo" data-solo-admin>
         <div class="side-titulo">Ajustes</div>
@@ -1400,6 +1434,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
       <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="saldopo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7.5L19 8v12.5H7z"/><path d="M14 3.5V8h5"/><path d="M10 12.5h6"/><path d="M10 16.5h4"/></svg><span>Saldo PO</span></button>
       <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Usuarios</span></button>
       <button class="movil-sheet-item" type="button" id="movilInstalar" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 8v6"/><path d="M9.5 11.5L12 14l2.5-2.5"/></svg><span>Instalar Ruteka en este teléfono</span></button>
       <p class="movil-version" id="movilVersion"></p>
@@ -1550,6 +1585,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
               <th class="col-num">N°</th>
               <th>Cliente</th>
               <th>Departamento</th>
+              <th>PO</th>
               <th>Dirección</th>
               <th>Comuna</th>
               <th>Contacto</th>
@@ -1565,7 +1601,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="9" style="text-align:right;">Total tarifa</td>
+              <td colspan="11" style="text-align:right;">Total tarifa</td>
               <td id="totalTarifa">$0</td>
               <td></td>
             </tr>
@@ -1871,6 +1907,33 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <p class="footer-note">Cada correo debe tener su usuario en Firebase (Authentication → Users). Todo correo que no sea administrador entra solo con Entregas, aunque no esté en esta lista; la liquidación, el historial, el seguimiento y las solicitudes los ven solo los que tengan marcada su casilla.</p>
   </div>
 
+  <div id="viewSaldoPO" hidden>
+    <div class="content-header">
+      <h1>Saldo PO</h1>
+      <p>Tus órdenes de compra: cuánto se ha usado en despachos, cuánto facturó el proveedor y cuánto queda disponible.</p>
+    </div>
+    <section class="card po-form-card">
+      <h2 id="poFormTitulo">Nueva orden de compra</h2>
+      <form id="poForm" class="po-form" autocomplete="off">
+        <label><span>N° PO</span><input id="poNumero" required placeholder="Ej: 4500123456"></label>
+        <label><span>Proveedor</span><input id="poProveedor" placeholder="Ej: Transportes y Logística Barrientos"></label>
+        <label><span>Monto (CLP)</span><input id="poMonto" type="number" min="1" step="1" required placeholder="250000"></label>
+        <label><span>Fecha</span><input id="poFecha" type="date"></label>
+        <label class="po-ancho"><span>Descripción</span><input id="poDescripcion" placeholder="Ej: Despachos eventos Halloween"></label>
+        <div class="po-form-btns"><button type="submit" class="primary" id="poGuardar">Guardar PO</button><button type="button" id="poCancelar" hidden>Cancelar</button></div>
+      </form>
+      <p class="po-msg" id="poMsg" role="status"></p>
+    </section>
+    <section class="stat-grid">
+      <div class="card stat-tile"><span class="stat-label">Monto PO abiertas</span><span class="stat-value" id="poTotal">$0</span><span class="stat-note" id="poAbiertas"></span></div>
+      <div class="card stat-tile"><span class="stat-label">Usado en despachos</span><span class="stat-value" id="poUsado">$0</span></div>
+      <div class="card stat-tile"><span class="stat-label">Saldo disponible</span><span class="stat-value" id="poSaldo">$0</span></div>
+      <div class="card stat-tile"><span class="stat-label">Despachos sin PO</span><span class="stat-value" id="poSinPO">0</span><span class="stat-note" id="poSinPONota"></span></div>
+    </section>
+    <div class="po-lista" id="poLista"></div>
+    <p class="footer-note">Cada despacho se asigna a su PO en la columna <strong>PO</strong> de la Ruta del día (o con una columna «PO» en el Excel). <strong>Usado</strong> suma las tarifas de esos despachos; <strong>Facturado</strong>, las que ya tienen N° de factura (se anota en la Liquidación). El botón <strong>📄 Saldo PO</strong> arma el documento para imprimir o guardar en PDF.</p>
+  </div>
+
   <div id="viewLiqPeriodo" hidden>
     <div class="content-header">
       <h1>Liquidación del período</h1>
@@ -2039,8 +2102,29 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   // Filas en blanco agregadas en este dispositivo con «Agregar despacho».
   // No se guardan en línea hasta que tengan algún dato.
   const filasNuevas = new Set();
+  // Órdenes de compra (Saldo PO): se guardan en hojasDeRuta/po_indice; solo el administrador las usa.
+  const PO_DOC = 'po_indice';
+  let poLista = [];
+  let poUnsub = null;
+  let poDespachos = { rows: [], cargando: false, cargado: false };
+  let poEditando = null;
+  function makePOCell(row){
+    const td = document.createElement('td');
+    td.className = 'po-celda';
+    const sel = document.createElement('select');
+    sel.setAttribute('aria-label', 'Orden de compra');
+    sel.appendChild(new Option('—', ''));
+    const actual = row.po || '';
+    poLista.filter(po => !po.cerrada || po.numero === actual).forEach(po => sel.appendChild(new Option(po.numero + (po.cerrada ? ' (cerrada)' : ''), po.numero)));
+    if(actual && !poLista.some(po => po.numero === actual)) sel.appendChild(new Option(actual + ' (no registrada)', actual));
+    sel.value = actual;
+    sel.addEventListener('change', () => { row.po = sel.value; commit(); });
+    td.appendChild(sel);
+    return td;
+  }
+
   function defaultRow(){
-    return { id: uid(), cliente:'', departamento:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false, creadoAt: new Date().toISOString() };
+    return { id: uid(), cliente:'', departamento:'', po:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false, creadoAt: new Date().toISOString() };
   }
   // Trazabilidad: cada cambio de estado queda anotado con fecha, hora y quién lo hizo.
   function registrarEvento(row, tipo){
@@ -2290,6 +2374,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       tr.appendChild(makeCell('col-num', String(idx + 1)));
       tr.appendChild(makeEditableCell(row, 'cliente'));
       tr.appendChild(makeEditableCell(row, 'departamento'));
+      tr.appendChild(makePOCell(row));
       tr.appendChild(makeEditableCell(row, 'direccion'));
       tr.appendChild(makeEditableCell(row, 'comuna'));
       tr.appendChild(makeEditableCell(row, 'contacto'));
@@ -2789,6 +2874,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(dineroAntes !== verDinero && currentView === 'chofer') renderChofer();
     pintarTodoSolicitudes();
     chatAjustarRol();
+    poAjustarRol();
   }
 
   // Se cortan al cerrar sesión: si no, Firebase los rechaza (ya no hay usuario)
@@ -2799,6 +2885,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function cerrarSesion(){
     detenerGps(true);
     chatDetener();
+    poAjustarRol();
     dejarDeEscucharConfig();
     if(unsub){ unsub(); unsub = null; }
     if(auth) auth.signOut();
@@ -3265,7 +3352,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('btnInstalar').addEventListener('click', instalarApp);
 
   /* ---------- Teléfono: menú inferior y panel "Más" ---------- */
-  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', seguimiento: 'seguimiento', solicitudes: 'solicitudes', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', config: 'mas' };
+  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', seguimiento: 'seguimiento', solicitudes: 'solicitudes', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', saldopo: 'liquidaciones', config: 'mas' };
   function marcarTabMovil(view){
     document.querySelectorAll('.movil-tab').forEach(b => {
       // El transportista no tiene la pestaña Reportes: su historial queda bajo «Más».
@@ -3690,6 +3777,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const detalle = rows.map(r => ({
       'Fecha': r._fecha.split('-').reverse().join('/'),
       'Departamento': r.departamento || '',
+      'PO': r.po || '',
       'Cliente': r.cliente || '',
       'Dirección': [r.direccion, r.comuna].filter(Boolean).join(', '),
       'Transportista': r._transportista || '',
@@ -3790,6 +3878,282 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     XLSX.writeFile(wb, 'rutas-' + periodo.desde + '-al-' + periodo.hasta + '.xlsx');
   });
 
+  /* ---------- Saldo PO: órdenes de compra y cuánto queda de cada una ---------- */
+  function poAjustarRol(){
+    const debe = !!db && !sinSesion() && !modoTransportista;
+    if(debe && !poUnsub){
+      poUnsub = db.collection('hojasDeRuta').doc(PO_DOC).onSnapshot(sn => {
+        const d = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : null;
+        poLista = (d && d.pos) || [];
+        if(currentView === 'saldopo') renderSaldoPO();
+        if(currentView === 'despachos' && !isEditingNow()) renderRows();
+      }, err => { poUnsub = null; if(!sinSesion()) console.warn('No se pudieron leer las órdenes de compra', err); });
+    } else if(!debe && poUnsub){
+      try{ poUnsub(); }catch(e){}
+      poUnsub = null; poLista = []; poDespachos = { rows: [], cargando: false, cargado: false };
+    }
+  }
+  // Cambia la lista de PO en una transacción (por si dos administradores editan a la vez).
+  async function guardarPOs(cambiar){
+    if(!db) throw new Error('sin conexión');
+    const ref = db.collection('hojasDeRuta').doc(PO_DOC);
+    const final = await db.runTransaction(async tx => {
+      const sn = await tx.get(ref);
+      const d = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : { pos: [] };
+      const pos = d.pos || [];
+      const res = cambiar(pos);
+      tx.set(ref, { json: JSON.stringify({ pos }), updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: currentEmail() });
+      return { pos, res };
+    });
+    poLista = final.pos;
+    renderSaldoPO();
+    return final.res;
+  }
+  // Todos los despachos guardados (desde la fecha de la PO más antigua), para sumar lo usado.
+  async function cargarDespachosPO(){
+    renderSaldoPO();
+    if(!db || poDespachos.cargando) return;
+    poDespachos.cargando = true;
+    try{
+      const fechas = poLista.map(po => po.fecha).filter(Boolean).sort();
+      const desde = poLista.length && fechas.length === poLista.length ? fechas[0] : '';
+      const qs = await db.collection('hojasResumen').orderBy('fecha', 'desc').limit(800).get();
+      const ids = qs.docs.map(d => d.data()).filter(r => r.fecha && r.fecha >= desde && r.despachos).map(r => r.fecha);
+      const snaps = await Promise.all(ids.map(id => db.collection('hojasDeRuta').doc(id).get()));
+      const rows = [];
+      snaps.forEach((sn, k) => {
+        if(!sn.exists || !sn.data().json) return;
+        const st = JSON.parse(sn.data().json);
+        (st.rows || []).filter(r => r.cliente || r.direccion || Number(r.tarifa)).forEach(r => rows.push(Object.assign({}, r, { _fecha: ids[k], _transportista: (st.transportista || '').replace(/^—.*—$/, '').trim() })));
+      });
+      poDespachos = { rows, cargando: false, cargado: true, desde };
+    }catch(err){
+      console.error(err);
+      poDespachos.cargando = false;
+      $('poMsg').className = 'po-msg error';
+      $('poMsg').textContent = 'No se pudieron cargar los despachos (revisa la conexión).';
+    }
+    renderSaldoPO();
+  }
+  // Despachos de todas las rutas; el día abierto se toma de este dispositivo (lo más nuevo).
+  function despachosParaPO(){
+    const abiertos = state.rows.filter(r => !filaVacia(r)).map(r => Object.assign({}, r, { _fecha: hojaId, _transportista: (state.transportista || '').replace(/^—.*—$/, '').trim() }));
+    return poDespachos.rows.filter(r => r._fecha !== hojaId).concat(abiertos)
+      .sort((a, b) => a._fecha.localeCompare(b._fecha));
+  }
+  function resumenPO(po, todas){
+    const rows = todas.filter(r => (r.po || '') === po.numero);
+    const usado = rows.reduce((t, r) => t + (Number(r.tarifa) || 0), 0);
+    const facturado = rows.filter(r => r.numeroFactura).reduce((t, r) => t + (Number(r.tarifa) || 0), 0);
+    const monto = Number(po.monto) || 0;
+    const facturas = new Map();
+    rows.filter(r => r.numeroFactura).forEach(r => {
+      const f = facturas.get(r.numeroFactura) || { numero: r.numeroFactura, despachos: 0, monto: 0 };
+      f.despachos++; f.monto += Number(r.tarifa) || 0;
+      facturas.set(r.numeroFactura, f);
+    });
+    return { rows, usado, facturado, porFacturar: usado - facturado, saldo: monto - usado, monto, facturas: [...facturas.values()] };
+  }
+  const fechaDMA = f => (f || '').split('-').reverse().join('/');
+  function renderSaldoPO(){
+    if($('viewSaldoPO').hidden) return;
+    const todas = despachosParaPO();
+    const abiertas = poLista.filter(po => !po.cerrada);
+    let total = 0, usado = 0;
+    abiertas.forEach(po => { const r = resumenPO(po, todas); total += r.monto; usado += r.usado; });
+    $('poTotal').textContent = formatMoney(total);
+    $('poAbiertas').textContent = abiertas.length + ' abierta(s) de ' + poLista.length;
+    $('poUsado').textContent = formatMoney(usado);
+    $('poSaldo').textContent = formatMoney(total - usado);
+    const sinPO = todas.filter(r => !r.po && Number(r.tarifa));
+    $('poSinPO').textContent = sinPO.length;
+    $('poSinPONota').textContent = poDespachos.cargando ? 'Cargando…' : (sinPO.length ? formatMoney(sinPO.reduce((t, r) => t + (Number(r.tarifa) || 0), 0)) + ' sin asignar' + (poDespachos.desde ? ' desde el ' + fechaDMA(poDespachos.desde) : '') : 'Todo asignado');
+    const lista = $('poLista');
+    lista.innerHTML = '';
+    if(!poLista.length){
+      lista.innerHTML = '<p class="chart-empty card" style="padding:18px">Aún no hay órdenes de compra. Registra la primera arriba.</p>';
+      return;
+    }
+    const orden = poLista.slice().sort((a, b) => (a.cerrada - b.cerrada) || (b.fecha || '').localeCompare(a.fecha || ''));
+    orden.forEach(po => lista.appendChild(tarjetaPO(po, resumenPO(po, todas))));
+  }
+  function tarjetaPO(po, r){
+    const card = document.createElement('section');
+    const excedida = r.saldo < 0;
+    card.className = 'card po-card' + (po.cerrada ? ' cerrada' : '') + (excedida ? ' excedida' : '');
+    card.dataset.po = po.numero;
+    const head = document.createElement('div'); head.className = 'po-head';
+    const izq = document.createElement('div');
+    const h = document.createElement('h3'); h.textContent = 'PO ' + po.numero;
+    const chip = document.createElement('span'); chip.className = 'po-chip'; chip.textContent = po.cerrada ? 'Cerrada' : (excedida ? 'Excedida' : 'Abierta');
+    h.appendChild(chip); izq.appendChild(h);
+    const sub = document.createElement('p');
+    sub.textContent = [po.proveedor, po.descripcion, po.fecha ? 'Emitida el ' + fechaDMA(po.fecha) : ''].filter(Boolean).join(' · ');
+    izq.appendChild(sub);
+    head.appendChild(izq);
+    card.appendChild(head);
+    const barra = document.createElement('div'); barra.className = 'po-barra';
+    const fill = document.createElement('div'); fill.style.width = Math.min(100, r.monto ? Math.round(r.usado / r.monto * 100) : 0) + '%';
+    barra.appendChild(fill); card.appendChild(barra);
+    const cifras = document.createElement('div'); cifras.className = 'po-cifras';
+    [['Monto PO', formatMoney(r.monto), ''], ['Usado', formatMoney(r.usado) + ' · ' + r.rows.length + ' desp.', ''], ['Facturado', formatMoney(r.facturado), ''], ['Por facturar', formatMoney(r.porFacturar), ''], [excedida ? 'Excedida en' : 'Saldo', formatMoney(Math.abs(r.saldo)), 'po-saldo']].forEach(([t, v, cls]) => {
+      const d = document.createElement('div'); if(cls) d.className = cls;
+      const sm = document.createElement('small'); sm.textContent = t;
+      const b = document.createElement('b'); b.textContent = v;
+      d.append(sm, b); cifras.appendChild(d);
+    });
+    card.appendChild(cifras);
+    const acc = document.createElement('div'); acc.className = 'po-acciones';
+    const btn = (txt, accion, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; b.dataset.acc = accion; if(cls) b.className = cls; b.addEventListener('click', fn); acc.appendChild(b); return b; };
+    btn('📄 Saldo PO', 'documento', 'primary', () => abrirDocumentoPO(po, r));
+    btn('📊 Excel', 'excel', 'excel', () => excelPO(po, r));
+    btn('✏️ Editar', 'editar', '', () => editarPO(po));
+    btn(po.cerrada ? '↩️ Reabrir' : '🔒 Cerrar PO', 'cerrar', '', async () => {
+      try{ await guardarPOs(pos => { const x = pos.find(p => p.id === po.id); if(x) x.cerrada = !x.cerrada; }); renderRows(); }
+      catch(err){ console.error(err); showDialog('No se pudo guardar el cambio (revisa la conexión).'); }
+    });
+    btn('🗑 Eliminar', 'eliminar', 'danger', async () => {
+      if(r.rows.length){ showDialog('Esta PO tiene ' + r.rows.length + ' despacho(s) asignado(s). Quítale la PO a esos despachos o ciérrala en vez de eliminarla.'); return; }
+      if(!confirm('¿Eliminar la PO ' + po.numero + '?')) return;
+      try{ await guardarPOs(pos => { const i = pos.findIndex(p => p.id === po.id); if(i >= 0) pos.splice(i, 1); }); renderRows(); }
+      catch(err){ console.error(err); showDialog('No se pudo eliminar (revisa la conexión).'); }
+    });
+    card.appendChild(acc);
+    if(r.rows.length){
+      const det = document.createElement('details');
+      const sm = document.createElement('summary'); sm.textContent = 'Ver despachos (' + r.rows.length + ')' + (r.facturas.length ? ' y facturas (' + r.facturas.length + ')' : '');
+      det.appendChild(sm);
+      const wrap = document.createElement('div'); wrap.className = 'table-wrap';
+      const t = document.createElement('table'); t.className = 'hist-table';
+      t.innerHTML = '<thead><tr><th>Fecha</th><th>Cliente</th><th>Departamento</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th></tr></thead>';
+      const tb = document.createElement('tbody');
+      r.rows.forEach(x => {
+        const tr = document.createElement('tr');
+        const td = c => { const e = document.createElement('td'); if(c instanceof Node) e.appendChild(c); else e.textContent = c; tr.appendChild(e); };
+        td(enlaceFecha(x._fecha)); td(x.cliente || '(sin cliente)'); td(x.departamento || '—');
+        td((ESTADOS.find(e => e.value === x.estado) || ESTADOS[0]).label); td(x.numeroFactura || '—'); td(formatMoney(x.tarifa));
+        tb.appendChild(tr);
+      });
+      t.appendChild(tb); wrap.appendChild(t); det.appendChild(wrap);
+      card.appendChild(det);
+    }
+    return card;
+  }
+  function editarPO(po){
+    poEditando = po.id;
+    $('poFormTitulo').textContent = 'Editar PO ' + po.numero;
+    $('poNumero').value = po.numero; $('poProveedor').value = po.proveedor || ''; $('poMonto').value = po.monto || '';
+    $('poFecha').value = po.fecha || ''; $('poDescripcion').value = po.descripcion || '';
+    $('poGuardar').textContent = 'Guardar cambios'; $('poCancelar').hidden = false;
+    $('poMsg').textContent = '';
+    $('poForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function limpiarFormPO(){
+    poEditando = null;
+    $('poForm').reset();
+    $('poFormTitulo').textContent = 'Nueva orden de compra';
+    $('poGuardar').textContent = 'Guardar PO'; $('poCancelar').hidden = true;
+  }
+  $('poCancelar').addEventListener('click', () => { limpiarFormPO(); $('poMsg').textContent = ''; });
+  $('poForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = $('poMsg');
+    const numero = $('poNumero').value.trim().replace(/\s+/g, ' ');
+    const monto = Math.round(Number($('poMonto').value) || 0);
+    if(!numero || monto <= 0){ msg.className = 'po-msg error'; msg.textContent = 'Indica el N° de la PO y un monto mayor a cero.'; return; }
+    const datos = { numero, proveedor: $('poProveedor').value.trim(), monto, fecha: $('poFecha').value, descripcion: $('poDescripcion').value.trim() };
+    const editando = poEditando;
+    try{
+      const res = await guardarPOs(pos => {
+        if(pos.some(p => p.numero.toLowerCase() === numero.toLowerCase() && p.id !== editando)) return 'repetida';
+        if(editando){
+          const x = pos.find(p => p.id === editando);
+          if(!x) return 'no-existe';
+          if(x.numero !== numero && despachosParaPO().some(r => r.po === x.numero)) return 'en-uso';
+          Object.assign(x, datos);
+        } else pos.push(Object.assign({ id: uid(), creadoAt: new Date().toISOString(), por: currentEmail(), cerrada: false }, datos));
+        return 'ok';
+      });
+      if(res === 'repetida'){ msg.className = 'po-msg error'; msg.textContent = 'Ya existe una PO con el N° ' + numero + '.'; return; }
+      if(res === 'en-uso'){ msg.className = 'po-msg error'; msg.textContent = 'Esta PO ya tiene despachos asignados: no se puede cambiar su número.'; return; }
+      if(res === 'no-existe'){ msg.className = 'po-msg error'; msg.textContent = 'Esa PO ya no existe (otra persona la eliminó).'; limpiarFormPO(); return; }
+      msg.className = 'po-msg';
+      msg.textContent = editando ? '✅ PO ' + numero + ' actualizada.' : '✅ PO ' + numero + ' registrada. Asígnala a los despachos en la columna «PO» de la Ruta del día.';
+      limpiarFormPO();
+      renderRows();
+    }catch(err){
+      console.error(err);
+      msg.className = 'po-msg error'; msg.textContent = 'No se pudo guardar la PO (revisa la conexión).';
+    }
+  });
+  function excelPO(po, r){
+    if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisa tu conexión e intenta de nuevo en unos segundos.'); return; }
+    const resumen = [
+      { 'Concepto': 'N° PO', 'Valor': po.numero }, { 'Concepto': 'Proveedor', 'Valor': po.proveedor || '' },
+      { 'Concepto': 'Descripción', 'Valor': po.descripcion || '' }, { 'Concepto': 'Fecha PO', 'Valor': fechaDMA(po.fecha) },
+      { 'Concepto': 'Monto PO', 'Valor': r.monto }, { 'Concepto': 'Usado en despachos', 'Valor': r.usado },
+      { 'Concepto': 'Facturado', 'Valor': r.facturado }, { 'Concepto': 'Por facturar', 'Valor': r.porFacturar },
+      { 'Concepto': 'Saldo disponible', 'Valor': r.saldo }
+    ];
+    const detalle = r.rows.map(x => ({ 'Fecha': fechaDMA(x._fecha), 'Cliente': x.cliente || '', 'Departamento': x.departamento || '', 'Dirección': [x.direccion, x.comuna].filter(Boolean).join(', '), 'Estado': (ESTADOS.find(e => e.value === x.estado) || ESTADOS[0]).label, 'N° Factura': x.numeroFactura || '', 'Tarifa': Number(x.tarifa) || 0 }));
+    const facturas = r.facturas.map(f => ({ 'N° Factura': f.numero, 'Despachos': f.despachos, 'Monto': f.monto }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Saldo');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detalle.length ? detalle : [{ 'Fecha': '', 'Cliente': 'Sin despachos' }]), 'Despachos');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(facturas.length ? facturas : [{ 'N° Factura': 'Sin facturas' }]), 'Facturas');
+    XLSX.writeFile(wb, 'saldo-po-' + po.numero.replace(/[^\w-]+/g, '_') + '.xlsx');
+  }
+  function abrirDocumentoPO(po, r){
+    const win = window.open('', '_blank');
+    if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
+    const emision = new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const filas = r.rows.map((x, i) => '<tr><td>' + (i + 1) + '</td><td style="white-space:nowrap">' + fechaDMA(x._fecha) + '</td><td>' + (escapeHtml(x.cliente) || '(sin cliente)') + '</td><td>' + escapeHtml([x.direccion, x.comuna].filter(Boolean).join(', ')) + '</td><td>' + escapeHtml((ESTADOS.find(e => e.value === x.estado) || ESTADOS[0]).label) + '</td><td>' + escapeHtml(x.numeroFactura || '—') + '</td><td style="text-align:right">' + formatMoney(x.tarifa) + '</td></tr>').join('');
+    const facturas = r.facturas.map(f => '<tr><td>' + escapeHtml(f.numero) + '</td><td style="text-align:center">' + f.despachos + '</td><td style="text-align:right">' + formatMoney(f.monto) + '</td></tr>').join('');
+    win.document.write(
+      '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Saldo PO ' + escapeHtml(po.numero) + '</title><style>' +
+      'body{ font-family:Arial, Helvetica, sans-serif; color:#1b1a2e; padding:36px; }' +
+      'h1{ font-size:21px; margin:0 0 4px; } h2{ font-size:14px; margin:24px 0 8px; text-transform:uppercase; letter-spacing:.04em; color:#0B7A6B; }' +
+      '.meta{ color:#555; font-size:13px; line-height:1.7; margin-bottom:18px; }' +
+      'table{ width:100%; border-collapse:collapse; font-size:12.5px; } th, td{ border:1px solid #ccc; padding:7px 9px; text-align:left; }' +
+      'th{ background:#f0f0f6; text-transform:uppercase; font-size:11px; letter-spacing:0.3px; }' +
+      '.cuadro{ display:grid; grid-template-columns:repeat(5, 1fr); gap:0; border:1px solid #ccc; margin:6px 0 4px; }' +
+      '.cuadro div{ padding:10px 12px; border-right:1px solid #ccc; } .cuadro div:last-child{ border-right:none; background:' + (r.saldo < 0 ? '#fde4e4' : '#e6f6f1') + '; }' +
+      '.cuadro small{ display:block; font-size:10.5px; text-transform:uppercase; color:#666; letter-spacing:.04em; } .cuadro b{ font-size:16px; }' +
+      '.nota{ font-size:11.5px; color:#666; margin-top:14px; line-height:1.5; }' +
+      '.firma{ margin-top:56px; display:flex; gap:60px; } .firma div{ flex:1; border-top:1px solid #999; padding-top:6px; font-size:12px; color:#555; text-align:center; }' +
+      '@media print{ body{ padding:0; } }' +
+      '</style></head><body>' +
+      '<div style="font-size:12px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:#0B7A6B;margin-bottom:6px">' + escapeHtml(MARCA.nombre) + '</div>' +
+      '<h1>Saldo de orden de compra N° ' + escapeHtml(po.numero) + '</h1>' +
+      '<div class="meta">' +
+        (po.proveedor ? 'Proveedor: <b>' + escapeHtml(po.proveedor) + '</b><br>' : '') +
+        (po.descripcion ? 'Descripción: ' + escapeHtml(po.descripcion) + '<br>' : '') +
+        (po.fecha ? 'Fecha de la PO: ' + fechaDMA(po.fecha) + '<br>' : '') +
+        'Estado: <b>' + (po.cerrada ? 'Cerrada' : (r.saldo < 0 ? 'Excedida' : 'Abierta')) + '</b><br>' +
+        'Fecha de emisión: ' + emision +
+      '</div>' +
+      '<div class="cuadro">' +
+        '<div><small>Monto PO</small><b>' + formatMoney(r.monto) + '</b></div>' +
+        '<div><small>Usado en despachos</small><b>' + formatMoney(r.usado) + '</b></div>' +
+        '<div><small>Facturado</small><b>' + formatMoney(r.facturado) + '</b></div>' +
+        '<div><small>Por facturar</small><b>' + formatMoney(r.porFacturar) + '</b></div>' +
+        '<div><small>' + (r.saldo < 0 ? 'Excedida en' : 'Saldo disponible') + '</small><b>' + formatMoney(Math.abs(r.saldo)) + '</b></div>' +
+      '</div>' +
+      '<h2>Despachos con cargo a la PO (' + r.rows.length + ')</h2>' +
+      (r.rows.length ? '<table><thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th></tr></thead><tbody>' + filas + '</tbody>' +
+        '<tfoot><tr><td colspan="6" style="text-align:right"><b>Total usado</b></td><td style="text-align:right"><b>' + formatMoney(r.usado) + '</b></td></tr></tfoot></table>' : '<p>Aún no hay despachos con cargo a esta PO.</p>') +
+      '<h2>Facturas del proveedor con mención a la PO (' + r.facturas.length + ')</h2>' +
+      (r.facturas.length ? '<table><thead><tr><th>N° Factura</th><th>Despachos</th><th>Monto</th></tr></thead><tbody>' + facturas + '</tbody>' +
+        '<tfoot><tr><td colspan="2" style="text-align:right"><b>Total facturado</b></td><td style="text-align:right"><b>' + formatMoney(r.facturado) + '</b></td></tr></tfoot></table>' : '<p>Aún no hay facturas registradas para esta PO.</p>') +
+      '<p class="nota">Usado: suma de las tarifas de los despachos asignados a la PO. Facturado: despachos que ya tienen N° de factura del proveedor. Saldo disponible = Monto PO − Usado.</p>' +
+      '<div class="firma"><div>Firma responsable</div><div>Firma proveedor</div></div>' +
+      '</body></html>'
+    );
+    win.document.close();
+    win.focus();
+    win.print();
+  }
+
   function updateKpis(){
     const counts = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
     const conDatos = enRango() && currentView === 'despachos' ? filasDelRango() : state.rows.filter(r => !filaVacia(r));
@@ -3830,10 +4194,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('viewLiquidaciones').hidden = view !== 'liquidaciones';
     $('viewHistorial').hidden = view !== 'historial';
     $('viewLiqPeriodo').hidden = view !== 'liqperiodo';
+    $('viewSaldoPO').hidden = view !== 'saldopo';
     $('viewEntregasHist').hidden = view !== 'entregashist';
     // La barra "Ruta del …" no aplica a las vistas del período.
     $('viewConfig').hidden = view !== 'config';
-    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'config' || view === 'solicitudes';
+    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'config' || view === 'solicitudes' || view === 'saldopo';
     if(view === 'config') pintarConfig();
 
     marcarMenuLateral(view);
@@ -3846,6 +4211,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(view === 'solicitudes') pintarSolicitudes();
     if(view === 'liquidaciones') renderLiquidaciones();
     if(view === 'historial' || view === 'liqperiodo' || view === 'entregashist') cargarPeriodo();
+    if(view === 'saldopo') cargarDespachosPO();
     marcarTabMovil(view);
   }
 
@@ -4717,6 +5083,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       'N°': idx + 1,
       'Cliente': r.cliente || '',
       'Departamento': r.departamento || '',
+      'PO': r.po || '',
       'Dirección': r.direccion || '',
       'Comuna': r.comuna || '',
       'Contacto': r.contacto || '',
@@ -4727,7 +5094,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       'Tarifa': r.tarifa || ''
     }));
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{wch:4},{wch:24},{wch:18},{wch:28},{wch:16},{wch:16},{wch:26},{wch:14},{wch:10},{wch:20},{wch:10}];
+    ws['!cols'] = [{wch:4},{wch:24},{wch:18},{wch:14},{wch:28},{wch:16},{wch:16},{wch:26},{wch:14},{wch:10},{wch:20},{wch:10}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Despachos');
     const fecha = state.fecha || hojaId;
@@ -4766,7 +5133,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     productos: ['productos', 'producto', 'detalle', 'items', 'articulo', 'descripcion'],
     tarifa: ['tarifa', 'precio', 'valor', 'monto', 'costo flete', 'flete', 'costo'],
     estado: ['estado'],
-    horaEntrega: ['hora entrega', 'hora de entrega', 'hora']
+    horaEntrega: ['hora entrega', 'hora de entrega', 'hora'],
+    po: ['orden de compra', 'orden compra', 'numero po', 'nro po', 'n° po', 'n po', 'po']
   };
 
   function normalizeHeaderText(text){
@@ -4777,7 +5145,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const norm = normalizeHeaderText(header);
     if(!norm) return null;
     for(const [field, aliases] of Object.entries(EXCEL_HEADER_ALIASES)){
-      if(aliases.some(alias => norm === alias || norm.includes(alias))) return field;
+      // Los alias cortos («po») solo valen exactos, para no confundirse con otras columnas.
+      if(aliases.some(alias => norm === alias || (alias.length > 3 && norm.includes(alias)))) return field;
     }
     return null;
   }
