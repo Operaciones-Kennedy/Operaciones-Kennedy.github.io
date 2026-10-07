@@ -29,6 +29,7 @@ service cloud.firestore {
     //  - gps_AAAA-MM-DD: ubicación del camión (Seguimiento).
     //  - sol_AAAA-MM: solicitudes de ruta de la agencia.
     //  - chat_indice: resumen de las conversaciones del chat.
+    //  - po_indice: órdenes de compra (Saldo PO); solo la escribe un administrador.
     // Los despachos se guardan juntos en un texto JSON, por eso las reglas no pueden
     // separar campos (por ejemplo "pagado"): la app ya oculta esos controles al
     // transportista, y aquí se exige al menos que sea un usuario de la app.
