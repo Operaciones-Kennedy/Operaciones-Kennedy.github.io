@@ -13,13 +13,13 @@ await p.waitForTimeout(700);
 await p.click('.side-item[data-view="liquidaciones"]'); await p.waitForTimeout(300);
 console.log('Columna «Prueba de entrega» en la Liquidación del día');
 check('tiene la columna', (await p.$$eval('#tablaLiq thead th', t => t.map(x => x.textContent.trim()))).includes('Prueba de entrega'));
-check('muestra solo la foto (sin firma), con enlace', (await p.$$('#tbodyLiq tr:nth-child(1) .liq-prueba a img')).length === 1 && (await p.textContent('#tbodyLiq tr:nth-child(1) .liq-prueba')).includes('Recibió: Ana Pérez'));
-check('el no entregado muestra el motivo', (await p.textContent('#tbodyLiq tr:nth-child(2) .liq-prueba')) === 'Motivo: Cerrado');
+check('muestra solo la foto (sin firma ni «Recibió»), con enlace', (await p.$$('#tbodyLiq tr:nth-child(1) .liq-prueba a img')).length === 1 && (await p.textContent('#tbodyLiq tr:nth-child(1) .liq-prueba')).trim() === '');
+check('sin foto queda «—» (no muestra el motivo)', (await p.textContent('#tbodyLiq tr:nth-child(2) .liq-prueba')) === '—');
 check('sin entrega queda «—»', (await p.textContent('#tbodyLiq tr:nth-child(3) .liq-prueba')) === '—');
 if(process.env.CAPTURA){ await (await p.$('#viewLiquidaciones .table-card')).screenshot({ path: process.env.CAPTURA }); }
 const [pdf] = await Promise.all([p.waitForEvent('popup'), p.click('#btnImprimirLiq')]);
 await pdf.waitForLoadState();
-check('el PDF incluye las fotos', (await pdf.$$eval('thead th', t => t.map(x => x.textContent))).includes('Prueba de entrega') && (await pdf.$$('td.prueba img')).length === 1 && (await pdf.textContent('tbody')).includes('Recibió: Ana Pérez'));
+check('el PDF incluye las fotos', (await pdf.$$eval('thead th', t => t.map(x => x.textContent))).includes('Prueba de entrega') && (await pdf.$$('td.prueba img')).length === 1 && !(await pdf.textContent('tbody')).includes('Recibió'));
 await pdf.close();
 sinErrores(p);
 await b.close();
