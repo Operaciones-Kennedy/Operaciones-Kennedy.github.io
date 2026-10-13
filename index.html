@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-13 · 3";
+const VERSION_APP = "2026-10-13 · 4";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1692,6 +1692,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <select id="drEstado" aria-label="Filtrar por estado"><option value="">Todos los estados</option></select>
         <span class="spacer"></span>
         <button class="excel" id="drExcel">📤 Exportar Excel</button>
+        <button class="primary" id="drVolverDia">✏️ Agregar o editar despachos</button>
       </div>
       <section class="card table-card">
         <div class="table-wrap">
@@ -3657,7 +3658,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   /* ---------- Día o rango en Ruta del día, Seguimiento, Entregas, KPIs y Liquidación ---------- */
   const VISTAS_RANGO = ['despachos', 'seguimiento', 'chofer', 'reportes', 'liquidaciones'];
   let modoRango = (() => { try{ return localStorage.getItem('ruteka_modo') === 'rango'; }catch(e){ return false; } })();
-  function enRango(){ return modoRango && VISTAS_RANGO.includes(currentView); }
+  // La Ruta del día tiene su propio modo y siempre abre en «Día» (ahí se agregan y editan
+  // despachos): el «Rango» elegido en otras pantallas no se le pega.
+  let rangoRuta = false;
+  const modoActual = () => currentView === 'despachos' ? rangoRuta : modoRango;
+  function enRango(){ return currentView === 'despachos' ? rangoRuta : (modoRango && VISTAS_RANGO.includes(currentView)); }
   function fechaDe(r){ return r._fecha || hojaId; }
   // Filas del período: los otros días tal como se cargaron y el día abierto en vivo (sus filas reales).
   function filasDelRango(){
@@ -3686,14 +3691,17 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('hojaInfo').hidden = r;
     if(currentView === 'despachos') renderDespachosRango();
     $('hojaModo').querySelectorAll('button').forEach(b => {
-      const activo = (b.dataset.modo === 'rango') === modoRango;
+      const activo = (b.dataset.modo === 'rango') === modoActual();
       b.classList.toggle('activo', activo);
       b.setAttribute('aria-pressed', activo ? 'true' : 'false');
     });
   }
   $('hojaModo').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-    modoRango = b.dataset.modo === 'rango';
-    try{ localStorage.setItem('ruteka_modo', modoRango ? 'rango' : 'dia'); }catch(e){}
+    if(currentView === 'despachos') rangoRuta = b.dataset.modo === 'rango';
+    else {
+      modoRango = b.dataset.modo === 'rango';
+      try{ localStorage.setItem('ruteka_modo', modoRango ? 'rango' : 'dia'); }catch(e){}
+    }
     pintarModoBarra();
     if(enRango()) cargarPeriodo();
     renderVistaActual();
@@ -4038,6 +4046,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('drTotal').textContent = formatMoney(total);
   }
   $('drBuscar').addEventListener('input', renderDespachosRango);
+  $('drVolverDia').addEventListener('click', () => { rangoRuta = false; pintarModoBarra(); renderVistaActual(); window.scrollTo(0, 0); });
   $('drEstado').addEventListener('change', renderDespachosRango);
   $('drExcel').addEventListener('click', () => {
     if(typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel — revisa tu conexión e intenta de nuevo en unos segundos.'); return; }
@@ -6525,7 +6534,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     }
   }
   function irARuta(fecha, vista){
-    modoRango = false; try{ localStorage.setItem('ruteka_modo', 'dia'); }catch(e){}
+    modoRango = false; rangoRuta = false; try{ localStorage.setItem('ruteka_modo', 'dia'); }catch(e){}
     abrirHoja(fecha); switchView(vista); window.scrollTo(0, 0);
   }
   function pintarOk(box){
