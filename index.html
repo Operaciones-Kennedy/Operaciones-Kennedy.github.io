@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-13 · 2";
+const VERSION_APP = "2026-10-13 · 3";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1115,7 +1115,12 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .vb-email input{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; font-weight:600; font-size:13px; color:var(--text); min-width:0; width:230px; max-width:100%; background:#fff; }
   .vb-email input:focus{ outline:none; border-color:var(--accent); }
   thead th.col-vb{ background:var(--marca-principal); }
-  td.col-vb{ min-width:230px; background:rgba(20,184,166,0.05); }
+  td.col-vb{ min-width:210px; background:#eef8f6; }
+  /* El visto bueno queda siempre a la vista, aunque la tabla se desplace hacia el lado. */
+  @media (min-width:821px){ #tablaLiq th.col-vb, #tablaLiq td.col-vb{ position:sticky; right:0; z-index:1; box-shadow:-6px 0 10px -6px rgba(15,76,92,.25); } }
+  #tablaLiq td.liq-dir{ min-width:190px; }
+  #tablaLiq input.prueba{ width:112px; }
+  .content.ancha{ max-width:none; }
   tbody tr.vb-observado{ background:#fffaf0; }
   .vb-box{ display:flex; flex-direction:column; gap:6px; }
   .vb-btns{ display:flex; gap:6px; flex-wrap:wrap; }
@@ -2148,7 +2153,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
     <p class="footer-note">
       Marca "Pagado" cuando le hayas transferido o entregado el dinero al transportista por ese despacho. Anota el N° de factura y, si quieres, adjunta el archivo (PDF o foto) que te mandó. "Imprimir liquidación" arma un comprobante con todos los despachos listados aquí para guardar como PDF. Se guarda junto con el resto de la hoja, así lo ve también si tiene sesión abierta.
-      En <strong>Visto bueno transportista</strong>, el transportista marca cada despacho como <strong>Conforme</strong> u <strong>Observar</strong> (con un comentario). Si anotas su correo arriba, solo él puede marcar. Si la tarifa de un despacho cambia después del visto bueno, vuelve a quedar pendiente.
+      En <strong>Visto bueno transportista</strong>, el transportista marca cada despacho como <strong>Conforme</strong> u <strong>Observar</strong> (con un comentario). Si anotas su correo arriba, solo él (o tú, como operación) puede marcar. Si la tarifa de un despacho cambia después del visto bueno, vuelve a quedar pendiente.
     </p>
   </div>
   </main>
@@ -2730,6 +2735,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
       const tdDireccion = document.createElement('td');
       tdDireccion.textContent = [row.direccion, row.comuna].filter(Boolean).join(', ');
+      tdDireccion.className = 'liq-dir';
       tr.appendChild(tdDireccion);
 
       const tdEstado = document.createElement('td');
@@ -4650,6 +4656,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('viewLiquidaciones').hidden = view !== 'liquidaciones';
     $('viewHistorial').hidden = view !== 'historial';
     $('viewLiqPeriodo').hidden = view !== 'liqperiodo';
+    // Las vistas con tablas anchas usan todo el ancho de la pantalla.
+    document.querySelector('main.content').classList.toggle('ancha', ['despachos', 'liquidaciones', 'liqperiodo', 'entregashist', 'historial'].includes(view));
     $('viewSaldoPO').hidden = view !== 'saldopo';
     $('viewEntregasHist').hidden = view !== 'entregashist';
     // La barra "Ruta del …" no aplica a las vistas del período.
