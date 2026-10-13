@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-13 · 5";
+const VERSION_APP = "2026-10-13 · 6";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1109,7 +1109,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .eh-table .eh-firma{ background:#fff; object-fit:contain; }
   .hist-foto{ width:44px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--border); display:block; }
   .liq-prueba .liq-fotos{ display:flex; gap:6px; }
-  .liq-prueba small{ display:block; margin-top:4px; font-size:11.5px; color:var(--muted); max-width:150px; }
   @media (max-width:480px){ .rango-info{ margin-left:0; width:100%; } .hist-charts{ grid-template-columns:1fr; } }
 
   /* ---------- Visto bueno del transportista (Liquidaciones) ---------- */
@@ -2701,7 +2700,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return c;
   }
 
-  // Foto de referencia de la entrega (miniatura que abre la imagen) y quién recibió.
+  // Solo la foto de referencia de la entrega (miniatura que abre la imagen).
   function celdaPruebaLiq(row){
     const td = document.createElement('td');
     td.className = 'liq-prueba';
@@ -2710,8 +2709,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const foto = miniaturaEh(e.fotoUrl, 'Foto de entrega');
     if(foto instanceof Node) fotos.appendChild(foto);
     if(fotos.children.length) td.appendChild(fotos);
-    const txt = e.recibidoPor ? 'Recibió: ' + e.recibidoPor : e.motivo ? 'Motivo: ' + e.motivo : '';
-    if(txt){ const sm = document.createElement('small'); sm.textContent = txt; td.appendChild(sm); }
     if(!td.childNodes.length) td.textContent = e.fotoPendiente ? '⏳ Subiendo…' : '—';
     return td;
   }
@@ -2913,8 +2910,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const pruebaHtml = r => {
       const e = r.entrega || {};
       const imgs = urlOk(e.fotoUrl) ? '<img src="' + escapeHtml(e.fotoUrl) + '" alt="">' : '';
-      const txt = e.recibidoPor ? 'Recibió: ' + e.recibidoPor : (e.motivo ? 'Motivo: ' + e.motivo : '');
-      return imgs || txt ? imgs + (txt ? '<div class="quien">' + escapeHtml(txt) + '</div>' : '') : '—';
+      return imgs || '—';
     };
     let vbOk = 0, vbObs = 0;
     rows.forEach(r => { const v = vistoBuenoDe(r).estado; if(v === 'conforme') vbOk++; if(v === 'observado') vbObs++; });
@@ -2961,7 +2957,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       '.firma{ margin-top:60px; display:flex; gap:60px; }' +
       '.firma div{ flex:1; border-top:1px solid #999; padding-top:6px; font-size:12px; color:#555; text-align:center; }' +
       'td.prueba img{ width:70px; height:70px; object-fit:cover; border:1px solid #ccc; border-radius:4px; margin:0 4px 4px 0; vertical-align:top; }' +
-      'td.prueba .quien{ font-size:11px; color:#555; }' +
       'tr{ page-break-inside:avoid; }' +
       '@media print{ body{ padding:0; } }' +
       '</style></head><body>' +
