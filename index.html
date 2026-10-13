@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-08 · 2";
+const VERSION_APP = "2026-10-13 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -2539,7 +2539,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   function currentEmail(){
     return ((auth && auth.currentUser && auth.currentUser.email) || '').trim().toLowerCase();
   }
+  // Da el visto bueno el transportista de la ruta; el administrador también puede hacerlo
+  // (queda registrado como «operación», con su correo).
   function puedeDarVistoBueno(row){
+    if(!modoTransportista) return true;
     const t = ((row && row._fecha && row._fecha !== hojaId ? row._transportistaEmail : state.transportistaEmail) || '').trim().toLowerCase();
     return !t || t === currentEmail();
   }
@@ -2563,6 +2566,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       tarifa: Number(row.tarifa) || 0,
       comentario: comentario || ''
     };
+    if(!modoTransportista) vb.operacion = true;
     vbEditando.delete(vbClave(row));
     vbBorrador.delete(vbClave(row));
     actualizarFila(row, r => { r.vistoBueno = Object.assign({}, vb); });
@@ -2605,7 +2609,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const st = document.createElement('div');
       st.className = 'vb-stamp ' + vb.estado;
       const titulo = document.createElement('b');
-      titulo.textContent = vb.estado === 'conforme' ? '✅ Conforme' : '⚠️ Con observación';
+      titulo.textContent = (vb.estado === 'conforme' ? '✅ Conforme' : '⚠️ Con observación') + (vb.operacion ? ' (operación)' : '');
       st.appendChild(titulo);
       st.appendChild(document.createTextNode((vb.por || '') + ' · ' + fechaCorta(vb.at)));
       if(vb.comentario){
@@ -2618,7 +2622,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       if(puede){
         const cambiar = document.createElement('button');
         cambiar.className = 'vb-link';
-        cambiar.textContent = 'Cambiar mi respuesta';
+        cambiar.textContent = modoTransportista ? 'Cambiar mi respuesta' : 'Cambiar';
         cambiar.addEventListener('click', () => actualizarFila(row, r => { delete r.vistoBueno; }));
         box.appendChild(cambiar);
       }
@@ -2800,8 +2804,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   function textoVistoBueno(r){
     const vb = vistoBuenoDe(r);
-    if(vb.estado === 'conforme') return 'Conforme · ' + escapeHtml(vb.por || '') + ' · ' + fechaCorta(vb.at);
-    if(vb.estado === 'observado') return '<b>Observado</b> · ' + escapeHtml(vb.por || '') + ' · ' + fechaCorta(vb.at) + '<br><i>' + escapeHtml(vb.comentario || '') + '</i>';
+    const op = vb.operacion ? ' (operación)' : '';
+    if(vb.estado === 'conforme') return 'Conforme' + op + ' · ' + escapeHtml(vb.por || '') + ' · ' + fechaCorta(vb.at);
+    if(vb.estado === 'observado') return '<b>Observado</b>' + op + ' · ' + escapeHtml(vb.por || '') + ' · ' + fechaCorta(vb.at) + '<br><i>' + escapeHtml(vb.comentario || '') + '</i>';
     return vb.cambioTarifa ? 'Pendiente (cambió la tarifa)' : 'Pendiente';
   }
 
