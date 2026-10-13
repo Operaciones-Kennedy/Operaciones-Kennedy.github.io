@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-13 · 1";
+const VERSION_APP = "2026-10-13 · 2";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -943,6 +943,9 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .guia-btns{ display:flex; gap:8px; flex-wrap:wrap; }
   .gps-card.activo{ border-color:var(--marca-principal-claro); background:var(--ok-bg); }
   .lp-depto-titulo{ margin:0; padding:14px 16px 0; font-size:15px; }
+  .liq-cargo{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px 18px; padding:14px 18px; margin-bottom:16px; }
+  .liq-cargo small{ display:block; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:3px; }
+  .liq-cargo b{ font-size:15px; overflow-wrap:anywhere; }
   .po-header{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:10px 16px; }
   .po-header > div{ flex:1 1 300px; }
   .po-form-card{ padding:16px; margin-bottom:12px; }
@@ -2056,6 +2059,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       </label>
       <button id="lpExcel">📊 Exportar Excel</button>
     </div>
+    <section class="card liq-cargo" id="lpCargo">
+      <div><small>Departamento a cargo</small><b id="lpDepto">—</b></div>
+      <div><small>Orden de compra</small><b id="lpPO">—</b></div>
+    </section>
     <section class="card table-card">
       <h2 class="lp-depto-titulo">Gasto por departamento</h2>
       <div class="table-wrap">
@@ -2068,7 +2075,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     <section class="card table-card">
       <div class="table-wrap">
         <table class="hist-table">
-          <thead><tr><th>Fecha</th><th>Cliente</th><th>Departamento</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Cliente</th><th>Departamento</th><th>PO</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno</th></tr></thead>
           <tbody id="lpFilas"></tbody>
         </table>
       </div>
@@ -2101,6 +2108,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <span class="stat-note" id="liqVistoBuenoNota"></span>
       </div>
     </section>
+    <section class="card liq-cargo" id="liqCargo">
+      <div><small>Departamento a cargo</small><b id="liqDepto">—</b></div>
+      <div><small>Orden de compra</small><b id="liqPO">—</b></div>
+    </section>
 
     <div class="toolbar">
       <button class="primary" id="btnImprimirLiq">🖨️ Imprimir liquidación (PDF)</button>
@@ -2119,6 +2130,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
               <th class="col-num">N°</th>
               <th id="thLiqFecha" hidden>Fecha</th>
               <th>Cliente</th>
+              <th>Departamento</th>
+              <th>PO</th>
               <th>Dirección</th>
               <th>Estado</th>
               <th>Tarifa</th>
@@ -2657,6 +2670,28 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return td;
   }
 
+  // Quién paga la liquidación: departamento(s) y orden(es) de compra de sus despachos.
+  function cargoLiquidacion(rows){
+    const con = rows.filter(r => r.cliente || r.direccion || Number(r.tarifa));
+    const lista = campo => [...new Set(con.map(r => String(r[campo] || '').trim()).filter(Boolean))].sort();
+    const sin = campo => con.filter(r => !String(r[campo] || '').trim()).length;
+    return { deptos: lista('departamento'), pos: lista('po'), sinDepto: sin('departamento'), sinPO: sin('po'), total: con.length };
+  }
+  function textoCargo(lista, sin, nombre){
+    if(!lista.length) return 'Sin ' + nombre + (nombre === 'orden de compra' ? ' asignada' : ' asignado');
+    return lista.join(', ') + (sin ? ' (' + sin + ' despacho(s) sin ' + nombre + ')' : '');
+  }
+  function textoPOs(c){
+    const conArea = c.pos.map(n => { const po = (typeof poLista !== 'undefined' ? poLista : []).find(p => p.numero === n); return 'N° ' + n + (po && po.area ? ' (' + po.area + ')' : ''); });
+    return textoCargo(conArea, c.sinPO, 'orden de compra');
+  }
+  function pintarCargo(pre, rows){
+    const c = cargoLiquidacion(rows);
+    $(pre + 'Depto').textContent = c.total ? textoCargo(c.deptos, c.sinDepto, 'departamento') : '—';
+    $(pre + 'PO').textContent = c.total ? textoPOs(c) : '—';
+    return c;
+  }
+
   function renderLiquidaciones(){
     const tbodyLiq = $('tbodyLiq');
     tbodyLiq.innerHTML = '';
@@ -2691,6 +2726,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const tdCliente = document.createElement('td');
       tdCliente.textContent = row.cliente || '(sin cliente)';
       tr.appendChild(tdCliente);
+      [row.departamento, row.po].forEach(v => { const c = document.createElement('td'); c.textContent = (v || '').trim() || '—'; tr.appendChild(c); });
 
       const tdDireccion = document.createElement('td');
       tdDireccion.textContent = [row.direccion, row.comuna].filter(Boolean).join(', ');
@@ -2792,6 +2828,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('liqPendiente').textContent = formatMoney(total - pagado);
     $('liqVistoBueno').textContent = `${vbConforme} de ${vbTotal}`;
     $('liqVistoBuenoNota').textContent = vbObservado ? `${vbObservado} con observación` : (vbTotal && vbConforme === vbTotal ? 'Todo conforme' : '');
+    pintarCargo('liq', filas);
   }
 
   $('liqTransportistaEmail').addEventListener('change', e => {
@@ -2840,6 +2877,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const rows = o.rows;
     if(!rows.length){ showDialog('No hay despachos para liquidar.'); return; }
     const conFecha = !!o.periodo;
+    const cargo = cargoLiquidacion(rows);
+    // Si hay más de un departamento u orden de compra, cada fila dice el suyo.
+    const colDepto = cargo.deptos.length > 1 || (cargo.deptos.length && cargo.sinDepto);
+    const colPO = cargo.pos.length > 1 || (cargo.pos.length && cargo.sinPO);
     let vbOk = 0, vbObs = 0;
     rows.forEach(r => { const v = vistoBuenoDe(r).estado; if(v === 'conforme') vbOk++; if(v === 'observado') vbObs++; });
 
@@ -2853,6 +2894,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         '<td>' + (i + 1) + '</td>' +
         (conFecha ? '<td style="white-space:nowrap">' + escapeHtml((r._fecha || '').split('-').reverse().join('/')) + '</td>' : '') +
         '<td>' + (escapeHtml(r.cliente) || '(sin cliente)') + '</td>' +
+        (colDepto ? '<td>' + (escapeHtml(r.departamento) || '—') + '</td>' : '') +
+        (colPO ? '<td>' + (escapeHtml(r.po) || '—') + '</td>' : '') +
         '<td>' + escapeHtml([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</td>' +
         '<td>' + escapeHtml(estadoInfo.label) + '</td>' +
         '<td>' + escapeHtml(r.numeroFactura || '—') + '</td>' +
@@ -2888,11 +2931,13 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       '<div class="meta">' +
         (o.periodo ? 'Período: <b>' + escapeHtml(o.periodo) + '</b><br>' : 'Hoja de ruta: <b>' + escapeHtml(o.hoja) + '</b><br>') +
         'Transportista: <b>' + escapeHtml(o.transportista || 'Todos') + '</b>' + (o.transportistaEmail ? ' (' + escapeHtml(o.transportistaEmail) + ')' : '') + '<br>' +
+        'Departamento a cargo: <b>' + escapeHtml(textoCargo(cargo.deptos, cargo.sinDepto, 'departamento')) + '</b><br>' +
+        'Orden de compra: <b>' + escapeHtml(textoPOs(cargo)) + '</b><br>' +
         'Visto bueno del transportista: <b>' + vbOk + ' de ' + rows.length + ' conforme</b>' + (vbObs ? ' · ' + vbObs + ' con observación' : '') + '<br>' +
         (o.puntoPartida ? 'Punto de partida: ' + escapeHtml(o.puntoPartida) + '<br>' : '') +
         'Fecha de emisión: ' + fechaEmision +
       '</div>' +
-      '<table><thead><tr><th>N°</th>' + (conFecha ? '<th>Fecha</th>' : '') + '<th>Cliente</th><th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno transportista</th></tr></thead>' +
+      '<table><thead><tr><th>N°</th>' + (conFecha ? '<th>Fecha</th>' : '') + '<th>Cliente</th>' + (colDepto ? '<th>Departamento</th>' : '') + (colPO ? '<th>PO</th>' : '') + '<th>Dirección</th><th>Estado</th><th>N° Factura</th><th>Tarifa</th><th>Pagado</th><th>Visto bueno transportista</th></tr></thead>' +
       '<tbody>' + filas + '</tbody></table>' +
       '<div class="totales">' +
         '<div><span>Total liquidación</span><span>' + formatMoney(total) + '</span></div>' +
@@ -3863,6 +3908,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       td(enlaceFecha(r._fecha));
       td(r.cliente || '(sin cliente)');
       td(r.departamento || '—');
+      td(r.po || '—');
       td([r.direccion, r.comuna].filter(Boolean).join(', '));
       const info = ESTADOS.find(e => e.value === r.estado) || ESTADOS[0];
       const pill = document.createElement('span'); pill.className = 'estado-pill ' + info.cls; pill.textContent = info.label; td(pill);
@@ -3874,7 +3920,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     });
     if(!rows.length){
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td colspan="9" class="chart-empty">No hay despachos en este período.</td>';
+      tr.innerHTML = '<td colspan="10" class="chart-empty">No hay despachos en este período.</td>';
       tb.appendChild(tr);
     }
     $('lpTotal').textContent = formatMoney(total);
@@ -3883,6 +3929,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     $('lpPendiente').textContent = formatMoney(total - pagado);
     $('lpVistoBueno').textContent = ok + ' de ' + rows.length;
     $('lpVistoBuenoNota').textContent = obs ? obs + ' con observación' : (rows.length && ok === rows.length ? 'Todo conforme' : '');
+    pintarCargo('lp', rows);
   }
 
   document.querySelectorAll('.rango-bar, .rango-ctrl').forEach(bar => {
