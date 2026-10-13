@@ -81,6 +81,32 @@ console.log('Administrador: Ruta del día por rango');
   await p.context().close();
 }
 
+console.log('El «Rango» de otras pantallas no bloquea la Ruta del día');
+{
+  const p = await open(b, { setup: setup('jefe@prueba.cl'), width: 1280 });
+  await p.waitForTimeout(600);
+  await p.click('.side-item[data-view="liquidaciones"]'); await p.waitForTimeout(200);
+  await rango(p);
+  await p.click('.side-item[data-view="despachos"]'); await p.waitForTimeout(300);
+  check('la Ruta del día abre en «Día», lista para agregar y editar', await p.isVisible('#tabla') && await p.isVisible('#btnAddRow') && !(await p.isVisible('#despRango')) && await p.$eval('#hojaModo [data-modo="dia"]', e => e.classList.contains('activo')));
+  await p.click('.side-item[data-view="liquidaciones"]'); await p.waitForTimeout(200);
+  check('la Liquidación sigue en «Rango»', await p.isVisible('#rDesdeR'));
+  await p.click('.side-item[data-view="despachos"]'); await p.waitForTimeout(200);
+  await p.click('#hojaModo [data-modo="rango"]'); await p.waitForTimeout(300);
+  check('en Rango aparece el botón para volver a editar', await p.isVisible('#drVolverDia'));
+  await p.click('#drVolverDia'); await p.waitForTimeout(200);
+  check('y vuelve a «Día»', await p.isVisible('#btnAddRow') && !(await p.isVisible('#despRango')));
+  sinErrores(p);
+  await p.context().close();
+}
+{
+  const p = await open(b, { setup: setup('jefe@prueba.cl').replace("localStorage.setItem('hojaDeRuta_actual'", "localStorage.setItem('ruteka_modo', 'rango'); localStorage.setItem('hojaDeRuta_actual'"), width: 1280 });
+  await p.waitForTimeout(600);
+  check('al abrir la app con «Rango» guardado, la Ruta del día igual parte en «Día»', await p.isVisible('#btnAddRow') && !(await p.isVisible('#despRango')));
+  sinErrores(p);
+  await p.context().close();
+}
+
 console.log('Ruta del día por rango en el teléfono');
 {
   const p = await open(b, { setup: setup('jefe@prueba.cl'), width: 390, height: 844 });
