@@ -53,6 +53,16 @@ Proyecto Firebase propio: `ruteka-f1c53`. Hasta octubre de 2026 Ruteka usaba el 
 
 Al guardar, la página no reemplaza la lista completa. Envía solo lo que cambió en ese dispositivo y lo combina con lo que hay en línea (en una transacción). Así dos personas pueden trabajar a la vez sin pisarse.
 
+### Avisos por correo
+
+Cuando la operación **reprograma** una solicitud (botón 🔄 en Solicitudes), la página deja un documento en la colección `mail` con el correo de quien pidió la ruta (`para`), el asunto y el texto. Un sitio estático no puede enviar correos solo, así que los envía la extensión de Firebase **Trigger Email from Firestore**:
+
+1. Firebase pasa el proyecto al plan Blaze (el uso de esta extensión es mínimo).
+2. Consola → **Extensions** → instalar *Trigger Email from Firestore*, con colección `mail` y un servidor SMTP (Gmail con contraseña de aplicación, SendGrid, etc.) y el remitente que quieras.
+3. Publicar las reglas de `firebase/firestore.rules` (incluyen `mail`, solo para administradores).
+
+Hasta que la extensión esté instalada, el aviso queda en `mail` sin enviarse y la reprogramación funciona igual. Si la escritura falla (reglas sin publicar), solo se omite el aviso.
+
 ### Reglas de seguridad
 
 En `firebase/` están las reglas recomendadas:

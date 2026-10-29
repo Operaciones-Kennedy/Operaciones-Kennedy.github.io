@@ -50,6 +50,13 @@ service cloud.firestore {
       allow write: if esAdmin() || conectado() && hoja.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
     }
 
+    // Correos de aviso (por ejemplo, una ruta reprogramada): solo un administrador los encola.
+    // Los envía la extensión «Trigger Email from Firestore», que no pasa por estas reglas.
+    match /mail/{id} {
+      allow create: if esAdmin();
+      allow read, update, delete: if esAdmin();
+    }
+
     // Configuración: todos la leen; solo un administrador la cambia.
     match /config/app {
       allow read: if conectado();

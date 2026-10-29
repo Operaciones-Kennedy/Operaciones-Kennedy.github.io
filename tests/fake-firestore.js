@@ -73,7 +73,7 @@
     };
   }
   const db = {
-    collection: coll => Object.assign(query(coll), { doc: id => ref(coll, id), orderBy: (f, dir) => query(coll, f, dir) }),
+    collection: coll => Object.assign(query(coll), { add: async d => { if(denegada(coll)) throw permiso(); write(coll + '/' + Math.random().toString(36).slice(2), d); }, doc: id => ref(coll, id), orderBy: (f, dir) => query(coll, f, dir) }),
     runTransaction: async fn => {
       if(params.offline) throw Object.assign(new Error('offline'), { code: 'unavailable' });
       const pend = [];
