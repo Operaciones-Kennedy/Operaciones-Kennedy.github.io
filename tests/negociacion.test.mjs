@@ -140,6 +140,9 @@ console.log('Reprogramar: el cliente se anticipó y se despacha antes');
   const r30 = await rowsOf(p, 'hojasDeRuta', '2026-10-30');
   check('la ruta del 30/10 conserva el entregado y lo ajeno', r30.rows.map(r => r.id).join(',') === 'r2,r3');
   check('la tarjeta muestra 30 tachado → 29 y el hilo', (await p.textContent(`${carta} .sol-hilo`)).includes('Reprogramada: pasó de la ruta del viernes, 30 de octubre') && (await p.$$eval(`${carta} .sol-dia b`, bs => bs.map(x => x.textContent).join('→'))) === '30→29');
+  const correos = await p.evaluate(() => Object.entries(window.__fs.docs).filter(([k]) => k.startsWith('mail/')).map(([, d]) => d));
+  check('encola un correo para quien pidió la ruta', correos.length === 1 && correos[0].to[0] === 'ops@agencia.cl' && correos[0].message.subject.includes('se adelantó al jueves, 29 de octubre') && correos[0].message.html.includes('viernes, 30 de octubre') && correos[0].message.html.includes('Radio Sonar'), JSON.stringify(correos));
+  check('el aviso en pantalla dice a quién se avisó', (await p.textContent('#solOk')).includes('Se avisó por correo a ops@agencia.cl'));
   sinErrores(p);
   await p.context().close();
 }

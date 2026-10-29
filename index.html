@@ -6396,6 +6396,30 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       transportista: state.transportista || '', transportistaEmail: state.transportistaEmail || '', transportistas: state.transportistas || [], fecha, rows: []
     };
   }
+  // Avisa por correo a quien pidió la ruta. Se escribe en la colección `mail`, que envía la extensión
+  // «Trigger Email from Firestore» de Firebase (ver README); si no está instalada, no pasa nada.
+  async function avisarReprogramacion(sol, desde, fecha){
+    const para = String(sol.por || '').trim();
+    if(!db || !/^[^@\s]+@[^@\s]+$/.test(para) || para.toLowerCase() === currentEmail().toLowerCase()) return false;
+    const antes = fecha < desde;
+    const nombre = (sol.solicitante && sol.solicitante.nombre) || '';
+    const lista = sol.despachos.map(d => '<li>' + escapeHtml([d.cliente, d.direccion, d.comuna].filter(Boolean).join(' · ')) + '</li>').join('');
+    const html = '<p>Hola' + (nombre ? ' ' + escapeHtml(nombre) : '') + ',</p>' +
+      '<p>La operación ' + (antes ? '<b>adelantó</b>' : 'cambió') + ' el despacho que pediste: pasó del <b>' + escapeHtml(fechaLarga(desde)) + '</b> al <b>' + escapeHtml(fechaLarga(fecha)) + '</b>.</p>' +
+      '<ul>' + lista + '</ul>' +
+      '<p>Puedes ver el estado en Ruteka: <a href="https://operaciones-kennedy.github.io">operaciones-kennedy.github.io</a></p>';
+    try{
+      await db.collection('mail').add({
+        to: [para],
+        message: { subject: 'Ruteka: tu despacho ' + (antes ? 'se adelantó al ' : 'cambió al ') + fechaLarga(fecha), html },
+        solicitudId: sol.id, creadoPor: currentEmail(), creadoAt: new Date().toISOString()
+      });
+      return true;
+    }catch(err){
+      console.warn('No se pudo encolar el correo de aviso', err);
+      return false;
+    }
+  }
   // La operación mueve una solicitud ya programada a otra ruta (ej: el cliente se anticipó). Solo pasan los
   // despachos que siguen pendientes; los que ya salieron o se entregaron se quedan en su ruta.
   async function reprogramarSolicitud(sol, fecha){
@@ -6436,7 +6460,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       s.historial.push(pasoSol('reprogramada', { fecha, desde }));
       Object.assign(s, { rutaFecha: fecha });
     });
-    if(ok){ solUltimoAviso = { fecha, n: movidas, at: Date.now() }; pintarTodoSolicitudes(); }
+    if(ok){
+      const correo = await avisarReprogramacion(sol, desde, fecha);
+      solUltimoAviso = { fecha, n: movidas, at: Date.now(), correo: correo ? sol.por : '' };
+      pintarTodoSolicitudes();
+    }
     return ok;
   }
 
@@ -6617,7 +6645,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     box.innerHTML = '';
     box.hidden = !a;
     if(!a) return;
-    box.appendChild(nuevo('span', '', '✅ ' + (a.n === 1 ? '1 despacho pasó' : a.n + ' despachos pasaron') + ' a la ruta del ' + fechaLarga(a.fecha) + '.'));
+    box.appendChild(nuevo('span', '', '✅ ' + (a.n === 1 ? '1 despacho pasó' : a.n + ' despachos pasaron') + ' a la ruta del ' + fechaLarga(a.fecha) + '.' + (a.correo ? ' Se avisó por correo a ' + a.correo + '.' : '')));
     const aSeguimiento = modoTransportista && verSeguimiento;
     if(!modoTransportista || verSeguimiento) box.appendChild(boton(aSeguimiento ? '📍 Ver seguimiento' : '🚚 Ver en Entregas', 'ir-ruta', '', () => { solUltimoAviso = null; irARuta(a.fecha, aSeguimiento ? 'seguimiento' : 'chofer'); }));
     const x = boton('✕', 'cerrar-ok', 'icon-btn', () => { solUltimoAviso = null; pintarTodoSolicitudes(); });
