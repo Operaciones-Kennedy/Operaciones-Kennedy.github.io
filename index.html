@@ -6390,6 +6390,56 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     pintarTodoSolicitudes();
   }
 
+  function hojaNueva(fecha){
+    return {
+      titulo: state.titulo || '', puntoPartida: state.puntoPartida || '', startLat: state.startLat, startLng: state.startLng,
+      transportista: state.transportista || '', transportistaEmail: state.transportistaEmail || '', transportistas: state.transportistas || [], fecha, rows: []
+    };
+  }
+  // La operación mueve una solicitud ya programada a otra ruta (ej: el cliente se anticipó). Solo pasan los
+  // despachos que siguen pendientes; los que ya salieron o se entregaron se quedan en su ruta.
+  async function reprogramarSolicitud(sol, fecha){
+    const desde = sol.rutaFecha || sol.fecha;
+    if(!fecha || fecha === desde) return false;
+    const quien = currentEmail();
+    const ahora = new Date().toISOString();
+    let movidas = 0, finales = null;
+    try{
+      const refA = db.collection('hojasDeRuta').doc(desde), refB = db.collection('hojasDeRuta').doc(fecha);
+      finales = await db.runTransaction(async tx => {
+        const [snA, snB] = await Promise.all([tx.get(refA), tx.get(refB)]);
+        const stA = snA.exists && snA.data().json ? JSON.parse(snA.data().json) : null;
+        if(!stA) return null;
+        const mover = (stA.rows || []).filter(r => r.solicitudId === sol.id && (!r.estado || r.estado === 'pendiente'));
+        if(!mover.length) return null;
+        const stB = snB.exists && snB.data().json ? JSON.parse(snB.data().json) : hojaNueva(fecha);
+        stA.rows = stA.rows.filter(r => !mover.includes(r));
+        stB.rows = (stB.rows || []).concat(mover.map(r => Object.assign({}, r, { eventos: (r.eventos || []).concat([{ tipo: 'reprogramado', at: ahora, por: quien }]).slice(-30) })));
+        const meta = { updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: quien };
+        tx.set(refA, Object.assign({ json: JSON.stringify(stA), fecha: desde }, meta), { merge: true });
+        tx.set(refB, Object.assign({ json: JSON.stringify(stB), fecha }, meta), { merge: true });
+        movidas = mover.length;
+        return [[stA, desde], [stB, fecha]];
+      });
+    }catch(err){
+      console.error(err);
+      showDialog('No se pudo reprogramar: ' + err.message);
+      return false;
+    }
+    if(!finales){
+      showDialog('No hay despachos pendientes de esta solicitud en la ruta del ' + fechaDM(desde) + ' (ya salieron, se entregaron o se quitaron de la ruta).');
+      solPanel = null; pintarTodoSolicitudes();
+      return false;
+    }
+    finales.forEach(([st, id]) => guardarResumen(st, id, quien));
+    const ok = await moverSolicitud(sol, ['programada'], s => {
+      s.historial.push(pasoSol('reprogramada', { fecha, desde }));
+      Object.assign(s, { rutaFecha: fecha });
+    });
+    if(ok){ solUltimoAviso = { fecha, n: movidas, at: Date.now() }; pintarTodoSolicitudes(); }
+    return ok;
+  }
+
   // Aprobar (operación) o aceptar la fecha propuesta (agencia): los despachos pasan a la ruta de ese día.
   async function programarSolicitud(sol, fecha){
     const quien = currentEmail();
@@ -6415,10 +6465,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       const ref = db.collection('hojasDeRuta').doc(fecha);
       const final = await db.runTransaction(async tx => {
         const sn = await tx.get(ref);
-        const st = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : {
-          titulo: state.titulo || '', puntoPartida: state.puntoPartida || '', startLat: state.startLat, startLng: state.startLng,
-          transportista: state.transportista || '', transportistaEmail: state.transportistaEmail || '', transportistas: state.transportistas || [], fecha, rows: []
-        };
+        const st = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : hojaNueva(fecha);
         st.rows = (st.rows || []).concat(sol.despachos.map(d => Object.assign(defaultRow(), {
           cliente: d.cliente || '', direccion: d.direccion || '', comuna: d.comuna || '', contacto: d.contacto || '', productos: d.productos || '',
           creadoAt: sol.creadoAt, solicitudId: sol.id,
@@ -6555,6 +6602,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       case 'contrapropuesta': return [quien + ' propone el ' + fechaL(h.fecha), 'ag'];
       case 'programada': return ['Aprobada: programada en la ruta del ' + fechaL(h.fecha), 'op'];
       case 'aceptada': return [quien + ' aceptó: programada en la ruta del ' + fechaL(h.fecha), 'ag'];
+      case 'reprogramada': return ['Reprogramada: pasó de la ruta del ' + fechaL(h.desde) + ' a la del ' + fechaL(h.fecha), 'op'];
       case 'rechazada': return ['La operación la rechazó', 'rojo'];
       case 'cancelada': return [quien + ' canceló la solicitud', 'rojo'];
       default: return [h.accion || '', ''];
@@ -6608,6 +6656,23 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         else await contraproponerFecha(sol, f.value, texto.value.trim());
       });
       panel.append(lab, texto, enviar, volver, msg);
+    } else if(pn.modo === 'reprogramar'){
+      const actual = sol.rutaFecha || sol.fecha;
+      const lab = nuevo('label', '', 'Mover a la ruta del ');
+      const f = nuevo('input'); f.type = 'date'; f.dataset.k = 'fecha'; f.min = fechaLocal();
+      f.value = pn.fecha || fechaLocal();
+      pn.fecha = f.value;
+      f.addEventListener('input', () => { pn.fecha = f.value; });
+      f.addEventListener('change', () => { pn.fecha = f.value; });
+      lab.appendChild(f);
+      const enviar = boton('🔄 Reprogramar', 'reprogramar-ok', 'primary', async () => {
+        if(!f.value){ err('Elige la nueva fecha.'); f.focus(); return; }
+        if(f.value === actual){ err('Ya está en la ruta del ' + fechaDM(actual) + '. Elige otra fecha.'); f.focus(); return; }
+        enviar.disabled = true;
+        await reprogramarSolicitud(sol, f.value);
+        enviar.disabled = false;
+      });
+      panel.append(lab, enviar, volver, msg);
     } else if(pn.modo === 'eliminar'){
       const conf = boton('🗑 Sí, eliminar', 'confirmar', 'danger', async () => { conf.disabled = true; await eliminarSolicitud(sol); });
       panel.append(nuevo('span', 'sol-espera', '¿Eliminar esta solicitud? No se puede deshacer.'), conf, volver);
@@ -6699,7 +6764,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       card.appendChild(box);
     }
     // Acciones
-    if(solPanel && solPanel.id === sol.id && (SOL_ACTIVAS.includes(sol.estado) || (solPanel.modo === 'eliminar' && esAdmin))){
+    if(solPanel && solPanel.id === sol.id && (SOL_ACTIVAS.includes(sol.estado) || (['eliminar', 'reprogramar'].includes(solPanel.modo) && esAdmin))){
       card.appendChild(panelSolicitud(sol));
       return card;
     }
@@ -6707,6 +6772,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const espera = t => pie.appendChild(nuevo('span', 'sol-espera', t));
     if(sol.estado === 'programada'){
       espera('✅ Programada en la ruta del ' + fechaDM(sol.rutaFecha) + ' por ' + (sol.resueltoPor || '—') + ' · ' + fechaCorta(sol.resueltoAt));
+      if(esAdmin) pie.appendChild(boton('🔄 Reprogramar', 'reprogramar', '', () => abrirPanelSol(sol, 'reprogramar')));
       if(verSeguimiento) pie.appendChild(boton('📍 Ver seguimiento', 'seguimiento', '', () => irARuta(sol.rutaFecha, 'seguimiento')));
     } else if(sol.estado === 'rechazada' || sol.estado === 'cancelada'){
       espera('✕ ' + (sol.estado === 'rechazada' ? 'Rechazada' : 'Cancelada') + ' por ' + (sol.resueltoPor || '—') + (sol.motivo ? ': «' + sol.motivo + '»' : ''));

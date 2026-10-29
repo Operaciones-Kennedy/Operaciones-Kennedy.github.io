@@ -116,6 +116,34 @@ console.log('Aprobar desde Entregas: los pedidos pasan a la ruta del día');
   await p.context().close();
 }
 
+console.log('Reprogramar: el cliente se anticipó y se despacha antes');
+{
+  const prog = Object.assign(sol('solR', '2026-10-30', 'Radio Sonar'), { estado: 'programada', rutaFecha: '2026-10-30', resueltoPor: 'jefe@prueba.cl', resueltoAt: '2026-10-02T12:00:00.000Z',
+    despachos: [{ cliente: 'Radio Sonar' }, { cliente: 'Radio Sonar 2' }] });
+  const fila = (id, cliente, estado, solicitudId) => ({ id, cliente, estado, solicitudId, eventos: [] });
+  const ruta30 = { fecha: '2026-10-30', rows: [fila('r1', 'Radio Sonar', 'pendiente', 'solR'), fila('r2', 'Radio Sonar 2', 'entregado', 'solR'), fila('r3', 'Otro', 'pendiente', 'solX')] };
+  const extra = { [K]: { json: JSON.stringify({ solicitudes: [prog] }) }, 'hojasDeRuta/2026-10-30': { json: JSON.stringify(ruta30), fecha: '2026-10-30' } };
+  const p = await open(b, { setup: setup('jefe@prueba.cl', extra), width: 1280 });
+  await p.waitForTimeout(600);
+  await p.click('.side-item[data-view="solicitudes"]'); await p.waitForTimeout(200);
+  await p.click('#solFiltros [data-f="programada"]'); await p.waitForTimeout(150);
+  await p.click(`${carta} [data-acc="reprogramar"]`); await p.waitForTimeout(150);
+  await p.fill(`${carta} [data-k="fecha"]`, '2026-10-30');
+  await p.click(`${carta} [data-acc="reprogramar-ok"]`); await p.waitForTimeout(150);
+  check('no deja reprogramar a la misma fecha', (await p.textContent(`${carta} .sol-panel`)).includes('Elige otra fecha') && (await leer(p))[0].rutaFecha === '2026-10-30');
+  await p.fill(`${carta} [data-k="fecha"]`, '2026-10-29');
+  await p.click(`${carta} [data-acc="reprogramar-ok"]`); await p.waitForTimeout(900);
+  const s = (await leer(p))[0];
+  check('la solicitud queda en la ruta del 29/10 con el paso anotado', s.estado === 'programada' && s.rutaFecha === '2026-10-29' && s.historial.slice(-1)[0].accion === 'reprogramada' && s.historial.slice(-1)[0].desde === '2026-10-30', JSON.stringify(s.historial));
+  const r29 = await rowsOf(p, 'hojasDeRuta', '2026-10-29');
+  check('pasa solo el despacho pendiente a la ruta del 29/10', r29 && r29.rows.length === 1 && r29.rows[0].id === 'r1' && r29.rows[0].eventos.slice(-1)[0].tipo === 'reprogramado');
+  const r30 = await rowsOf(p, 'hojasDeRuta', '2026-10-30');
+  check('la ruta del 30/10 conserva el entregado y lo ajeno', r30.rows.map(r => r.id).join(',') === 'r2,r3');
+  check('la tarjeta muestra 30 tachado → 29 y el hilo', (await p.textContent(`${carta} .sol-hilo`)).includes('Reprogramada: pasó de la ruta del viernes, 30 de octubre') && (await p.$$eval(`${carta} .sol-dia b`, bs => bs.map(x => x.textContent).join('→'))) === '30→29');
+  sinErrores(p);
+  await p.context().close();
+}
+
 console.log('El transportista no ve solicitudes en Entregas');
 {
   const extra = { [K]: { json: JSON.stringify({ solicitudes: [sol('solB', '2026-10-01', 'Chilevisión')] }) } };
