@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-10-13 · 6";
+const VERSION_APP = "2026-11-03 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1387,8 +1387,75 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .chofer-summary .details b{ color:var(--text); }
   .uploading-msg{ font-size:12px; color:var(--muted); }
 
+  /* Reporte de gestión */
+  .rg-head{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:10px 16px; }
+  .rg-head > div{ flex:1 1 320px; }
+  .rg{ display:flex; flex-direction:column; gap:18px; }
+  .rg-portada{ background:var(--sidebar); color:#e6f2ef; border-radius:16px; padding:22px 24px; }
+  .rg-portada h2{ margin:0; font-size:24px; color:#fff; text-wrap:balance; }
+  .rg-portada p{ margin:6px 0 0; color:#b9d4cf; font-size:14px; }
+  .rg-portada .rg-meta{ display:flex; flex-wrap:wrap; gap:6px 24px; margin-top:14px; font-size:13px; color:#cfe3df; }
+  .rg-portada .rg-meta b{ color:#fff; }
+  .rg-kpis{ display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; }
+  .rg-kpi{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; }
+  .rg-kpi small{ display:block; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .rg-kpi b{ display:block; font-size:28px; line-height:1.15; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .rg-kpi span{ display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .rg-sec{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:18px 20px; }
+  .rg-sec > h2{ margin:0 0 4px; font-size:18px; }
+  .rg-sec > p.rg-sub{ margin:0 0 14px; font-size:13px; color:var(--muted); }
+  .rg-resumen p{ margin:0 0 8px; max-width:78ch; font-size:14.5px; line-height:1.6; }
+  .rg-callout{ display:flex; gap:12px; align-items:flex-start; background:#e8f4f1; border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:13.5px; }
+  .rg-callout b.t{ display:block; font-size:15px; margin-bottom:2px; }
+  .rg-callout .i{ flex:none; width:32px; height:32px; border-radius:9px; background:var(--accent); color:#fff; display:grid; place-items:center; font-weight:800; }
+  .rg-agencias{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px; }
+  .rg-ag{ border:1px solid var(--border); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0; }
+  .rg-ag .h{ display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+  .rg-ag .h b{ font-size:16px; }
+  .rg-ag .h span{ font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .rg-ag .h span small{ font-size:12px; color:var(--muted); font-weight:600; }
+  .rg-barra{ height:7px; background:#e6efee; border-radius:99px; overflow:hidden; }
+  .rg-barra i{ display:block; height:100%; background:var(--accent); border-radius:99px; }
+  .rg-ag .l{ font-size:12.5px; color:var(--muted); overflow-wrap:anywhere; }
+  .rg-pill{ display:inline-block; font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:999px; }
+  .rg-pill.ok{ background:var(--ok-bg); color:var(--ok); } .rg-pill.warn{ background:var(--warn-bg); color:var(--warn); } .rg-pill.bad{ background:var(--bad-bg); color:var(--bad); } .rg-pill.neu{ background:#eceff1; color:#5b6670; }
+  .rg-dos{ display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px; }
+  .rg-svg{ width:100%; height:auto; display:block; }
+  .rg-ley{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px; color:var(--muted); margin-bottom:6px; }
+  .rg-ley i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  .rg-cm{ display:grid; grid-template-columns:minmax(0,150px) minmax(0,1fr) 40px; gap:10px; align-items:center; font-size:13.5px; margin-bottom:6px; }
+  .rg-cm .t{ height:15px; background:#e8f4f1; border-radius:5px; overflow:hidden; }
+  .rg-cm .t i{ display:block; height:100%; background:var(--accent); border-radius:5px; }
+  .rg-cm b{ text-align:right; font-variant-numeric:tabular-nums; }
+  .rg-zonas{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .rg-zona{ border:1px solid var(--border); border-radius:10px; padding:7px 12px; font-size:12.5px; }
+  .rg-zona b{ display:block; font-size:17px; }
+  .rg-mas{ font-size:12.5px; color:var(--muted); margin:8px 0 0; }
+  .rg-filtros{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .rg-filtros button{ font-size:13px; font-weight:700; border-radius:999px; padding:6px 12px; }
+  .rg-filtros button[aria-pressed="true"]{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .rg-envios{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:12px; }
+  .rg-env{ border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; min-width:0; background:var(--panel); break-inside:avoid; page-break-inside:avoid; }
+  .rg-foto{ position:relative; aspect-ratio:4/3; max-width:100%; background:#e8eef0; display:block; }
+  .rg-foto img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .rg-foto .sf{ position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:10px; font-size:13px; font-weight:700; color:var(--muted); }
+  .rg-foto.no .sf{ background:var(--bad-bg); color:var(--bad); }
+  .rg-foto .e{ position:absolute; right:8px; top:8px; }
+  .rg-env .c{ padding:10px 12px 12px; display:flex; flex-direction:column; gap:4px; }
+  .rg-env .c b{ font-size:14.5px; }
+  .rg-env .c .d{ font-size:12.5px; color:var(--muted); }
+  .rg-env dl{ display:grid; grid-template-columns:auto minmax(0,1fr); gap:2px 10px; font-size:12px; margin:4px 0 0; }
+  .rg-env dt{ color:var(--muted); } .rg-env dd{ margin:0; font-weight:600; overflow-wrap:anywhere; }
+  .rg-metodo{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px 20px; font-size:13px; margin:0; }
+  .rg-metodo dt{ font-weight:800; } .rg-metodo dd{ margin:2px 0 0; color:var(--muted); }
+  body.imprimiendo-reporte .rg-mostrar{ display:none !important; }
   @media print{
     body{ background:#fff; }
+    body.imprimiendo-reporte .sidebar, body.imprimiendo-reporte .movil-top, body.imprimiendo-reporte .movil-nav, body.imprimiendo-reporte .chat-fab,
+    body.imprimiendo-reporte .hoja-bar, body.imprimiendo-reporte #viewReporte .rango-bar, body.imprimiendo-reporte .rg-head button, body.imprimiendo-reporte .rg-filtros,
+    body.imprimiendo-reporte .aviso-permisos{ display:none !important; }
+    body.imprimiendo-reporte{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body.imprimiendo-reporte .rg-sec, body.imprimiendo-reporte .rg-kpi, body.imprimiendo-reporte .rg-ag{ break-inside:avoid; }
     .toolbar, .icon-btn, .col-actions, .sync-banner, .sidebar, .map-hero, .kpi-bar{ display:none !important; }
     .content{ padding:0; max-width:none; }
     .card{ box-shadow:none; border:none; }
@@ -1456,6 +1523,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <button class="side-item" type="button" data-view="reportes" id="navReportes" data-solo-admin title="KPIs del día"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
         <button class="side-item" type="button" data-view="historial" data-solo-admin title="Historial y reportes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Historial y reportes</span></button>
         <button class="side-item" type="button" data-view="entregashist" data-historial title="Historial de entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
+        <button class="side-item" type="button" data-view="reporte" data-solo-admin title="Reporte de gestión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5V20.5H6z"/><path d="M9 16v-3"/><path d="M12 16v-6"/><path d="M15 16v-4"/></svg><span>Reporte de gestión</span></button>
       </div>
       <div class="side-grupo" data-dinero>
         <div class="side-titulo">Pagos</div>
@@ -1504,6 +1572,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <button class="movil-sheet-item" type="button" data-ir="seguimiento" data-seguimiento data-no-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><span>Seguimiento</span></button>
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
       <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="reporte" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5V20.5H6z"/><path d="M9 16v-3"/><path d="M12 16v-6"/><path d="M15 16v-4"/></svg><span>Reporte de gestión</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
       <button class="movil-sheet-item" type="button" data-ir="saldopo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7.5L19 8v12.5H7z"/><path d="M14 3.5V8h5"/><path d="M10 12.5h6"/><path d="M10 16.5h4"/></svg><span>Saldo PO</span></button>
       <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Usuarios</span></button>
@@ -1850,6 +1919,27 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <p class="chart-note" id="chartTarifaNote"></p>
       <div class="chart-holder" id="chartTarifa"></div>
     </section>
+  </div>
+
+  <div id="viewReporte" hidden>
+    <div class="content-header rg-head">
+      <div>
+        <h1>Reporte de gestión</h1>
+        <p>Despachos de última milla del período: indicadores, agencias, comunas y el detalle con foto de cada entrega. Sin montos.</p>
+      </div>
+      <button type="button" class="primary" id="rgImprimir">🖨️ Descargar PDF</button>
+    </div>
+    <section class="card rango-bar">
+      <label for="rDesdeG">Desde</label><input type="date" id="rDesdeG">
+      <label for="rHastaG">Hasta</label><input type="date" id="rHastaG">
+      <span class="rango-atajos">
+        <button data-rango="semana">Esta semana</button>
+        <button data-rango="mes">Este mes</button>
+        <button data-rango="mespasado">Mes pasado</button>
+      </span>
+      <span class="rango-info" id="rInfoG"></span>
+    </section>
+    <div id="rgCuerpo" class="rg"></div>
   </div>
 
   <div id="viewHistorial" hidden>
@@ -3564,7 +3654,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   $('btnInstalar').addEventListener('click', instalarApp);
 
   /* ---------- Teléfono: menú inferior y panel "Más" ---------- */
-  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', seguimiento: 'seguimiento', solicitudes: 'solicitudes', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', saldopo: 'liquidaciones', config: 'mas' };
+  const TAB_DE_VISTA = { despachos: 'despachos', chofer: 'chofer', reportes: 'historial', historial: 'historial', entregashist: 'historial', reporte: 'historial', seguimiento: 'seguimiento', solicitudes: 'solicitudes', liquidaciones: 'liquidaciones', liqperiodo: 'liquidaciones', saldopo: 'liquidaciones', config: 'mas' };
   function marcarTabMovil(view){
     document.querySelectorAll('.movil-tab').forEach(b => {
       // El transportista no tiene la pestaña Reportes: su historial queda bajo «Más».
@@ -3618,7 +3708,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function pintarRangos(){
-    ['H', 'L', 'E', 'R'].forEach(suf => {
+    ['H', 'L', 'E', 'R', 'G'].forEach(suf => {
       $('rDesde' + suf).value = periodo.desde;
       $('rHasta' + suf).value = periodo.hasta;
       $('rInfo' + suf).textContent = periodo.cargando ? 'Cargando…' : (periodo.rutas + ' ruta(s) · ' + periodo.rows.length + ' despacho(s)');
@@ -3679,6 +3769,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(currentView === 'historial') pintarHistorial();
     if(currentView === 'liqperiodo') pintarLiqPeriodo();
     if(currentView === 'entregashist') pintarEntregasHist();
+    if(currentView === 'reporte') pintarReporte();
     if(enRango()) renderVistaActual();
   }
 
@@ -4652,6 +4743,254 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     win.print();
   }
 
+  /* ---------- Reporte de gestión (última milla, sin montos) ---------- */
+  // Agencias con las que se trabaja; la empresa de cada solicitud se asocia a una de ellas.
+  const AGENCIAS_RG = ['Azerta', 'Burson', 'EK', 'Wiin', 'Team Chile', 'Team Para Chile'];
+  const normRg = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  function agenciaCanonica(txt){
+    const n = normRg(txt);
+    if(!n) return '';
+    const s = ' ' + n + ' ';
+    if(s.includes(' team para chile ') || n.replace(/ /g, '').includes('teamparachile')) return 'Team Para Chile';
+    if(s.includes(' team chile ') || n.replace(/ /g, '') === 'teamchile') return 'Team Chile';
+    if(n.includes('azerta')) return 'Azerta';
+    if(n.includes('burson')) return 'Burson';
+    if(n.includes('wiin')) return 'Wiin';
+    if(/(^| )ek( |$)/.test(n)) return 'EK';
+    return String(txt).trim();
+  }
+  const ZONAS_RG = {
+    'Oriente': ['las condes', 'vitacura', 'lo barnechea', 'providencia', 'nunoa', 'la reina', 'penalolen', 'macul'],
+    'Centro': ['santiago', 'estacion central', 'independencia', 'recoleta'],
+    'Sur': ['san miguel', 'san joaquin', 'la cisterna', 'la florida', 'la granja', 'san ramon', 'el bosque', 'la pintana', 'pedro aguirre cerda', 'lo espejo', 'puente alto', 'san bernardo'],
+    'Poniente': ['maipu', 'cerrillos', 'pudahuel', 'lo prado', 'quinta normal', 'cerro navia'],
+    'Norte': ['renca', 'quilicura', 'huechuraba', 'conchali', 'colina', 'lampa']
+  };
+  const zonaDe = c => { const n = normRg(c); for(const z in ZONAS_RG) if(ZONAS_RG[z].includes(n)) return z; return 'Otras'; };
+  const rgSol = { porMes: {}, cargando: false };
+  let rgFiltro = '', rgMostrar = 60;
+  function mesesDelPeriodo(){
+    const out = [];
+    if(!periodo.desde || !periodo.hasta) return out;
+    let [y, m] = periodo.desde.split('-').map(Number);
+    const [y2, m2] = periodo.hasta.split('-').map(Number);
+    while(y < y2 || (y === y2 && m <= m2)){ out.push(y + '-' + String(m).padStart(2, '0')); m++; if(m > 12){ m = 1; y++; } }
+    return out;
+  }
+  // Solicitudes de los meses del período (para saber la agencia y el contacto de cada despacho).
+  async function cargarSolicitudesReporte(){
+    if(!db || rgSol.cargando) return;
+    const faltan = mesesDelPeriodo().filter(m => !(m in rgSol.porMes));
+    if(!faltan.length) return;
+    rgSol.cargando = true;
+    try{
+      const snaps = await Promise.all(faltan.map(m => db.collection('hojasDeRuta').doc(SOL_PREFIJO + m).get()));
+      snaps.forEach((sn, i) => { rgSol.porMes[faltan[i]] = sn.exists && sn.data().json ? (JSON.parse(sn.data().json).solicitudes || []) : []; });
+    }catch(err){ console.warn('No se pudieron leer las solicitudes del período', err); faltan.forEach(m => { rgSol.porMes[m] = rgSol.porMes[m] || []; }); }
+    rgSol.cargando = false;
+    if(currentView === 'reporte') pintarReporte();
+  }
+  function datosReporte(){
+    const sols = mesesDelPeriodo().flatMap(m => rgSol.porMes[m] || []);
+    const solPorId = new Map(sols.map(s => [s.id, s]));
+    const rows = periodo.rows.filter(r => !filaVacia(r)).map(r => {
+      const sol = r.solicitudId ? solPorId.get(r.solicitudId) : null;
+      const agencia = agenciaCanonica((sol && sol.solicitante && sol.solicitante.empresa) || r.agencia || '');
+      const contacto = (sol && sol.solicitante && sol.solicitante.nombre) || '';
+      const intentos = (r.eventos || []).filter(e => e.tipo === 'no-entregado').length;
+      return Object.assign({}, r, { _agencia: agencia, _contacto: contacto, _viaRuteka: !!sol, _reintento: intentos > 0 });
+    });
+    // Solicitudes del período por agencia (aunque aún no tengan despachos aprobados).
+    const solsPeriodo = sols.filter(s => { const f = String(s.creadoAt || '').slice(0, 10); return f >= periodo.desde && f <= periodo.hasta; });
+    return { rows, sols: solsPeriodo };
+  }
+  const pct = (a, b) => b ? (a / b * 100) : 0;
+  const pctTxt = (a, b) => b ? pct(a, b).toFixed(1).replace('.', ',') + '%' : '—';
+  const fechaCortaRg = f => f ? f.split('-').reverse().join('/') : '';
+  function lunesDe(f){ const [y, m, d] = f.split('-').map(Number); const dt = new Date(y, m - 1, d); dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7)); return fechaLocal(dt); }
+  const urlFotoOk = u => u && /^(https?:|data:image\/|blob:)/.test(u);
+
+  function pintarReporte(){
+    if($('viewReporte').hidden) return;
+    const cuerpo = $('rgCuerpo');
+    if(periodo.cargando){ cuerpo.innerHTML = '<p class="chart-empty">Cargando el período…</p>'; return; }
+    cargarSolicitudesReporte();
+    const { rows, sols } = datosReporte();
+    const ent = rows.filter(r => r.estado === 'entregado');
+    const noEnt = rows.filter(r => r.estado === 'no-entregado');
+    const cerrados = ent.length + noEnt.length;
+    const primer = ent.filter(r => !r._reintento).length;
+    const conFoto = ent.filter(r => r.entrega && urlFotoOk(r.entrega.fotoUrl)).length;
+    const reprog = ent.filter(r => r._reintento).length;
+    const rutas = new Set(rows.map(r => r._fecha)).size;
+    const transp = [...new Set(rows.map(r => r._transportista).filter(Boolean))];
+    // Comunas
+    const cmMap = new Map();
+    rows.forEach(r => { const k = normRg(r.comuna); if(!k) return; const x = cmMap.get(k) || { nombre: String(r.comuna).trim(), n: 0 }; x.n++; cmMap.set(k, x); });
+    const comunas = [...cmMap.values()].sort((a, b) => b.n - a.n);
+    const zonas = {}; comunas.forEach(c => { const z = zonaDe(c.nombre); zonas[z] = (zonas[z] || 0) + c.n; });
+    // Agencias
+    const agMap = new Map(AGENCIAS_RG.map(a => [a, { nombre: a, desp: 0, ent: 0, contactos: new Set(), sols: 0, ultima: '' }]));
+    const sinAg = { desp: 0 };
+    rows.forEach(r => {
+      if(!r._agencia){ sinAg.desp++; return; }
+      const a = agMap.get(r._agencia) || { nombre: r._agencia, desp: 0, ent: 0, contactos: new Set(), sols: 0, ultima: '' };
+      a.desp++; if(r.estado === 'entregado') a.ent++; if(r._contacto) a.contactos.add(r._contacto);
+      agMap.set(r._agencia, a);
+    });
+    sols.forEach(s => {
+      const nombre = agenciaCanonica(s.solicitante && s.solicitante.empresa);
+      if(!nombre) return;
+      const a = agMap.get(nombre) || { nombre, desp: 0, ent: 0, contactos: new Set(), sols: 0, ultima: '' };
+      a.sols++; if(s.solicitante && s.solicitante.nombre) a.contactos.add(s.solicitante.nombre);
+      const f = String(s.creadoAt || '').slice(0, 10); if(f > a.ultima) a.ultima = f;
+      agMap.set(nombre, a);
+    });
+    const agencias = [...agMap.values()];
+    const conRuteka = agencias.filter(a => a.sols > 0);
+    const contactosTot = new Set(agencias.flatMap(a => [...a.contactos].map(c => a.nombre + '|' + normRg(c)))).size;
+    const agActivas = agencias.filter(a => a.desp > 0 || a.sols > 0).length;
+    const maxAg = Math.max(1, ...agencias.map(a => a.desp));
+    // Semanas
+    const semMap = new Map();
+    rows.forEach(r => { const k = lunesDe(r._fecha); const x = semMap.get(k) || { ent: 0, no: 0, otros: 0 }; if(r.estado === 'entregado') x.ent++; else if(r.estado === 'no-entregado') x.no++; else x.otros++; semMap.set(k, x); });
+    const semanas = [...semMap.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    // Franjas horarias
+    const FR = [['Antes de 9', 0, 9], ['9–11', 9, 11], ['11–13', 11, 13], ['13–15', 13, 15], ['15–17', 15, 17], ['17–19', 17, 19], ['Después de 19', 19, 24]];
+    const franjas = FR.map(([lab]) => ({ lab, n: 0 }));
+    ent.forEach(r => { const h = parseInt(horaEntregaDe(r), 10); if(isNaN(h)) return; const i = FR.findIndex(([, a, b]) => h >= a && h < b); if(i >= 0) franjas[i].n++; });
+    const franjasVis = franjas.filter((f, i) => f.n || (i > 0 && i < 6));
+    // Motivos
+    const motMap = new Map();
+    noEnt.forEach(r => { const m = ((r.entrega && r.entrega.motivo) || 'Sin motivo registrado').trim(); const k = normRg(m); const x = motMap.get(k) || { m, n: 0 }; x.n++; motMap.set(k, x); });
+    const motivos = [...motMap.values()].sort((a, b) => b.n - a.n);
+
+    const periodoTxt = fechaCortaRg(periodo.desde) + ' al ' + fechaCortaRg(periodo.hasta);
+    const h = [];
+    h.push('<section class="rg-portada"><h2>Reporte de gestión de despachos de última milla</h2><p>Despachos desde ' + escapeHtml((state.puntoPartida || 'el punto de partida').replace(/\s+/g, ' ')) + '.</p>' +
+      '<div class="rg-meta"><span>Período <b>' + periodoTxt + '</b></span><span>Transportista <b>' + escapeHtml(transp.join(', ') || '—') + '</b></span><span>Preparado por <b>' + escapeHtml(currentEmail() || '—') + '</b></span><span>Fuente <b>Ruteka · ' + rutas + ' ruta(s)</b></span></div></section>');
+    if(!rows.length){
+      h.push('<p class="chart-empty card" style="padding:18px">No hay despachos en este período. Elige otro rango de fechas.</p>');
+      cuerpo.innerHTML = h.join('');
+      return;
+    }
+    const kpi = (t, v, n) => '<div class="rg-kpi"><small>' + t + '</small><b>' + v + '</b><span>' + n + '</span></div>';
+    h.push('<div class="rg-kpis">' +
+      kpi('Despachos realizados', fmtN(rows.length), rutas + ' ruta(s) · ' + (rows.length / Math.max(1, rutas)).toFixed(1).replace('.', ',') + ' por ruta') +
+      kpi('Tasa de entrega', pctTxt(ent.length, cerrados), ent.length + ' entregados · ' + noEnt.length + ' no entregados' + (rows.length - cerrados ? ' · ' + (rows.length - cerrados) + ' en curso' : '')) +
+      kpi('Entrega al primer intento', pctTxt(primer, cerrados), reprog ? reprog + ' entregado(s) tras reintento' : 'sin reintentos') +
+      kpi('Con foto de respaldo', pctTxt(conFoto, ent.length), conFoto + ' de ' + ent.length + ' entregas') +
+      kpi('Comunas atendidas', comunas.length, Object.keys(zonas).filter(z => z !== 'Otras').length + ' sector(es) de Santiago') +
+      kpi('Agencias activas', agActivas, contactosTot + ' punto(s) de contacto · ' + conRuteka.length + ' pide(n) por Ruteka') + '</div>');
+    // Resumen
+    const topCm = comunas.slice(0, 3).map(c => c.nombre).join(', ');
+    const zonaTop = Object.entries(zonas).sort((a, b) => b[1] - a[1])[0];
+    const nombresAct = agencias.filter(a => a.desp > 0 || a.sols > 0).map(a => a.nombre);
+    h.push('<section class="rg-sec rg-resumen"><h2>Resumen</h2><p class="rg-sub">Lo principal del período.</p>' +
+      '<p>Entre el ' + periodoTxt.replace(' al ', ' y el ') + ' se realizaron <b>' + rows.length + ' despachos</b> en ' + rutas + ' ruta(s), con una tasa de entrega de <b>' + pctTxt(ent.length, cerrados) + '</b> y foto de respaldo en el <b>' + pctTxt(conFoto, ent.length) + '</b> de las entregas. Se atendieron <b>' + comunas.length + ' comunas</b>' + (topCm ? ', principalmente ' + escapeHtml(topCm) : '') + (zonaTop && zonaTop[0] !== 'Otras' ? ', con mayor concentración en el sector ' + zonaTop[0].toLowerCase() : '') + '.</p>' +
+      '<p>Se trabajó con <b>' + agActivas + ' agencia(s)</b>' + (nombresAct.length ? ' (' + escapeHtml(nombresAct.join(', ')) + ')' : '') + ' y ' + contactosTot + ' punto(s) de contacto. ' + (conRuteka.length ? escapeHtml(conRuteka.map(a => a.nombre).join(', ')) + ' ya ingresa' + (conRuteka.length > 1 ? 'n' : '') + ' sus solicitudes directamente en Ruteka, y se está gestionando que el resto de las agencias también lo haga.' : 'Se está gestionando que las agencias ingresen sus propias solicitudes directamente en Ruteka.') + '</p>' +
+      (noEnt.length ? '<p>Hubo ' + noEnt.length + ' despacho(s) no entregado(s)' + (motivos[0] ? ', principalmente por «' + escapeHtml(motivos[0].m) + '»' : '') + (reprog ? '; ' + reprog + ' despacho(s) se entregaron en un segundo intento' : '') + '.</p>' : '<p>Todos los despachos cerrados del período se entregaron.</p>') + '</section>');
+    // Agencias
+    const canal = a => a.sols > 0 ? '<span class="rg-pill ok">Pide por Ruteka</span>' : (a.desp > 0 ? '<span class="rg-pill warn">En incorporación</span>' : '<span class="rg-pill neu">Sin actividad en el período</span>');
+    h.push('<section class="rg-sec"><h2>Agencias y puntos de contacto</h2><p class="rg-sub">Con quién trabajamos, cuánto despachamos para cada una y cómo nos piden los envíos.</p>' +
+      '<div class="rg-callout"><span class="i">R</span><div><b class="t">Gestión en curso: las agencias ingresan sus propias solicitudes en Ruteka</b>El objetivo es que cada agencia pida sus despachos directamente en la plataforma y vea el seguimiento y la foto de cada entrega. Hoy <b>' + conRuteka.length + ' de ' + AGENCIAS_RG.length + '</b> agencias ya lo hacen.</div></div>' +
+      '<div class="rg-agencias">' + agencias.map(a => '<div class="rg-ag"><div class="h"><b>' + escapeHtml(a.nombre) + '</b><span>' + a.desp + ' <small>desp.</small></span></div>' +
+        '<div class="rg-barra"><i style="width:' + (a.desp / maxAg * 100) + '%"></i></div>' +
+        '<div class="l">' + pctTxt(a.desp, rows.length) + ' del total · ' + (a.desp ? 'entregados ' + pctTxt(a.ent, a.desp) : 'sin despachos') + '</div>' +
+        '<div class="l">' + a.sols + ' solicitud(es) por Ruteka' + (a.ultima ? ' · última el ' + fechaCortaRg(a.ultima) : '') + '</div>' +
+        '<div class="l">' + (a.contactos.size ? a.contactos.size + ' contacto(s): ' + escapeHtml([...a.contactos].slice(0, 4).join(', ')) + (a.contactos.size > 4 ? ' y ' + (a.contactos.size - 4) + ' más' : '') : 'Sin contactos registrados') + '</div>' +
+        '<div>' + canal(a) + '</div></div>').join('') + '</div>' +
+      (sinAg.desp ? '<p class="rg-mas">' + sinAg.desp + ' despacho(s) del período no tienen agencia asociada (se cargaron directo en la Ruta del día, no desde una solicitud).</p>' : '') + '</section>');
+    // Semanas
+    h.push('<section class="rg-sec"><h2>Evolución semanal</h2><p class="rg-sub">Despachos por semana (desde el lunes) según resultado.</p>' +
+      '<div class="rg-ley"><span><i style="background:var(--teal)"></i>Entregados</span><span><i style="background:var(--coral)"></i>No entregados</span><span><i style="background:#c4d3d1"></i>Pendientes / en ruta</span></div>' + svgSemanas(semanas) + '</section>');
+    // Comunas y franjas
+    h.push('<div class="rg-dos"><section class="rg-sec"><h2>Cobertura por comuna</h2><p class="rg-sub">' + comunas.length + ' comuna(s) atendidas en el período.</p>' +
+      comunas.slice(0, 15).map(c => '<div class="rg-cm"><span>' + escapeHtml(c.nombre) + '</span><span class="t"><i style="width:' + (c.n / comunas[0].n * 100) + '%"></i></span><b>' + c.n + '</b></div>').join('') +
+      (comunas.length > 15 ? '<p class="rg-mas">Además: ' + escapeHtml(comunas.slice(15).map(c => c.nombre + ' (' + c.n + ')').join(', ')) + '.</p>' : '') +
+      '<div class="rg-zonas">' + Object.entries(zonas).sort((a, b) => b[1] - a[1]).map(([z, n]) => '<div class="rg-zona"><b>' + n + '</b>' + z + '</div>').join('') + '</div></section>' +
+      '<section class="rg-sec"><h2>Franja horaria de entrega</h2><p class="rg-sub">Entregas según la hora registrada por el transportista.</p>' + svgBarras(franjasVis.map(f => [f.lab, f.n])) + '</section></div>');
+    // Calidad
+    h.push('<section class="rg-sec"><h2>Calidad del servicio</h2><p class="rg-sub">Despachos no entregados y su motivo.</p>' +
+      (motivos.length ? motivos.map(m => '<div class="rg-cm"><span>' + escapeHtml(m.m) + '</span><span class="t"><i style="width:' + (m.n / motivos[0].n * 100) + '%;background:var(--coral)"></i></span><b>' + m.n + '</b></div>').join('') : '<p class="rg-mas">No hubo despachos no entregados en el período.</p>') +
+      (reprog ? '<p class="rg-mas">' + reprog + ' despacho(s) se entregaron después de un primer intento fallido.</p>' : '') + '</section>');
+    // Detalle
+    const agFiltro = [...new Set(rows.map(r => r._agencia || 'Sin agencia'))].sort();
+    if(rgFiltro && !agFiltro.includes(rgFiltro)) rgFiltro = '';
+    const lista = rows.filter(r => !rgFiltro || (r._agencia || 'Sin agencia') === rgFiltro).sort((a, b) => b._fecha.localeCompare(a._fecha));
+    const imprimiendo = document.body.classList.contains('imprimiendo-reporte');
+    const visibles = imprimiendo ? lista : lista.slice(0, rgMostrar);
+    const estPill = r => r.estado === 'entregado' ? '<span class="rg-pill ok e">Entregado</span>' : r.estado === 'no-entregado' ? '<span class="rg-pill bad e">No entregado</span>' : '<span class="rg-pill neu e">' + escapeHtml((ESTADOS.find(e => e.value === r.estado) || ESTADOS[0]).label) + '</span>';
+    h.push('<section class="rg-sec"><h2>Detalle de despachos</h2><p class="rg-sub">Cada despacho con su registro fotográfico. Filtra por agencia.</p>' +
+      '<div class="rg-filtros" role="group" aria-label="Filtrar por agencia">' + ['', ...agFiltro].map(a => '<button type="button" data-rg-ag="' + escapeHtml(a) + '" aria-pressed="' + (a === rgFiltro ? 'true' : 'false') + '">' + escapeHtml(a || 'Todas') + '</button>').join('') + '</div>' +
+      '<div class="rg-envios">' + visibles.map(r => {
+        const e = r.entrega || {};
+        const foto = urlFotoOk(e.fotoUrl)
+          ? '<a class="rg-foto" href="' + escapeHtml(e.fotoUrl) + '" target="_blank" rel="noopener"><img src="' + escapeHtml(e.fotoUrl) + '" alt="Foto de la entrega" loading="lazy">' + estPill(r) + '</a>'
+          : '<div class="rg-foto' + (r.estado === 'no-entregado' ? ' no' : '') + '"><span class="sf">' + (r.estado === 'no-entregado' ? 'Sin entrega' + (e.motivo ? '<br>Motivo: ' + escapeHtml(e.motivo) : '') : 'Sin foto registrada') + '</span>' + estPill(r) + '</div>';
+        const hora = horaEntregaDe(r);
+        return '<article class="rg-env">' + foto + '<div class="c"><b>' + escapeHtml(r.cliente || '(sin cliente)') + '</b><span class="d">' + escapeHtml([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' +
+          '<dl><dt>Agencia</dt><dd>' + escapeHtml(r._agencia || '—') + '</dd><dt>Fecha</dt><dd>' + fechaCortaRg(r._fecha) + (hora ? ' · ' + escapeHtml(hora) + ' h' : '') + '</dd>' +
+          (r.productos ? '<dt>Productos</dt><dd>' + escapeHtml(r.productos) + '</dd>' : '') +
+          (e.recibidoPor ? '<dt>Recibió</dt><dd>' + escapeHtml(e.recibidoPor) + '</dd>' : '') + '</dl></div></article>';
+      }).join('') + '</div>' +
+      (visibles.length < lista.length ? '<p class="rg-mas">Se muestran ' + visibles.length + ' de ' + lista.length + '. <button type="button" class="rg-mostrar" id="rgMas">Mostrar todos</button></p>' : '<p class="rg-mas">' + lista.length + ' despacho(s).</p>') + '</section>');
+    h.push('<section class="rg-sec"><h2>Cómo se calculan</h2><dl class="rg-metodo">' +
+      '<div><dt>Tasa de entrega</dt><dd>Entregados ÷ (entregados + no entregados) × 100.</dd></div>' +
+      '<div><dt>Entrega al primer intento</dt><dd>Entregados sin un «No entregado» previo ÷ despachos cerrados × 100. Referencia de la industria: sobre 85–90%.</dd></div>' +
+      '<div><dt>Foto de respaldo</dt><dd>Entregas con foto registrada en Ruteka ÷ entregas × 100.</dd></div>' +
+      '<div><dt>Agencia</dt><dd>Empresa de la solicitud en Ruteka de la que salió el despacho.</dd></div>' +
+      '<div><dt>Punto de contacto</dt><dd>Persona que pidió al menos una solicitud a nombre de la agencia.</dd></div></dl></section>');
+    cuerpo.innerHTML = h.join('');
+  }
+  const fmtN = n => Number(n).toLocaleString('es-CL');
+  function svgSemanas(semanas){
+    if(!semanas.length) return '';
+    const W = 720, H = 240, L = 36, R = 12, T = 18, B = 36;
+    const max = Math.max(1, ...semanas.map(([, x]) => x.ent + x.no + x.otros));
+    const tope = Math.max(5, Math.ceil(max / 5) * 5);
+    const y = v => T + (H - T - B) * (1 - v / tope), bw = (W - L - R) / semanas.length;
+    let s = '<svg class="rg-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Despachos por semana">';
+    [0, tope / 2, tope].forEach(v => { s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" style="stroke:var(--border)"/><text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="11" style="fill:var(--muted)">' + v + '</text>'; });
+    semanas.forEach(([lun, x], i) => {
+      const w = Math.min(46, bw * .62), cx = L + i * bw + bw / 2, x0 = cx - w / 2;
+      let base = 0;
+      [['ent', 'var(--teal)'], ['no', 'var(--coral)'], ['otros', '#c4d3d1']].forEach(([k, col]) => { if(!x[k]) return; s += '<rect x="' + x0 + '" y="' + y(base + x[k]) + '" width="' + w + '" height="' + (y(base) - y(base + x[k])) + '" rx="2" style="fill:' + col + '"/>'; base += x[k]; });
+      s += '<text x="' + cx + '" y="' + (y(base) - 5) + '" text-anchor="middle" font-size="11" font-weight="700" style="fill:var(--text)">' + base + '</text>';
+      s += '<text x="' + cx + '" y="' + (H - B + 16) + '" text-anchor="middle" font-size="10.5" style="fill:var(--muted)">' + fechaCortaRg(lun).slice(0, 5) + '</text>';
+    });
+    return s + '</svg>';
+  }
+  function svgBarras(datos){
+    const W = 380, H = 220, L = 30, R = 8, T = 18, B = 30;
+    const max = Math.max(1, ...datos.map(d => d[1]));
+    const tope = Math.max(4, Math.ceil(max / 4) * 4);
+    const y = v => T + (H - T - B) * (1 - v / tope), bw = (W - L - R) / Math.max(1, datos.length);
+    let s = '<svg class="rg-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Entregas por franja horaria">';
+    [0, tope / 2, tope].forEach(v => { s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" style="stroke:var(--border)"/><text x="' + (L - 5) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="10.5" style="fill:var(--muted)">' + v + '</text>'; });
+    datos.forEach(([lab, n], i) => {
+      const w = bw * .64, x0 = L + i * bw + bw * .18;
+      s += '<rect x="' + x0 + '" y="' + y(n) + '" width="' + w + '" height="' + (y(0) - y(n)) + '" rx="3" style="fill:var(--teal)"/>';
+      s += '<text x="' + (x0 + w / 2) + '" y="' + (y(n) - 5) + '" text-anchor="middle" font-size="11" font-weight="700" style="fill:var(--text)">' + n + '</text>';
+      s += '<text x="' + (x0 + w / 2) + '" y="' + (H - B + 15) + '" text-anchor="middle" font-size="10" style="fill:var(--muted)">' + escapeHtml(lab) + '</text>';
+    });
+    return s + '</svg>';
+  }
+  $('rgCuerpo').addEventListener('click', e => {
+    const f = e.target.closest('[data-rg-ag]');
+    if(f){ rgFiltro = f.dataset.rgAg; rgMostrar = 60; pintarReporte(); return; }
+    if(e.target.id === 'rgMas'){ rgMostrar = Infinity; pintarReporte(); }
+  });
+  $('rgImprimir').addEventListener('click', () => {
+    document.body.classList.add('imprimiendo-reporte');
+    pintarReporte();
+    const fin = () => { document.body.classList.remove('imprimiendo-reporte'); window.removeEventListener('afterprint', fin); pintarReporte(); };
+    window.addEventListener('afterprint', fin);
+    // Se espera a que carguen las fotos antes de abrir el diálogo de impresión.
+    const imgs = [...document.querySelectorAll('#rgCuerpo img')].filter(i => !i.complete);
+    Promise.race([Promise.all(imgs.map(i => new Promise(r => { i.loading = 'eager'; i.onload = i.onerror = r; }))), new Promise(r => setTimeout(r, 4000))]).then(() => window.print());
+  });
+
   function updateKpis(){
     const counts = { pendiente: 0, 'en-ruta': 0, entregado: 0, 'no-entregado': 0 };
     const conDatos = enRango() && currentView === 'despachos' ? filasDelRango() : state.rows.filter(r => !filaVacia(r));
@@ -4696,9 +5035,10 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     document.querySelector('main.content').classList.toggle('ancha', ['despachos', 'liquidaciones', 'liqperiodo', 'entregashist', 'historial'].includes(view));
     $('viewSaldoPO').hidden = view !== 'saldopo';
     $('viewEntregasHist').hidden = view !== 'entregashist';
+    $('viewReporte').hidden = view !== 'reporte';
     // La barra "Ruta del …" no aplica a las vistas del período.
     $('viewConfig').hidden = view !== 'config';
-    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'config' || view === 'solicitudes' || view === 'saldopo';
+    $('hojaBar').hidden = view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'config' || view === 'solicitudes' || view === 'saldopo' || view === 'reporte';
     if(view === 'config') pintarConfig();
 
     marcarMenuLateral(view);
@@ -4710,7 +5050,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     if(view === 'seguimiento') renderSeguimiento();
     if(view === 'solicitudes') pintarSolicitudes();
     if(view === 'liquidaciones') renderLiquidaciones();
-    if(view === 'historial' || view === 'liqperiodo' || view === 'entregashist') cargarPeriodo();
+    if(view === 'historial' || view === 'liqperiodo' || view === 'entregashist' || view === 'reporte') cargarPeriodo();
     if(view === 'saldopo') cargarDespachosPO();
     if(view === 'despachos' && poTablaVieja){ poTablaVieja = false; renderRows(); }
     marcarTabMovil(view);
