@@ -1033,6 +1033,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .po-fac-form input{ border:1px solid var(--border); border-radius:8px; padding:7px 9px; font:inherit; min-width:0; }
   .po-fac-form .po-ancho{ grid-column:1 / -1; }
   .po-total-fac{ display:flex; justify-content:space-between; font-weight:800; padding:10px 4px 0; }
+  .agencia-celda select{ border:1px solid var(--border); border-radius:6px; padding:4px 6px; font:inherit; font-size:12.5px; max-width:150px; background:#fff; }
   .po-celda select{ border:1px solid var(--border); border-radius:6px; padding:4px 6px; font:inherit; font-size:12.5px; max-width:170px; background:#fff; }
   .aviso-po{ margin:0 0 14px; padding:10px 14px; border-radius:12px; background:#fff6e5; color:#8a5a00; border:1px solid #f3d9a4; font-size:13.5px; font-weight:600; }
   .aviso-po.rojo{ background:#fdecec; color:#a32b30; border-color:#f4c2c4; }
@@ -1449,6 +1450,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .rg-metodo{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px 20px; font-size:13px; margin:0; }
   .rg-metodo dt{ font-weight:800; } .rg-metodo dd{ margin:2px 0 0; color:var(--muted); }
   body.imprimiendo-reporte .rg-mostrar{ display:none !important; }
+  .rg-novedades{ background:var(--warn-bg); color:var(--warn); border-radius:12px; padding:12px 16px; font-size:14px; }
+  .rg-env.nueva{ border-color:var(--marca-acento, #f08a3c); box-shadow:0 0 0 2px rgba(240,138,60,.25); }
   @media print{
     body{ background:#fff; }
     body.imprimiendo-reporte .sidebar, body.imprimiendo-reporte .movil-top, body.imprimiendo-reporte .movil-nav, body.imprimiendo-reporte .chat-fab,
@@ -1524,6 +1527,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         <button class="side-item" type="button" data-view="historial" data-solo-admin title="Historial y reportes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6.5 17V11"/><path d="M12 17V6"/><path d="M17.5 17v-4"/></svg><span>Historial y reportes</span></button>
         <button class="side-item" type="button" data-view="entregashist" data-historial title="Historial de entregas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
         <button class="side-item" type="button" data-view="reporte" data-solo-admin title="Reporte de gestión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5V20.5H6z"/><path d="M9 16v-3"/><path d="M12 16v-6"/><path d="M15 16v-4"/></svg><span>Reporte de gestión</span></button>
+        <button class="side-item" type="button" data-view="reporte" data-solo-agencia title="Mis despachos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5V20.5H6z"/><path d="M9 16v-3"/><path d="M12 16v-6"/><path d="M15 16v-4"/></svg><span>Mis despachos</span></button>
       </div>
       <div class="side-grupo" data-dinero>
         <div class="side-titulo">Pagos</div>
@@ -1573,6 +1577,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       <button class="movil-sheet-item" type="button" data-ir="reportes" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>KPIs del día</span></button>
       <button class="movil-sheet-item" type="button" data-ir="entregashist" data-historial><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2"/></svg><span>Historial de entregas</span></button>
       <button class="movil-sheet-item" type="button" data-ir="reporte" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5V20.5H6z"/><path d="M9 16v-3"/><path d="M12 16v-6"/><path d="M15 16v-4"/></svg><span>Reporte de gestión</span></button>
+      <button class="movil-sheet-item" type="button" data-ir="reporte" data-solo-agencia><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5V20.5H6z"/><path d="M9 16v-3"/><path d="M12 16v-6"/><path d="M15 16v-4"/></svg><span>Mis despachos</span></button>
       <button class="movil-sheet-item" type="button" data-ir="liqperiodo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Liquidación del período</span></button>
       <button class="movil-sheet-item" type="button" data-ir="saldopo" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7.5L19 8v12.5H7z"/><path d="M14 3.5V8h5"/><path d="M10 12.5h6"/><path d="M10 16.5h4"/></svg><span>Saldo PO</span></button>
       <button class="movil-sheet-item" type="button" data-ir="config" data-solo-admin><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M18 14.3c1.8.7 3 2.5 3 5.2"/></svg><span>Usuarios</span></button>
@@ -1727,6 +1732,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
               <th>Cliente</th>
               <th>Departamento</th>
               <th>PO</th>
+              <th>Agencia</th>
               <th>Dirección</th>
               <th>Comuna</th>
               <th>Contacto</th>
@@ -1742,7 +1748,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="11" style="text-align:right;">Total tarifa</td>
+              <td colspan="12" style="text-align:right;">Total tarifa</td>
               <td id="totalTarifa">$0</td>
               <td></td>
             </tr>
@@ -2341,6 +2347,37 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     return td;
   }
 
+  // Agencias con las que se trabaja; la empresa de cada solicitud se asocia a una de ellas.
+  const AGENCIAS_RG = ['Azerta', 'Burson', 'EK', 'Wiin', 'Team Chile', 'Team Para Chile'];
+  const normRg = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  function agenciaCanonica(txt){
+    const n = normRg(txt);
+    if(!n) return '';
+    const s = ' ' + n + ' ';
+    if(s.includes(' team para chile ') || n.replace(/ /g, '').includes('teamparachile')) return 'Team Para Chile';
+    if(s.includes(' team chile ') || n.replace(/ /g, '') === 'teamchile') return 'Team Chile';
+    if(n.includes('azerta')) return 'Azerta';
+    if(n.includes('burson')) return 'Burson';
+    if(n.includes('wiin')) return 'Wiin';
+    if(/(^| )ek( |$)/.test(n)) return 'EK';
+    return String(txt).trim();
+  }
+  // Agencia de cada despacho (columna de la Ruta del día; al aprobar una solicitud se toma de su empresa).
+  function makeAgenciaCell(row){
+    const td = document.createElement('td');
+    td.className = 'agencia-celda';
+    const sel = document.createElement('select');
+    sel.setAttribute('aria-label', 'Agencia');
+    sel.appendChild(new Option('—', ''));
+    AGENCIAS_RG.forEach(a => sel.appendChild(new Option(a, a)));
+    const actual = String(row.agencia || '').trim();
+    if(actual && !AGENCIAS_RG.includes(actual)) sel.appendChild(new Option(actual, actual));
+    sel.value = actual;
+    sel.addEventListener('change', () => { row.agencia = sel.value; commit(); });
+    td.appendChild(sel);
+    return td;
+  }
+
   // Tarifario de despachos: la tarifa de cada despacho se elige de esta lista.
   const TARIFARIO = [
     { nombre: 'Punto simple', monto: 8000 },
@@ -2363,7 +2400,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   function defaultRow(){
-    return { id: uid(), cliente:'', departamento:'', po:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false, creadoAt: new Date().toISOString() };
+    return { id: uid(), cliente:'', departamento:'', po:'', agencia:'', direccion:'', comuna:'', contacto:'', productos:'', estado:'pendiente', hora:'', prueba:'', tarifa:'', pagado:false, creadoAt: new Date().toISOString() };
   }
   // Trazabilidad: cada cambio de estado queda anotado con fecha, hora y quién lo hizo.
   function registrarEvento(row, tipo){
@@ -2614,6 +2651,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       tr.appendChild(makeEditableCell(row, 'cliente'));
       tr.appendChild(makeEditableCell(row, 'departamento'));
       tr.appendChild(makePOCell(row));
+      tr.appendChild(makeAgenciaCell(row));
       tr.appendChild(makeEditableCell(row, 'direccion'));
       tr.appendChild(makeEditableCell(row, 'comuna'));
       tr.appendChild(makeEditableCell(row, 'contacto'));
@@ -3116,7 +3154,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
   let modoAgencia = false;
   function vistasPermitidas(){
-    if(modoAgencia) return ['seguimiento', 'solicitudes', 'entregashist'];
+    if(modoAgencia) return ['seguimiento', 'solicitudes', 'entregashist', 'reporte'];
     return ['chofer'].concat(verDinero ? ['liquidaciones'] : [], verHistorial ? ['entregashist'] : [], verSeguimiento ? ['seguimiento'] : [], verSolicitudes ? ['solicitudes'] : []);
   }
   function vistaInicial(){ return modoAgencia ? 'seguimiento' : 'chofer'; }
@@ -4744,21 +4782,6 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   }
 
   /* ---------- Reporte de gestión (última milla, sin montos) ---------- */
-  // Agencias con las que se trabaja; la empresa de cada solicitud se asocia a una de ellas.
-  const AGENCIAS_RG = ['Azerta', 'Burson', 'EK', 'Wiin', 'Team Chile', 'Team Para Chile'];
-  const normRg = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
-  function agenciaCanonica(txt){
-    const n = normRg(txt);
-    if(!n) return '';
-    const s = ' ' + n + ' ';
-    if(s.includes(' team para chile ') || n.replace(/ /g, '').includes('teamparachile')) return 'Team Para Chile';
-    if(s.includes(' team chile ') || n.replace(/ /g, '') === 'teamchile') return 'Team Chile';
-    if(n.includes('azerta')) return 'Azerta';
-    if(n.includes('burson')) return 'Burson';
-    if(n.includes('wiin')) return 'Wiin';
-    if(/(^| )ek( |$)/.test(n)) return 'EK';
-    return String(txt).trim();
-  }
   const ZONAS_RG = {
     'Oriente': ['las condes', 'vitacura', 'lo barnechea', 'providencia', 'nunoa', 'la reina', 'penalolen', 'macul'],
     'Centro': ['santiago', 'estacion central', 'independencia', 'recoleta'],
@@ -4795,10 +4818,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const solPorId = new Map(sols.map(s => [s.id, s]));
     const rows = periodo.rows.filter(r => !filaVacia(r)).map(r => {
       const sol = r.solicitudId ? solPorId.get(r.solicitudId) : null;
-      const agencia = agenciaCanonica((sol && sol.solicitante && sol.solicitante.empresa) || r.agencia || '');
+      const agencia = agenciaCanonica(r.agencia || (sol && sol.solicitante && sol.solicitante.empresa) || '');
       const contacto = (sol && sol.solicitante && sol.solicitante.nombre) || '';
       const intentos = (r.eventos || []).filter(e => e.tipo === 'no-entregado').length;
-      return Object.assign({}, r, { _agencia: agencia, _contacto: contacto, _viaRuteka: !!sol, _reintento: intentos > 0 });
+      const porMi = !!(sol && String(sol.por || '').toLowerCase() === currentEmail());
+      return Object.assign({}, r, { _agencia: agencia, _contacto: contacto, _viaRuteka: !!sol, _reintento: intentos > 0, _porMi: porMi });
     });
     // Solicitudes del período por agencia (aunque aún no tengan despachos aprobados).
     const solsPeriodo = sols.filter(s => { const f = String(s.creadoAt || '').slice(0, 10); return f >= periodo.desde && f <= periodo.hasta; });
@@ -4812,10 +4836,19 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
   function pintarReporte(){
     if($('viewReporte').hidden) return;
+    leerVisitaReporte();
     const cuerpo = $('rgCuerpo');
     if(periodo.cargando){ cuerpo.innerHTML = '<p class="chart-empty">Cargando el período…</p>'; return; }
     cargarSolicitudesReporte();
-    const { rows, sols } = datosReporte();
+    const datos = datosReporte();
+    const esAgencia = modoAgencia;
+    const miAgencia = esAgencia ? agenciaDeUsuario() : '';
+    const rows = esAgencia ? datos.rows.filter(r => r._porMi || (miAgencia && r._agencia === miAgencia)) : datos.rows;
+    const sols = esAgencia ? datos.sols.filter(s => String(s.por || '').toLowerCase() === currentEmail() || (miAgencia && agenciaCanonica(s.solicitante && s.solicitante.empresa) === miAgencia)) : datos.sols;
+    $('viewReporte').querySelector('.rg-head h1').textContent = esAgencia ? 'Mis despachos' : 'Reporte de gestión';
+    $('viewReporte').querySelector('.rg-head p').textContent = esAgencia
+      ? 'Tus despachos del período: cuántos se entregaron, dónde y la foto de cada entrega.'
+      : 'Despachos de última milla del período: indicadores, agencias, comunas y el detalle con foto de cada entrega. Sin montos.';
     const ent = rows.filter(r => r.estado === 'entregado');
     const noEnt = rows.filter(r => r.estado === 'no-entregado');
     const cerrados = ent.length + noEnt.length;
@@ -4867,8 +4900,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
 
     const periodoTxt = fechaCortaRg(periodo.desde) + ' al ' + fechaCortaRg(periodo.hasta);
     const h = [];
-    h.push('<section class="rg-portada"><h2>Reporte de gestión de despachos de última milla</h2><p>Despachos desde ' + escapeHtml((state.puntoPartida || 'el punto de partida').replace(/\s+/g, ' ')) + '.</p>' +
-      '<div class="rg-meta"><span>Período <b>' + periodoTxt + '</b></span><span>Transportista <b>' + escapeHtml(transp.join(', ') || '—') + '</b></span><span>Preparado por <b>' + escapeHtml(currentEmail() || '—') + '</b></span><span>Fuente <b>Ruteka · ' + rutas + ' ruta(s)</b></span></div></section>');
+    h.push('<section class="rg-portada"><h2>' + (esAgencia ? 'Mis despachos' + (miAgencia ? ' · ' + escapeHtml(miAgencia) : '') : 'Reporte de gestión de despachos de última milla') + '</h2><p>Despachos desde ' + escapeHtml((state.puntoPartida || 'el punto de partida').replace(/\s+/g, ' ')) + '.</p>' +
+      '<div class="rg-meta"><span>Período <b>' + periodoTxt + '</b></span><span>Transportista <b>' + escapeHtml(transp.join(', ') || '—') + '</b></span><span>' + (esAgencia ? 'Agencia <b>' + escapeHtml(miAgencia || currentEmail() || '—') : 'Preparado por <b>' + escapeHtml(currentEmail() || '—')) + '</b></span><span>Fuente <b>Ruteka · ' + rutas + ' ruta(s)</b></span></div></section>');
     if(!rows.length){
       h.push('<p class="chart-empty card" style="padding:18px">No hay despachos en este período. Elige otro rango de fechas.</p>');
       cuerpo.innerHTML = h.join('');
@@ -4881,18 +4914,23 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       kpi('Entrega al primer intento', pctTxt(primer, cerrados), reprog ? reprog + ' entregado(s) tras reintento' : 'sin reintentos') +
       kpi('Con foto de respaldo', pctTxt(conFoto, ent.length), conFoto + ' de ' + ent.length + ' entregas') +
       kpi('Comunas atendidas', comunas.length, Object.keys(zonas).filter(z => z !== 'Otras').length + ' sector(es) de Santiago') +
-      kpi('Agencias activas', agActivas, contactosTot + ' punto(s) de contacto · ' + conRuteka.length + ' pide(n) por Ruteka') + '</div>');
+      (esAgencia ? kpi('Solicitudes por Ruteka', sols.length, 'ingresadas en el período') : kpi('Agencias activas', agActivas, contactosTot + ' punto(s) de contacto · ' + conRuteka.length + ' pide(n) por Ruteka')) + '</div>');
+    // Novedades: entregas registradas desde la última visita de la agencia.
+    if(esAgencia){
+      const nuevas = ent.filter(r => entregaAt(r) > rgVistoPrev);
+      if(rgVistoPrev && nuevas.length) h.push('<div class="rg-novedades" role="status">🆕 <b>' + nuevas.length + ' entrega(s) nueva(s)</b> desde tu última visita. Están marcadas como «Nueva» en el detalle.</div>');
+    }
     // Resumen
     const topCm = comunas.slice(0, 3).map(c => c.nombre).join(', ');
     const zonaTop = Object.entries(zonas).sort((a, b) => b[1] - a[1])[0];
     const nombresAct = agencias.filter(a => a.desp > 0 || a.sols > 0).map(a => a.nombre);
-    h.push('<section class="rg-sec rg-resumen"><h2>Resumen</h2><p class="rg-sub">Lo principal del período.</p>' +
+    if(!esAgencia) h.push('<section class="rg-sec rg-resumen"><h2>Resumen</h2><p class="rg-sub">Lo principal del período.</p>' +
       '<p>Entre el ' + periodoTxt.replace(' al ', ' y el ') + ' se realizaron <b>' + rows.length + ' despachos</b> en ' + rutas + ' ruta(s), con una tasa de entrega de <b>' + pctTxt(ent.length, cerrados) + '</b> y foto de respaldo en el <b>' + pctTxt(conFoto, ent.length) + '</b> de las entregas. Se atendieron <b>' + comunas.length + ' comunas</b>' + (topCm ? ', principalmente ' + escapeHtml(topCm) : '') + (zonaTop && zonaTop[0] !== 'Otras' ? ', con mayor concentración en el sector ' + zonaTop[0].toLowerCase() : '') + '.</p>' +
       '<p>Se trabajó con <b>' + agActivas + ' agencia(s)</b>' + (nombresAct.length ? ' (' + escapeHtml(nombresAct.join(', ')) + ')' : '') + ' y ' + contactosTot + ' punto(s) de contacto. ' + (conRuteka.length ? escapeHtml(conRuteka.map(a => a.nombre).join(', ')) + ' ya ingresa' + (conRuteka.length > 1 ? 'n' : '') + ' sus solicitudes directamente en Ruteka, y se está gestionando que el resto de las agencias también lo haga.' : 'Se está gestionando que las agencias ingresen sus propias solicitudes directamente en Ruteka.') + '</p>' +
       (noEnt.length ? '<p>Hubo ' + noEnt.length + ' despacho(s) no entregado(s)' + (motivos[0] ? ', principalmente por «' + escapeHtml(motivos[0].m) + '»' : '') + (reprog ? '; ' + reprog + ' despacho(s) se entregaron en un segundo intento' : '') + '.</p>' : '<p>Todos los despachos cerrados del período se entregaron.</p>') + '</section>');
     // Agencias
     const canal = a => a.sols > 0 ? '<span class="rg-pill ok">Pide por Ruteka</span>' : (a.desp > 0 ? '<span class="rg-pill warn">En incorporación</span>' : '<span class="rg-pill neu">Sin actividad en el período</span>');
-    h.push('<section class="rg-sec"><h2>Agencias y puntos de contacto</h2><p class="rg-sub">Con quién trabajamos, cuánto despachamos para cada una y cómo nos piden los envíos.</p>' +
+    if(!esAgencia) h.push('<section class="rg-sec"><h2>Agencias y puntos de contacto</h2><p class="rg-sub">Con quién trabajamos, cuánto despachamos para cada una y cómo nos piden los envíos.</p>' +
       '<div class="rg-callout"><span class="i">R</span><div><b class="t">Gestión en curso: las agencias ingresan sus propias solicitudes en Ruteka</b>El objetivo es que cada agencia pida sus despachos directamente en la plataforma y vea el seguimiento y la foto de cada entrega. Hoy <b>' + conRuteka.length + ' de ' + AGENCIAS_RG.length + '</b> agencias ya lo hacen.</div></div>' +
       '<div class="rg-agencias">' + agencias.map(a => '<div class="rg-ag"><div class="h"><b>' + escapeHtml(a.nombre) + '</b><span>' + a.desp + ' <small>desp.</small></span></div>' +
         '<div class="rg-barra"><i style="width:' + (a.desp / maxAg * 100) + '%"></i></div>' +
@@ -4900,7 +4938,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         '<div class="l">' + a.sols + ' solicitud(es) por Ruteka' + (a.ultima ? ' · última el ' + fechaCortaRg(a.ultima) : '') + '</div>' +
         '<div class="l">' + (a.contactos.size ? a.contactos.size + ' contacto(s): ' + escapeHtml([...a.contactos].slice(0, 4).join(', ')) + (a.contactos.size > 4 ? ' y ' + (a.contactos.size - 4) + ' más' : '') : 'Sin contactos registrados') + '</div>' +
         '<div>' + canal(a) + '</div></div>').join('') + '</div>' +
-      (sinAg.desp ? '<p class="rg-mas">' + sinAg.desp + ' despacho(s) del período no tienen agencia asociada (se cargaron directo en la Ruta del día, no desde una solicitud).</p>' : '') + '</section>');
+      (sinAg.desp ? '<p class="rg-mas">' + sinAg.desp + ' despacho(s) del período no tienen agencia asignada. Asígnala en la columna «Agencia» de la Ruta del día.</p>' : '') + '</section>');
     // Semanas
     h.push('<section class="rg-sec"><h2>Evolución semanal</h2><p class="rg-sub">Despachos por semana (desde el lunes) según resultado.</p>' +
       '<div class="rg-ley"><span><i style="background:var(--teal)"></i>Entregados</span><span><i style="background:var(--coral)"></i>No entregados</span><span><i style="background:#c4d3d1"></i>Pendientes / en ruta</span></div>' + svgSemanas(semanas) + '</section>');
@@ -4922,14 +4960,15 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     const visibles = imprimiendo ? lista : lista.slice(0, rgMostrar);
     const estPill = r => r.estado === 'entregado' ? '<span class="rg-pill ok e">Entregado</span>' : r.estado === 'no-entregado' ? '<span class="rg-pill bad e">No entregado</span>' : '<span class="rg-pill neu e">' + escapeHtml((ESTADOS.find(e => e.value === r.estado) || ESTADOS[0]).label) + '</span>';
     h.push('<section class="rg-sec"><h2>Detalle de despachos</h2><p class="rg-sub">Cada despacho con su registro fotográfico. Filtra por agencia.</p>' +
-      '<div class="rg-filtros" role="group" aria-label="Filtrar por agencia">' + ['', ...agFiltro].map(a => '<button type="button" data-rg-ag="' + escapeHtml(a) + '" aria-pressed="' + (a === rgFiltro ? 'true' : 'false') + '">' + escapeHtml(a || 'Todas') + '</button>').join('') + '</div>' +
+      (agFiltro.length < 2 ? '' : '<div class="rg-filtros" role="group" aria-label="Filtrar por agencia">' + ['', ...agFiltro].map(a => '<button type="button" data-rg-ag="' + escapeHtml(a) + '" aria-pressed="' + (a === rgFiltro ? 'true' : 'false') + '">' + escapeHtml(a || 'Todas') + '</button>').join('') + '</div>') +
       '<div class="rg-envios">' + visibles.map(r => {
         const e = r.entrega || {};
         const foto = urlFotoOk(e.fotoUrl)
           ? '<a class="rg-foto" href="' + escapeHtml(e.fotoUrl) + '" target="_blank" rel="noopener"><img src="' + escapeHtml(e.fotoUrl) + '" alt="Foto de la entrega" loading="lazy">' + estPill(r) + '</a>'
           : '<div class="rg-foto' + (r.estado === 'no-entregado' ? ' no' : '') + '"><span class="sf">' + (r.estado === 'no-entregado' ? 'Sin entrega' + (e.motivo ? '<br>Motivo: ' + escapeHtml(e.motivo) : '') : 'Sin foto registrada') + '</span>' + estPill(r) + '</div>';
         const hora = horaEntregaDe(r);
-        return '<article class="rg-env">' + foto + '<div class="c"><b>' + escapeHtml(r.cliente || '(sin cliente)') + '</b><span class="d">' + escapeHtml([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' +
+        const nueva = esAgencia && rgVistoPrev && r.estado === 'entregado' && entregaAt(r) > rgVistoPrev;
+        return '<article class="rg-env' + (nueva ? ' nueva' : '') + '">' + foto + '<div class="c">' + (nueva ? '<span class="rg-pill warn">Nueva</span>' : '') + '<b>' + escapeHtml(r.cliente || '(sin cliente)') + '</b><span class="d">' + escapeHtml([r.direccion, r.comuna].filter(Boolean).join(', ')) + '</span>' +
           '<dl><dt>Agencia</dt><dd>' + escapeHtml(r._agencia || '—') + '</dd><dt>Fecha</dt><dd>' + fechaCortaRg(r._fecha) + (hora ? ' · ' + escapeHtml(hora) + ' h' : '') + '</dd>' +
           (r.productos ? '<dt>Productos</dt><dd>' + escapeHtml(r.productos) + '</dd>' : '') +
           (e.recibidoPor ? '<dt>Recibió</dt><dd>' + escapeHtml(e.recibidoPor) + '</dd>' : '') + '</dl></div></article>';
@@ -4942,7 +4981,56 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       '<div><dt>Agencia</dt><dd>Empresa de la solicitud en Ruteka de la que salió el despacho.</dd></div>' +
       '<div><dt>Punto de contacto</dt><dd>Persona que pidió al menos una solicitud a nombre de la agencia.</dd></div></dl></section>');
     cuerpo.innerHTML = h.join('');
+    if(esAgencia) guardarVisitaReporte();
   }
+  // Agencia del usuario: la empresa de sus solicitudes (la más reciente).
+  function agenciaDeUsuario(){
+    const yo = currentEmail();
+    const mias = Object.values(rgSol.porMes).flat().concat(todasLasSolicitudes())
+      .filter(s => String(s.por || '').toLowerCase() === yo && s.solicitante && s.solicitante.empresa)
+      .sort((a, b) => String(b.creadoAt).localeCompare(String(a.creadoAt)));
+    return mias.length ? agenciaCanonica(mias[0].solicitante.empresa) : '';
+  }
+  const entregaAt = r => (r.entrega && r.entrega.registradoAt) || ((r.eventos || []).filter(e => e.tipo === 'entregado').map(e => e.at).pop()) || (r._fecha + 'T23:59:00');
+  // Última visita: se lee una vez por sesión (para marcar lo nuevo) y se guarda al ver la pantalla.
+  const RG_VISTO = () => 'ruteka_visto_' + currentEmail();
+  let rgVistoPrev = null, rgVistoLeido = false;
+  function leerVisitaReporte(){
+    if(rgVistoLeido) return;
+    rgVistoLeido = true;
+    try{ rgVistoPrev = localStorage.getItem(RG_VISTO()) || ''; }catch(e){ rgVistoPrev = ''; }
+  }
+  function guardarVisitaReporte(){ try{ localStorage.setItem(RG_VISTO(), new Date().toISOString()); }catch(e){} }
+
+  /* ---------- Aviso por correo a la agencia cuando se entrega su despacho ---------- */
+  // Lo encola el administrador (la colección `mail` solo la escribe un administrador) mientras tiene
+  // Ruteka abierto: revisa la ruta abierta y avisa una vez por despacho entregado que vino de una solicitud.
+  async function avisarEntregasAgencias(){
+    if(!db || modoTransportista || sinSesion() || !firebaseReady) return;
+    const sols = new Map(todasLasSolicitudes().map(s => [s.id, s]));
+    const limite = Date.now() - 48 * 3600 * 1000;
+    const porAvisar = state.rows.filter(r => r.estado === 'entregado' && r.solicitudId && !r.avisoEntregaAt && sols.has(r.solicitudId)
+      && Date.parse(entregaAt(Object.assign({ _fecha: hojaId }, r))) >= limite);
+    for(const r of porAvisar){
+      const sol = sols.get(r.solicitudId);
+      const para = String(sol.por || '').trim();
+      if(!/^[^@\s]+@[^@\s]+$/.test(para) || para.toLowerCase() === currentEmail()) continue;
+      r.avisoEntregaAt = new Date().toISOString(); // se marca antes, para no repetir el aviso
+      commit();
+      const e = r.entrega || {};
+      const nombre = (sol.solicitante && sol.solicitante.nombre) || '';
+      const foto = /^https?:/.test(e.fotoUrl || '') ? '<p><a href="' + escapeHtml(e.fotoUrl) + '">Ver la foto de la entrega</a></p>' : '';
+      const html = '<p>Hola' + (nombre ? ' ' + escapeHtml(nombre) : '') + ',</p>' +
+        '<p>Tu despacho a <b>' + escapeHtml(r.cliente || 'tu cliente') + '</b> (' + escapeHtml([r.direccion, r.comuna].filter(Boolean).join(', ')) + ') <b>fue entregado</b> el ' + escapeHtml(fechaLarga(hojaId)) + (e.horaEntrega ? ' a las ' + escapeHtml(e.horaEntrega) : '') + '.</p>' +
+        (e.recibidoPor ? '<p>Recibió: ' + escapeHtml(e.recibidoPor) + '</p>' : '') + foto +
+        '<p>Puedes ver todos tus despachos y sus fotos en Ruteka, en «Mis despachos»: <a href="https://operaciones-kennedy.github.io">operaciones-kennedy.github.io</a></p>';
+      try{
+        await db.collection('mail').add({ to: [para], message: { subject: 'Ruteka: entregado ' + (r.cliente || 'tu despacho'), html }, tipo: 'entrega', solicitudId: sol.id, rowId: r.id, creadoPor: currentEmail(), creadoAt: new Date().toISOString() });
+      }catch(err){ console.warn('No se pudo encolar el aviso de entrega', err); }
+    }
+  }
+  setInterval(() => { avisarEntregasAgencias(); }, 60 * 1000);
+  window.__avisarEntregasAgencias = avisarEntregasAgencias; // para las pruebas
   const fmtN = n => Number(n).toLocaleString('es-CL');
   function svgSemanas(semanas){
     if(!semanas.length) return '';
@@ -5935,6 +6023,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       'Cliente': r.cliente || '',
       'Departamento': r.departamento || '',
       'PO': r.po || '',
+      'Agencia': r.agencia || '',
       'Dirección': r.direccion || '',
       'Comuna': r.comuna || '',
       'Contacto': r.contacto || '',
@@ -5946,7 +6035,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
       'Tarifa': r.tarifa || ''
     }));
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{wch:4},{wch:24},{wch:18},{wch:14},{wch:28},{wch:16},{wch:16},{wch:26},{wch:14},{wch:10},{wch:20},{wch:16},{wch:10}];
+    ws['!cols'] = [{wch:4},{wch:24},{wch:18},{wch:14},{wch:16},{wch:28},{wch:16},{wch:16},{wch:26},{wch:14},{wch:10},{wch:20},{wch:16},{wch:10}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Despachos');
     const fecha = state.fecha || hojaId;
@@ -5987,7 +6076,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     servicio: ['tipo de servicio', 'servicio', 'tipo de carga', 'tipo camion'],
     estado: ['estado'],
     horaEntrega: ['hora entrega', 'hora de entrega', 'hora'],
-    po: ['orden de compra', 'orden compra', 'numero po', 'nro po', 'n° po', 'n po', 'po']
+    po: ['orden de compra', 'orden compra', 'numero po', 'nro po', 'n° po', 'n po', 'po'],
+    agencia: ['agencia']
   };
 
   function normalizeHeaderText(text){
@@ -6050,6 +6140,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         const hora = horaFromExcel(raw);
         if(hora) row.entrega = Object.assign({}, row.entrega || {}, { horaEntrega: hora });
       }
+      else if(field === 'agencia') row.agencia = agenciaCanonica(raw);
       else row[field] = String(raw ?? '').trim();
     });
     return row;
@@ -6836,7 +6927,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
         const st = sn.exists && sn.data().json ? JSON.parse(sn.data().json) : hojaNueva(fecha);
         st.rows = (st.rows || []).concat(sol.despachos.map(d => Object.assign(defaultRow(), {
           cliente: d.cliente || '', direccion: d.direccion || '', comuna: d.comuna || '', contacto: d.contacto || '', productos: d.productos || '',
-          creadoAt: sol.creadoAt, solicitudId: sol.id,
+          creadoAt: sol.creadoAt, solicitudId: sol.id, agencia: agenciaCanonica(sol.solicitante && sol.solicitante.empresa),
           eventos: [{ tipo: 'solicitado', at: sol.creadoAt, por: sol.por || '' }, { tipo: 'programado', at: ahora, por: programadoPor }]
         })));
         tx.set(ref, { json: JSON.stringify(st), fecha, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: quien }, { merge: true });
