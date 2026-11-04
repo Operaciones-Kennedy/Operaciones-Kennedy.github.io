@@ -45,7 +45,7 @@ for (const w of [1280, 390]) {
   const p = await open(b, { setup: setup('ops@agencia.cl', gps), width: w, height: 844 });
   await p.waitForTimeout(700);
   check('entra en vista agencia', await p.evaluate(() => document.body.classList.contains('modo-agencia')) && (await p.textContent('#rolChip')) === 'Vista agencia');
-  check('menú: Solicitudes, Seguimiento e Historial de entregas', (await menu(p, w)) === (w > 820 ? 'Solicitudes,Seguimiento,Historial de entregas' : 'Seguimiento,Solicitudes,Más'), await menu(p, w));
+  check('menú: Solicitudes, Seguimiento, Historial de entregas y Mis despachos', (await menu(p, w)) === (w > 820 ? 'Solicitudes,Seguimiento,Historial de entregas,Mis despachos' : 'Seguimiento,Solicitudes,Más'), await menu(p, w));
   check('abre en Seguimiento', !(await p.$eval('#viewSeguimiento', e => e.hidden)));
   const txt = await p.textContent('#viewSeguimiento');
   check('muestra los envíos con su estado', txt.includes('Radio Infinita') && txt.includes('Chilevisión') && txt.includes('1 Entregado'));
@@ -75,7 +75,7 @@ for (const w of [1280, 390]) {
     check('no se sale de la pantalla', !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
     await p.click('.movil-tab[data-tab="mas"]'); await p.waitForTimeout(150);
     const items = await p.$$eval('#movilMas .movil-sheet-item', es => es.filter(e => e.offsetWidth).map(e => e.textContent.trim()));
-    check('en Más: Historial de entregas y Cerrar sesión', items.join(',') === 'Historial de entregas,Cerrar sesión', items.join(','));
+    check('en Más: Historial de entregas, Mis despachos y Cerrar sesión', items.join(',') === 'Historial de entregas,Mis despachos,Cerrar sesión', items.join(','));
   }
   sinErrores(p);
   await p.context().close();
