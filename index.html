@@ -28,7 +28,7 @@
    ============================================================ */
 const MARCA = { nombre: "Ruteka", lema: "Todas tus rutas, en un solo lugar." };
 // Versión publicada (se ve en "Más" y en "Mi cuenta"): sirve para saber si un teléfono ya tiene lo último.
-const VERSION_APP = "2026-11-04 · 1";
+const VERSION_APP = "2026-11-25 · 1";
 
 /* ============================================================
    ADMINISTRADORES: solo estos correos ven todo el menú. Cualquier otro
@@ -1456,6 +1456,8 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
   .rg-mapa{ height:420px; border-radius:12px; overflow:hidden; background:#e8eef0; display:grid; place-items:center; }
   .rg-mapa > p{ padding:16px; }
   @media (max-width:820px){ .rg-mapa{ height:320px; } }
+  .po-estado{ align-items:center; flex-wrap:wrap; }
+  .po-estado-nota{ font-size:13px; color:var(--muted, #667); }
   .rg-novedades{ background:var(--warn-bg); color:var(--warn); border-radius:12px; padding:12px 16px; font-size:14px; }
   .rg-env.nueva{ border-color:var(--marca-acento, #f08a3c); box-shadow:0 0 0 2px rgba(240,138,60,.25); }
   @media print{
@@ -2106,6 +2108,11 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     </section>
     <p class="po-msg" id="poMsg" role="status"></p>
     <div class="po-avisos" id="poAvisos"></div>
+    <div class="toolbar po-estado">
+      <label class="vb-email" for="ecArea"><span>Área</span><select id="ecArea"></select></label>
+      <button type="button" class="primary" id="btnEstadoCuenta">📄 Estado de cuenta del área (PDF)</button>
+      <span class="po-estado-nota">Cuánto se ha pagado y cuánto se debe a la fecha, mes a mes.</span>
+    </div>
     <section class="stat-grid">
       <div class="card stat-tile"><span class="stat-label">Monto PO abiertas</span><span class="stat-value" id="poTotal">$0</span><span class="stat-note" id="poAbiertas"></span></div>
       <div class="card stat-tile"><span class="stat-label">Usado en despachos</span><span class="stat-value" id="poUsado">$0</span></div>
@@ -4462,6 +4469,7 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     // Sugerencias de área: las de las PO y los departamentos de los despachos.
     const areas = [...new Set(poLista.map(po => (po.area || '').trim()).concat(todas.map(r => (r.departamento || '').trim())).filter(Boolean))].sort();
     $('poAreasLista').innerHTML = areas.map(a => '<option value="' + escapeHtml(a) + '">').join('');
+    pintarSelectorEstado(areas);
     // Avisos: PO abiertas que van en 85% o más.
     const avisos = $('poAvisos');
     avisos.innerHTML = '';
@@ -4805,6 +4813,104 @@ const HOJA_LEGACY_ID = "principal"; // documento único que se usaba antes del h
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(facturas.length ? facturas : [{ 'N° Factura': 'Sin facturas' }]), 'Facturas');
     XLSX.writeFile(wb, 'saldo-po-' + po.numero.replace(/[^\w-]+/g, '_') + '.xlsx');
   }
+  /* ---------- Estado de cuenta de un área: pagado y adeudado a la fecha ---------- */
+  const normArea = t => String(t || '').trim().toLowerCase();
+  function pintarSelectorEstado(areas){
+    const sel = $('ecArea');
+    const unicas = [];
+    areas.forEach(a => { if(!unicas.some(u => normArea(u) === normArea(a))) unicas.push(a); });
+    const antes = sel.value;
+    sel.innerHTML = unicas.length ? unicas.map(a => '<option value="' + escapeHtml(a) + '">' + escapeHtml(a) + '</option>').join('') : '<option value="">Sin áreas</option>';
+    const preferida = [antes, poFiltroArea, 'PACS'].find(a => a && unicas.some(u => normArea(u) === normArea(a)));
+    if(preferida) sel.value = unicas.find(u => normArea(u) === normArea(preferida));
+    $('btnEstadoCuenta').disabled = !unicas.length;
+  }
+  const MESES_EC = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const nombreMes = m => { const [a, n] = m.split('-'); const t = MESES_EC[Number(n) - 1]; return t.charAt(0).toUpperCase() + t.slice(1) + ' ' + a; };
+  const DIAS_PAGO = 30;
+  // Un despacho es del área si su departamento lo dice o si su PO es de esa área.
+  function datosEstadoCuenta(area){
+    const a = normArea(area);
+    const areaPO = new Map(poLista.map(po => [po.numero, normArea(po.area)]));
+    const rows = despachosParaPO().filter(r => normArea(r.departamento) === a || (r.po && areaPO.get(r.po) === a));
+    const pos = poLista.filter(po => normArea(po.area) === a);
+    const fechaFactura = new Map();
+    poLista.forEach(po => (po.facturas || []).forEach(f => { if(f.numero && f.fecha) fechaFactura.set(String(f.numero).trim().toLowerCase(), f.fecha); }));
+    const hoy = fechaLocal();
+    const tar = r => Number(r.tarifa) || 0;
+    let total = 0, pagado = 0, facturadoPend = 0, sinFactura = 0;
+    rows.forEach(r => { total += tar(r); if(r.pagado) pagado += tar(r); else if(r.numeroFactura) facturadoPend += tar(r); else sinFactura += tar(r); });
+    // Mes a mes, en orden cronológico (mes del despacho).
+    const meses = new Map();
+    rows.forEach(r => {
+      const m = r._fecha.slice(0, 7);
+      const x = meses.get(m) || { n: 0, total: 0, pagado: 0, facturadoPend: 0, sinFactura: 0 };
+      x.n++; x.total += tar(r);
+      if(r.pagado) x.pagado += tar(r); else if(r.numeroFactura) x.facturadoPend += tar(r); else x.sinFactura += tar(r);
+      meses.set(m, x);
+    });
+    // Facturas: monto de los despachos del área, cuánto se pagó y su vencimiento (emisión + 30 días).
+    const facturas = new Map();
+    rows.filter(r => r.numeroFactura).forEach(r => {
+      const k = String(r.numeroFactura).trim();
+      const f = facturas.get(k.toLowerCase()) || { numero: k, n: 0, monto: 0, pagado: 0, desde: r._fecha, hasta: r._fecha, emision: fechaFactura.get(k.toLowerCase()) || '' };
+      f.n++; f.monto += tar(r); if(r.pagado) f.pagado += tar(r);
+      if(r._fecha < f.desde) f.desde = r._fecha; if(r._fecha > f.hasta) f.hasta = r._fecha;
+      facturas.set(k.toLowerCase(), f);
+    });
+    const listaFacturas = [...facturas.values()].map(f => {
+      const pendiente = f.monto - f.pagado;
+      const vence = f.emision ? sumarDias(f.emision, DIAS_PAGO) : '';
+      const estado = pendiente <= 0 ? 'Pagada' : !vence ? 'Pendiente (sin fecha de emisión)' : vence < hoy ? 'Vencida' : 'Por vencer';
+      return Object.assign(f, { pendiente, vence, estado });
+    }).sort((x, y) => (x.emision || x.desde).localeCompare(y.emision || y.desde));
+    const vencido = listaFacturas.filter(f => f.estado === 'Vencida').reduce((t, f) => t + f.pendiente, 0);
+    const todas = despachosParaPO();
+    return { area, rows: rows.sort((x, y) => x._fecha.localeCompare(y._fecha)), total, pagado, facturadoPend, sinFactura, vencido, hoy,
+      meses: [...meses.entries()].sort((x, y) => x[0].localeCompare(y[0])), facturas: listaFacturas,
+      pos: pos.map(po => [po, resumenPO(po, todas)]), sinTarifa: rows.filter(r => !tar(r)).length };
+  }
+  async function abrirEstadoCuenta(){
+    const area = $('ecArea').value;
+    if(!area) return;
+    const win = window.open('', '_blank');
+    if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
+    win.document.write('<p style="font-family:Arial;padding:30px">Armando el estado de cuenta…</p>');
+    if(!poDespachos.cargado) await cargarDespachosPO();
+    const d = datosEstadoCuenta(area);
+    const $m = formatMoney, td = (v, n) => '<td' + (n ? ' class="n"' : '') + '>' + v + '</td>';
+    const debe = d.total - d.pagado;
+    const tablaMeses = d.meses.map(([m, x]) => '<tr>' + td(nombreMes(m)) + td(x.n, 1) + td($m(x.total), 1) + td($m(x.pagado), 1) + td($m(x.facturadoPend), 1) + td($m(x.sinFactura), 1) + td('<b>' + $m(x.total - x.pagado) + '</b>', 1) + '</tr>').join('') +
+      '<tr class="tot">' + td('<b>Total</b>') + td(d.rows.length, 1) + td($m(d.total), 1) + td($m(d.pagado), 1) + td($m(d.facturadoPend), 1) + td($m(d.sinFactura), 1) + td('<b>' + $m(debe) + '</b>', 1) + '</tr>';
+    const tablaFacturas = d.facturas.map(f => '<tr' + (f.estado === 'Vencida' ? ' class="venc"' : '') + '>' + td(escapeHtml(f.numero)) + td(f.emision ? fechaDMA(f.emision) : '—') + td(f.vence ? fechaDMA(f.vence) : '—') + td(fechaDMA(f.desde) + (f.hasta !== f.desde ? ' al ' + fechaDMA(f.hasta) : '')) + td(f.n, 1) + td($m(f.monto), 1) + td($m(f.pagado), 1) + td($m(f.pendiente), 1) + td(escapeHtml(f.estado)) + '</tr>').join('');
+    const tablaPO = d.pos.map(([po, r]) => '<tr>' + td(escapeHtml(po.numero) + (po.cerrada ? ' <small>(cerrada)</small>' : '')) + td(po.fecha ? fechaDMA(po.fecha) : '—') + td($m(r.monto), 1) + td($m(r.usado), 1) + td($m(r.facturado), 1) + td($m(r.saldo), 1) + '</tr>').join('');
+    const estadoPago = r => r.pagado ? 'Pagado' : r.numeroFactura ? 'Facturado, por pagar' : 'Sin factura';
+    const detalle = d.rows.map(r => '<tr>' + td(fechaDMA(r._fecha)) + td(escapeHtml(r.cliente || '(sin cliente)')) + td(escapeHtml(r.po || '—')) + td(escapeHtml(r.numeroFactura || '—')) + td($m(r.tarifa), 1) + td(estadoPago(r)) + '</tr>').join('');
+    const emision = new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    win.document.open();
+    win.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Estado de cuenta ' + escapeHtml(area) + ' al ' + fechaDMA(d.hoy) + '</title><style>' +
+      'body{ font-family:Arial, Helvetica, sans-serif; color:#1b1a2e; padding:32px; font-size:12.5px; } h1{ font-size:22px; margin:0 0 4px; } h2{ font-size:14px; margin:26px 0 8px; text-transform:uppercase; letter-spacing:.04em; color:#0B7A6B; }' +
+      '.meta{ color:#555; font-size:13px; margin-bottom:12px; } .kpis{ display:grid; grid-template-columns:repeat(4, 1fr); border:1px solid #ccc; } .kpis div{ padding:10px 12px; border-right:1px solid #ccc; } .kpis div:last-child{ border-right:none; }' +
+      '.kpis small{ display:block; font-size:10.5px; text-transform:uppercase; color:#666; } .kpis b{ font-size:17px; } .kpis .debe{ background:#fff3e6; } .kpis .ok{ background:#e6f6f1; }' +
+      '.sub{ font-size:12px; color:#555; margin:6px 0 0; } table{ width:100%; border-collapse:collapse; } th, td{ border:1px solid #ccc; padding:6px 8px; text-align:left; } th{ background:#f0f0f6; font-size:10.5px; text-transform:uppercase; } td.n{ text-align:right; white-space:nowrap; }' +
+      'tr{ page-break-inside:avoid; } tr.tot td{ background:#f6f6fa; } tr.venc td{ background:#fde4e4; } .nota{ font-size:11.5px; color:#666; margin-top:14px; line-height:1.5; }' +
+      '.firma{ margin-top:50px; display:flex; gap:60px; } .firma div{ flex:1; border-top:1px solid #999; padding-top:6px; font-size:12px; color:#555; text-align:center; } @media print{ body{ padding:0; } }' +
+      '</style></head><body>' +
+      '<div style="font-size:12px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:#0B7A6B;margin-bottom:6px">' + escapeHtml(MARCA.nombre) + '</div>' +
+      '<h1>Estado de cuenta · ' + escapeHtml(area) + '</h1><div class="meta">Pagos al transportista al ' + fechaDMA(d.hoy) + ' · ' + d.rows.length + ' despacho(s)' + (d.rows.length ? ' desde el ' + fechaDMA(d.rows[0]._fecha) : '') + ' · Emitido el ' + emision + ' por ' + escapeHtml(currentEmail() || '') + '</div>' +
+      '<h2>Resumen a la fecha</h2><div class="kpis"><div><small>Total despachado</small><b>' + $m(d.total) + '</b></div><div class="ok"><small>Pagado</small><b>' + $m(d.pagado) + '</b></div><div class="debe"><small>Debemos</small><b>' + $m(debe) + '</b></div><div><small>Facturas vencidas</small><b>' + $m(d.vencido) + '</b></div></div>' +
+      '<p class="sub">De lo que debemos: <b>' + $m(d.facturadoPend) + '</b> ya está facturado y <b>' + $m(d.sinFactura) + '</b> son despachos que el transportista aún no factura.</p>' +
+      '<h2>Mes a mes</h2><table><thead><tr><th>Mes</th><th>Despachos</th><th>Total</th><th>Pagado</th><th>Facturado por pagar</th><th>Sin factura</th><th>Debemos</th></tr></thead><tbody>' + (tablaMeses) + '</tbody></table>' +
+      '<h2>Facturas del transportista</h2>' + (d.facturas.length ? '<table><thead><tr><th>N° Factura</th><th>Emisión</th><th>Vence</th><th>Despachos del</th><th>Cant.</th><th>Monto</th><th>Pagado</th><th>Pendiente</th><th>Estado</th></tr></thead><tbody>' + tablaFacturas + '</tbody></table>' : '<p class="sub">Aún no hay despachos con N° de factura.</p>') +
+      (d.pos.length ? '<h2>Órdenes de compra del área</h2><table><thead><tr><th>N° PO</th><th>Fecha</th><th>Monto</th><th>Usado</th><th>Facturado</th><th>Saldo</th></tr></thead><tbody>' + tablaPO + '</tbody></table>' : '') +
+      '<h2>Detalle de despachos (' + d.rows.length + ')</h2><table><thead><tr><th>Fecha</th><th>Cliente</th><th>PO</th><th>N° Factura</th><th>Tarifa</th><th>Pago</th></tr></thead><tbody>' + detalle + '</tbody></table>' +
+      '<p class="nota">El vencimiento es la fecha de emisión de la factura más ' + DIAS_PAGO + ' días (la fecha se toma de las facturas registradas en Saldo PO). Un despacho cuenta en el área si su departamento es «' + escapeHtml(area) + '» o si su orden de compra es de esa área.' + (d.sinTarifa ? ' Hay ' + d.sinTarifa + ' despacho(s) sin tarifa, que no suman en los montos.' : '') + '</p>' +
+      '<div class="firma"><div>Firma responsable</div><div>Firma transportista</div></div></body></html>');
+    win.document.close();
+    win.focus();
+    win.print();
+  }
+  $('btnEstadoCuenta').addEventListener('click', abrirEstadoCuenta);
   function abrirDocumentoPO(po, r){
     const win = window.open('', '_blank');
     if(!win){ showDialog('El navegador bloqueó la ventana. Permite pop-ups para este sitio e intenta de nuevo.'); return; }
