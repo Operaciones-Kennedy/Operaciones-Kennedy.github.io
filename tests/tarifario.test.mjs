@@ -23,7 +23,7 @@ console.log('Elegir la tarifa del tarifario');
   const p = await open(b, { setup, width: 1280 });
   await p.waitForTimeout(600);
   const ops = await p.$$eval('#tbody tr:first-child select.tarifa option', o => o.map(x => x.textContent));
-  check('lista con los 5 servicios', ops.join(' | ') === 'Elegir… | Punto simple · $8.000 | 1/4 de camión · $35.000 | 1/2 camión · $50.000 | Camión completo · $70.000 | Servicio especial · $100.000', ops.join(' | '));
+  check('lista con los 5 servicios y Directo Andina', ops.join(' | ') === 'Elegir… | Punto simple · $8.000 | 1/4 de camión · $35.000 | 1/2 camión · $50.000 | Camión completo · $70.000 | Servicio especial · $100.000 | Directo Andina · sin costo', ops.join(' | '));
   check('ya no se escribe a mano', !(await p.$('#tbody input.tarifa')));
   check('muestra la tarifa guardada', (await p.inputValue('#tbody tr:first-child select.tarifa')) === '8000');
   check('un monto antiguo se conserva como «fuera de tarifario»', (await p.$eval('#tbody tr:nth-child(2) select.tarifa', s => s.options[s.selectedIndex].textContent)) === '$12.000 (fuera de tarifario)');
