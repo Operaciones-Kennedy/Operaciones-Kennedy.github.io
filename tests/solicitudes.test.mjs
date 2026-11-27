@@ -23,7 +23,7 @@ for (const w of [390, 1280]) {
   await p.waitForTimeout(200);
   check('abre Solicitudes, sin la barra del día', !(await p.$eval('#viewSolicitudes', e => e.hidden)) && await p.$eval('#hojaBar', e => e.hidden));
   check('no se sale de la pantalla', !(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth)));
-  check('el formulario tiene los pasos Quién, Cuándo, Qué y Observaciones', (await p.$$eval('.sol-paso-tit', hs => hs.map(h => h.textContent.slice(1)).join(','))) === 'Quién solicita,Cuándo,Qué despachar,Observaciones');
+  check('el formulario tiene los pasos Quién, Cuándo, Qué y Observaciones', (await p.$$eval('.sol-paso-tit', hs => hs.filter(h => h.offsetWidth).map(h => h.textContent.slice(1)).join(','))) === 'Quién solicita,Cuándo,Qué despachar,Observaciones');
   await p.click('#solEnviar'); await p.waitForTimeout(100);
   check('pide nombre y empresa', (await p.textContent('#solMsg')).includes('nombre y la empresa'));
   await p.fill('#solNombre', 'Camila Rojas');
